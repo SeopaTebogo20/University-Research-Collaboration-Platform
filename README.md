@@ -1,5 +1,14 @@
 # University-Research-Collaboration-Platform
 
+## Links of the softwares we will be using:
+# For User Stories >
+https://students-team-o21wx7bu.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog
+
+# For Mockups and Prototypes >
+https://www.figma.com/design/mhc0wo4Emo4F0UXpRRU9BU/Untitled?t=H5wf1evp1ymt6gXQ-0
+
+
+
 
 ## HOW TO RUN THE PROJECT LOCALLY
  ## Run the following commands to install the necessary dependancies and to run the project
