@@ -1,13 +1,3 @@
-# University-Research-Collaboration-Platform
-
-
-## HOW TO RUN THE PROJECT LOCALLY
- ## Run the following commands to install the necessary dependancies and to run the project
- 1. npm install
- 2. npm install express
- 3. node src/server.js
-
-
 # CollabNexus Research Hub - Welcome Page Documentation
 
 ## Overview
