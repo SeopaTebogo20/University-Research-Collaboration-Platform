@@ -8,7 +8,12 @@ https://students-team-o21wx7bu.atlassian.net/jira/software/projects/SCRUM/boards
 https://www.figma.com/design/mhc0wo4Emo4F0UXpRRU9BU/Untitled?t=H5wf1evp1ymt6gXQ-0
 
 
-
+# How to correctly push to a new branch
+1. git checkout -b {name of your new branch}
+2. (check if you are in the new branch you created by running this command): git branch
+2. git add .
+3. git commit -m "Your commit message"
+4. git push origin {name of your new branch}
 
 ## HOW TO RUN THE PROJECT LOCALLY
  ## Run the following commands to install the necessary dependancies and to run the project
