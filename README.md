@@ -25,7 +25,7 @@ https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
  3. node src/server.js
 
 
-# CollabNexus Research Hub - Welcome Page Documentation
+# Welcome Page Documentation
 
 ## Overview
 The CollabNexus Research Hub welcome page is a modern, responsive landing page designed to introduce researchers to the platform's collaborative features. The page follows a clean, professional design with a color scheme that combines white backgrounds with research-themed accent colors to create a trustworthy, academic aesthetic.
