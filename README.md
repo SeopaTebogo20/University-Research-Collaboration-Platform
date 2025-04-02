@@ -7,6 +7,9 @@ https://students-team-o21wx7bu.atlassian.net/jira/software/projects/SCRUM/boards
 # For Mockups and Prototypes >
 https://www.figma.com/design/mhc0wo4Emo4F0UXpRRU9BU/Untitled?t=H5wf1evp1ymt6gXQ-0
 
+# For our Reposetory >
+https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
+
 
 # How to correctly push to a new branch
 1. git checkout -b {name of your new branch}
