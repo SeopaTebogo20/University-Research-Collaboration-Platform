@@ -1,6 +1,9 @@
 # University-Research-Collaboration-Platform
 
 ## Links of the softwares we will be using:
+# Deployed App (Live App)
+https://universityresearch-dmbgc8bjhsc0b5gg.canadacentral-01.azurewebsites.net/
+
 # For User Stories >
 https://students-team-o21wx7bu.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog
 
