@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,22 +19,45 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <header class="logo">
-            <i class="fas fa-book-open book-logo"></i>
-            CollabNexus
+          <i class="fas fa-book-open book-logo"></i>
+          CollabNexus
         </header>
         <ul class="nav-links">
-            <li><a href="#">Features</a></li>
-            <li><a href="#">Solutions</a></li>
-            <li><a href="#">Resources</a></li>
-            <li><a href="#">About Us</a></li>
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#researchers">Researchers</a></li>
+          <li><a href="#funding">Funding</a></li>
+          <li><a href="#resources">Resources</a></li>
         </ul>
-        <section class="auth-buttons">
-            <button class="btn btn-outline">Log In</button>
-            <button class="btn btn-primary">Sign Up</button>
-        </section>
-        <button id="mobile-menu-button" class="mobile-menu" style="display: none;">
-            <i class="fas fa-bars"></i>
+        <aside class="auth-buttons">
+          <button class="btn btn-outline">Sign In</button>
+          <button class="btn btn-primary">Register</button>
+        </aside>
+        <button id="mobile-menu-button" class="mobile-menu">
+          <i class="fas fa-bars"></i>
         </button>
+    </nav>
+      
+    <!-- Mobile Navigation -->
+    <nav id="mobile-nav" class="mobile-nav">
+        <header class="mobile-nav-header">
+          <h1 class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </h1>
+          <button id="mobile-nav-close" class="mobile-nav-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </header>
+        <ul class="mobile-nav-links">
+          <li><a href="#projects">Projects</a></li>
+          <li><a href="#researchers">Researchers</a></li>
+          <li><a href="#funding">Funding</a></li>
+          <li><a href="#resources">Resources</a></li>
+        </ul>
+        <aside class="mobile-auth-buttons">
+          <button class="btn btn-outline">Sign In</button>
+          <button class="btn btn-primary">Register</button>
+        </aside>
     </nav>
 
     <main>
@@ -45,10 +67,10 @@
                 <section class="hero-content">
                     <h1 class="animate-on-scroll">Accelerate Your Research with <mark class="gradient-text">CollabNexus</mark></h1>
                     <p class="animate-on-scroll">Connect with researchers who share your passion and complement your expertise. CollabNexus makes finding the right collaborator as easy as describing your project.</p>
-                    <section class="auth-buttons animate-on-scroll">
+                    <aside class="auth-buttons animate-on-scroll">
                         <button class="btn btn-primary">Get Started Now</button>
                         <button class="btn btn-outline">Learn More</button>
-                    </section>
+                    </aside>
                 </section>
                 <figure class="hero-image animate-on-scroll">
                     <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80" 
@@ -125,10 +147,10 @@
             <article class="container">
                 <h2>Ready to Accelerate Your Research?</h2>
                 <p>Join CollabNexus today and connect with researchers who share your passion and complement your expertise.</p>
-                <section class="cta-buttons">
+                <aside class="cta-buttons">
                     <button class="btn btn-white">Create Account</button>
                     <button class="btn btn-outline-white">Learn More <i class="fas fa-arrow-right"></i></button>
-                </section>
+                </aside>
             </article>
         </section>
     </main>
@@ -179,5 +201,6 @@
     </footer>
 
     <script src="js/main.js"></script>
+    
 </body>
 </html>
