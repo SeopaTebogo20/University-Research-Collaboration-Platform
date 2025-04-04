@@ -1,5 +1,16 @@
 {
+  "name": "university-research",
+  "version": "1.0.0",
+  "description": "University Research Application",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
   "dependencies": {
     "express": "^5.1.0"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
