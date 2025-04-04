@@ -19,7 +19,7 @@ The hero section provides an immediate introduction to the platform with:
 - Subheadline explaining the platform's purpose
 - Call-to-action buttons: "Get Started" and "Learn More"
 - A research collaboration image that adds visual context
-- Gradient text highlighting for emphasis on key phrases
+- Gradient text highlighting for emphasis on key phrases.
 
 ### 3. Features Section
 This section showcases platform capabilities with:
