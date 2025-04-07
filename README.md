@@ -13,6 +13,10 @@ https://www.figma.com/design/mhc0wo4Emo4F0UXpRRU9BU/Untitled?t=H5wf1evp1ymt6gXQ-
 # For our Reposetory >
 https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
 
+# Before you write any code, PLEASE make sure you do pull request
+1. git pull
+# If you have already written some code before doing pull request, PLEASE run this command to pull the code without losing the code you wrote
+1. git pull --no-rebase
 
 # How to correctly push to a new branch
 1. git checkout -b {name of your new branch}
