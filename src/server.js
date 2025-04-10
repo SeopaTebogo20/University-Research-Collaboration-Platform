@@ -1,4 +1,6 @@
 
+import dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -14,11 +16,9 @@ const __dirname = dirname(__filename);
 const app = express();
 
 // Initialize Supabase client with a more explicit configuration
-// Make sure to use the correct anon key (not service role key for client-side operations)
-const supabaseUrl = "https://vjralsarujpgusjhytjz.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqcmFsc2FydWpwZ3Vzamh5dGp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyMjA1NDgsImV4cCI6MjA1OTc5NjU0OH0.eRc8sP-5vsapa1owackHxOrU36n51sW0BxMP1nzyj3Q";
-// Service role key should only be used on the server-side for admin operations
-const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqcmFsc2FydWpwZ3Vzamh5dGp6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NDIyMDU0OCwiZXhwIjoyMDU5Nzk2NTQ4fQ.8iYqwFDmywxZNRz-W_ygf19AcghUfbpGy54DJitGX-8";
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
 // Create client for admin operations (server-side only)
 const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -43,7 +43,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(join(__dirname, 'public')));
 app.use(session({
-  secret: 'your-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
