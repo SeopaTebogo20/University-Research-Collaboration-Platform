@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CollabNexus Research Hub</title>
+    <meta name="description" content="Join CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
+    <meta name="author" content="CollabNexus">
+    
+    <meta property="og:title" content="Sign Up - CollabNexus Research Hub">
+    <meta property="og:description" content="Join CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/form-status.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <header class="logo">
+          <i class="fas fa-book-open book-logo"></i>
+          CollabNexus
+        </header>
+        <ul class="nav-links">
+          <li><a href="index.html#projects">Projects</a></li>
+          <li><a href="index.html#researchers">Researchers</a></li>
+          <li><a href="index.html#funding">Funding</a></li>
+          <li><a href="index.html#resources">Resources</a></li>
+        </ul>
+        <section class="auth-buttons">
+          <button class="btn btn-outline" onclick="location.href='login.html'">Sign In</button>
+          <button class="btn btn-primary" onclick="location.href='signup.html'">Register</button>
+        </section>
+        <button id="mobile-menu-button" class="mobile-menu">
+          <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+      
+    <!-- Mobile Navigation -->
+    <nav id="mobile-nav" class="mobile-nav">
+        <header class="mobile-nav-header">
+          <h1 class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </h1>
+          <button id="mobile-nav-close" class="mobile-nav-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </header>
+        <ul class="mobile-nav-links">
+          <li><a href="index.html#projects">Projects</a></li>
+          <li><a href="index.html#researchers">Researchers</a></li>
+          <li><a href="index.html#funding">Funding</a></li>
+          <li><a href="index.html#resources">Resources</a></li>
+        </ul>
+        <section class="mobile-auth-buttons">
+          <button class="btn btn-outline" onclick="location.href='login.html'">Sign In</button>
+          <button class="btn btn-primary" onclick="location.href='signup.html'">Register</button>
+        </section>
+    </nav>
+
+    <main class="signup-container">
+        <section class="signup-form-container">
+            <h1>Create Your Account</h1>
+            <p class="signup-intro">Join CollabNexus to connect with researchers who share your passion and complement your expertise.</p>
+            
+            <form id="signupForm" class="signup-form" novalidate>
+                <!-- Step 1: Role Selection -->
+                <fieldset class="form-step active" id="step1">
+                    <legend class="step-title">Select Your Role</legend>
+                    <section class="role-selection">
+                        <section class="role-option">
+                            <input type="radio" id="researcher" name="role" value="researcher" checked>
+                            <label for="researcher">
+                                <i class="fas fa-microscope"></i>
+                                <span>Researcher</span>
+                            </label>
+                        </section>
+                        <section class="role-option">
+                            <input type="radio" id="reviewer" name="role" value="reviewer">
+                            <label for="reviewer">
+                                <i class="fas fa-search"></i>
+                                <span>Reviewer</span>
+                            </label>
+                        </section>
+                        <section class="role-option">
+                            <input type="radio" id="admin" name="role" value="admin">
+                            <label for="admin">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Admin</span>
+                            </label>
+                        </section>
+                    </section>
+                    <section class="form-navigation">
+                        <button type="button" class="btn btn-primary next-btn">Continue</button>
+                    </section>
+                </fieldset>
+
+                <!-- Step 2: Personal Information -->
+                <fieldset class="form-step" id="step2">
+                    <legend class="step-title">Personal Information</legend>
+                    <fieldset class="form-group">
+                        <label for="name">Full Name*</label>
+                        <input type="text" id="name" name="name" placeholder="John Doe" class="styled-input" required>
+                        <output class="error-message" for="name"></output>
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="email">Email Address*</label>
+                        <input type="email" id="email" name="email" placeholder="your.email@example.com" class="styled-input" required>
+                        <output class="error-message" for="email"></output>
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="phone">Contact Number*</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+1 (123) 456-7890" class="styled-input" required>
+                        <output class="error-message" for="phone"></output>
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="password">Password*</label>
+                        <section class="password-input-wrapper">
+                            <input type="password" id="password" name="password" placeholder="Create a strong password" class="styled-input" required>
+                            <button type="button" class="toggle-password-visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </section>
+                        <output class="error-message" for="password"></output>
+                        <section class="password-requirements">
+                            <p>Password must:</p>
+                            <ul>
+                                <li id="length">Be at least 8 characters long</li>
+                                <li id="uppercase">Contain at least 1 uppercase letter</li>
+                                <li id="lowercase">Contain at least 1 lowercase letter</li>
+                                <li id="number">Contain at least 1 number</li>
+                                <li id="special">Contain at least 1 special character</li>
+                            </ul>
+                        </section>
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="confirmPassword">Confirm Password*</label>
+                        <section class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" class="styled-input" required>
+                            <button type="button" class="toggle-password-visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </section>
+                        <output class="error-message" for="confirmPassword"></output>
+                    </fieldset>
+                    <section class="form-navigation">
+                        <button type="button" class="btn btn-outline prev-btn">Back</button>
+                        <button type="button" class="btn btn-primary next-btn">Continue</button>
+                    </section>
+                </fieldset>
+
+                <!-- Step 3: Academic Information -->
+                <fieldset class="form-step" id="step3">
+                    <legend class="step-title">Academic Information</legend>
+                    <fieldset class="form-group">
+                        <label for="department">Department/Faculty*</label>
+                        <input type="text" id="department" name="department" placeholder="e.g., Computer Science" class="styled-input" required>
+                        <output class="error-message" for="department"></output>
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="academicRole">Current Academic Role*</label>
+                        <select id="academicRole" name="academicRole" class="styled-input" required>
+                            <option value="">Select your role</option>
+                            <option value="professor">Professor</option>
+                            <option value="associate_professor">Associate Professor</option>
+                            <option value="assistant_professor">Assistant Professor</option>
+                            <option value="lecturer">Lecturer</option>
+                            <option value="postdoc">Post-Doctoral Researcher</option>
+                            <option value="phd_student">PhD Student</option>
+                            <option value="masters_student">Master's Student</option>
+                            <option value="researcher">Researcher</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <output class="error-message" for="academicRole"></output>
+                    </fieldset>
+                    
+                    <!-- Researcher and Reviewer specific fields -->
+                    <fieldset class="form-group research-fields" data-role="researcher reviewer">
+                        <label for="researchArea">Research Area*</label>
+                        <input type="text" id="researchArea" name="researchArea" placeholder="e.g., Machine Learning, Quantum Physics" class="styled-input">
+                        <output class="error-message" for="researchArea"></output>
+                    </fieldset>
+                    
+                    <fieldset class="form-group research-fields" data-role="researcher reviewer">
+                        <label for="researchExperience">Research Experience (years)*</label>
+                        <input type="number" id="researchExperience" name="researchExperience" min="0" max="70" placeholder="5" class="styled-input">
+                        <output class="error-message" for="researchExperience"></output>
+                    </fieldset>
+                    
+                    <fieldset class="form-group research-fields" data-role="researcher reviewer">
+                        <label for="qualifications">Qualifications*</label>
+                        <textarea id="qualifications" name="qualifications" rows="3" placeholder="PhD in Computer Science, MSc in Data Science" class="styled-input"></textarea>
+                        <output class="error-message" for="qualifications"></output>
+                    </fieldset>
+                    
+                    <!-- Researcher only field -->
+                    <fieldset class="form-group research-fields" data-role="researcher">
+                        <label for="currentProject">Current Project*</label>
+                        <textarea id="currentProject" name="currentProject" rows="3" placeholder="Describe your current research project" class="styled-input"></textarea>
+                        <output class="error-message" for="currentProject"></output>
+                    </fieldset>
+                    
+                    <!-- Terms and conditions with improved styling -->
+                    <fieldset class="form-group terms-container">
+                        <section class="checkbox-group">
+                            <input type="checkbox" id="termsAgree" name="termsAgree" class="styled-checkbox" required>
+                            <label for="termsAgree">I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="privacy-link">Privacy Policy</a></label>
+                        </section>
+                        <output class="error-message" for="termsAgree"></output>
+                    </fieldset>
+                    
+                    <!-- Form submission area with status message -->
+                    <section class="form-navigation">
+                        <button type="button" class="btn btn-outline prev-btn">Back</button>
+                        <button type="submit" class="btn btn-primary submit-btn">Create Account</button>
+                    </section>
+                    <div id="formStatus" class="form-status-message"></div>
+                </fieldset>
+            </form>
+            
+            <footer class="signup-footer">
+                <p>Already have an account? <a href="login.html">Sign in here</a></p>
+            </footer>
+        </section>
+        <section class="signup-image">
+            <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80" alt="Collaboration">
+            <article class="signup-overlay">
+                <h2>Join our community of <span class="gradient-text">1,200+ researchers</span></h2>
+                <ul class="benefit-list">
+                    <li><i class="fas fa-check"></i> Find perfect research collaborators</li>
+                    <li><i class="fas fa-check"></i> Access exclusive funding opportunities</li>
+                    <li><i class="fas fa-check"></i> Streamline your research proposal process</li>
+                    <li><i class="fas fa-check"></i> Share and discover latest research insights</li>
+                </ul>
+            </article>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <section class="container">
+            <section class="footer-content">
+                <article class="footer-column">
+                    <header class="footer-logo">
+                        <i class="fas fa-book-open book-logo"></i>
+                        CollabNexus
+                    </header>
+                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                </article>
+                <article class="footer-column">
+                    <h3>Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">For Researchers</a></li>
+                        <li><a href="#">For Universities</a></li>
+                        <li><a href="#">For Industry</a></li>
+                        <li><a href="#">For Funding Agencies</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Research Guides</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </article>
+            </section>
+            <section class="footer-bottom">
+                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
+            </section>
+        </section>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/signup.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
