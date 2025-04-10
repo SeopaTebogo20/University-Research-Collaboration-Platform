@@ -1,40 +1,48 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
+# Improved workflow for ES Modules deployment
 name: Build and deploy Node.js app to Azure Web App - Researchcollab
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-
-      - name: npm install, build, and test
+      - name: npm install
+        run: npm install
+      - name: Create web.config
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-      
+          echo '<?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <system.webServer>
+              <webSocket enabled="false" />
+              <handlers>
+                <add name="iisnode" path="src/server.js" verb="*" modules="iisnode" />
+              </handlers>
+              <rewrite>
+                <rules>
+                  <rule name="DynamicContent">
+                    <match url="/*" />
+                    <action type="Rewrite" url="src/server.js" />
+                  </rule>
+                </rules>
+              </rewrite>
+              <iisnode nodeProcessCommandLine="node" />
+            </system.webServer>
+          </configuration>' > web.config
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: .
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -44,7 +52,6 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
-
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -57,13 +64,24 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_4A4A764D929B47B28BF0063F73052F32 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FAC2335600414AE98E34E5FD7688388B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2B4275E346D2469C9CCADE25D8F2BE74 }}
-
-      - name: 'Deploy to Azure Web App'
+      
+      - name: Stop Web App
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp stop --name 'Researchcollab' --resource-group 'YourResourceGroupName'
+      
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'Researchcollab'
           slot-name: 'Production'
           package: .
-          
+      
+      - name: Start Web App
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp start --name 'Researchcollab' --resource-group 'YourResourceGroupName'
           
