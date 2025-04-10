@@ -1,4 +1,4 @@
-# Improved workflow for ES Modules deployment
+# Simplified workflow for ES Modules deployment
 name: Build and deploy Node.js app to Azure Web App - Researchcollab
 on:
   push:
@@ -20,24 +20,24 @@ jobs:
         run: npm install
       - name: Create web.config
         run: |
-          echo '<?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <system.webServer>
-              <webSocket enabled="false" />
-              <handlers>
-                <add name="iisnode" path="src/server.js" verb="*" modules="iisnode" />
-              </handlers>
-              <rewrite>
-                <rules>
-                  <rule name="DynamicContent">
-                    <match url="/*" />
-                    <action type="Rewrite" url="src/server.js" />
-                  </rule>
-                </rules>
-              </rewrite>
-              <iisnode nodeProcessCommandLine="node" />
-            </system.webServer>
-          </configuration>' > web.config
+          echo '<?xml version="1.0" encoding="utf-8"?>' > web.config
+          echo '<configuration>' >> web.config
+          echo '  <system.webServer>' >> web.config
+          echo '    <webSocket enabled="false" />' >> web.config
+          echo '    <handlers>' >> web.config
+          echo '      <add name="iisnode" path="src/server.js" verb="*" modules="iisnode" />' >> web.config
+          echo '    </handlers>' >> web.config
+          echo '    <rewrite>' >> web.config
+          echo '      <rules>' >> web.config
+          echo '        <rule name="DynamicContent">' >> web.config
+          echo '          <match url="/*" />' >> web.config
+          echo '          <action type="Rewrite" url="src/server.js" />' >> web.config
+          echo '        </rule>' >> web.config
+          echo '      </rules>' >> web.config
+          echo '    </rewrite>' >> web.config
+          echo '    <iisnode nodeProcessCommandLine="node" />' >> web.config
+          echo '  </system.webServer>' >> web.config
+          echo '</configuration>' >> web.config
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
@@ -65,12 +65,6 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FAC2335600414AE98E34E5FD7688388B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2B4275E346D2469C9CCADE25D8F2BE74 }}
       
-      - name: Stop Web App
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az webapp stop --name 'Researchcollab' --resource-group 'YourResourceGroupName'
-      
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -78,10 +72,3 @@ jobs:
           app-name: 'Researchcollab'
           slot-name: 'Production'
           package: .
-      
-      - name: Start Web App
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az webapp start --name 'Researchcollab' --resource-group 'YourResourceGroupName'
-          
