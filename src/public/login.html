@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - CollabNexus Research Hub</title>
+    <meta name="description" content="Sign in to CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
+    <meta name="author" content="CollabNexus">
+    
+    <meta property="og:title" content="Sign In - CollabNexus Research Hub">
+    <meta property="og:description" content="Sign in to CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <header class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </a>
+        </header>
+        <ul class="nav-links">
+          <li><a href="index.html#projects">Projects</a></li>
+          <li><a href="index.html#researchers">Researchers</a></li>
+          <li><a href="index.html#funding">Funding</a></li>
+          <li><a href="index.html#resources">Resources</a></li>
+        </ul>
+        <section class="auth-buttons">
+          <button class="btn btn-outline" onclick="location.href='login.html'">Sign In</button>
+          <button class="btn btn-primary" onclick="location.href='signup.html'">Register</button>
+        </section>
+        <button id="mobile-menu-button" class="mobile-menu">
+          <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+      
+    <!-- Mobile Navigation -->
+    <nav id="mobile-nav" class="mobile-nav">
+        <header class="mobile-nav-header">
+          <h1 class="logo">
+            <a href="index.html" class="logo-link">
+              <i class="fas fa-book-open book-logo"></i>
+              CollabNexus
+            </a>
+          </h1>
+          <button id="mobile-nav-close" class="mobile-nav-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </header>
+        <ul class="mobile-nav-links">
+          <li><a href="index.html#projects">Projects</a></li>
+          <li><a href="index.html#researchers">Researchers</a></li>
+          <li><a href="index.html#funding">Funding</a></li>
+          <li><a href="index.html#resources">Resources</a></li>
+        </ul>
+        <section class="mobile-auth-buttons">
+          <button class="btn btn-outline" onclick="location.href='login.html'">Sign In</button>
+          <button class="btn btn-primary" onclick="location.href='signup.html'">Register</button>
+        </section>
+    </nav>
+
+    <main class="login-container">
+        <section class="login-form-container">
+            <h1>Welcome Back</h1>
+            <p class="login-intro">Sign in to continue to CollabNexus Research Hub</p>
+            
+            <form id="loginForm" class="login-form" novalidate>
+                <fieldset class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@example.com" class="styled-input" required>
+                    <output class="error-message" for="email"></output>
+                </fieldset>
+                <fieldset class="form-group">
+                    <label for="password">Password</label>
+                    <section class="password-input-wrapper">
+                        <input type="password" id="password" name="password" placeholder="Enter your password" class="styled-input" required>
+                        <button type="button" class="toggle-password-visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </section>
+                    <output class="error-message" for="password"></output>
+                </fieldset>
+                <fieldset class="form-group remember-forgot">
+                    <section class="checkbox-group">
+                        <input type="checkbox" id="rememberMe" name="rememberMe" class="styled-checkbox">
+                        <label for="rememberMe">Remember me</label>
+                    </section>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </fieldset>
+                <button type="submit" class="btn btn-primary login-btn">Sign In</button>
+            </form>
+            <footer class="login-footer">
+                <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+            </footer>
+        </section>
+        <section class="login-image">
+            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80" alt="Research collaboration">
+            <article class="login-overlay">
+                <blockquote class="testimonial">
+                    <p>"CollabNexus helped me find the perfect research partners across disciplines, leading to a breakthrough publication and grant funding."</p>
+                    <cite>— Dr. Sarah Johnson, University of Cambridge</cite>
+                </blockquote>
+            </article>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <section class="container">
+            <section class="footer-content">
+                <article class="footer-column">
+                    <header class="footer-logo">
+                        <a href="index.html" class="logo-link">
+                          <i class="fas fa-book-open book-logo"></i>
+                          CollabNexus
+                        </a>
+                    </header>
+                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                </article>
+                <article class="footer-column">
+                    <h3>Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">For Researchers</a></li>
+                        <li><a href="#">For Universities</a></li>
+                        <li><a href="#">For Industry</a></li>
+                        <li><a href="#">For Funding Agencies</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Research Guides</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </article>
+            </section>
+            <section class="footer-bottom">
+                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
+            </section>
+        </section>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
