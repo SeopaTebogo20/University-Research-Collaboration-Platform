@@ -5,7 +5,7 @@
 https://researchcollab-hhetcgbqbxd2gvct.canadacentral-01.azurewebsites.net/
 
 # For User Stories >
-https://students-team-o21wx7bu.atlassian.net/jira/software/projects/SCRUM/boards/1/backlog
+https://trello.com/b/Z44Nb2UI/collanexus
 
 # For Mockups and Prototypes >
 https://www.figma.com/design/mhc0wo4Emo4F0UXpRRU9BU/Untitled?t=H5wf1evp1ymt6gXQ-0
