@@ -2,7 +2,7 @@
 
 ## Links of the softwares we will be using:
 # Deployed App (Live App)
-https://researchcollab-hhetcgbqbxd2gvct.canadacentral-01.azurewebsites.net/
+https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/
 
 # For User Stories >
 https://trello.com/b/Z44Nb2UI/collanexus
