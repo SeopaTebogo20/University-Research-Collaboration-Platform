@@ -181,3 +181,4 @@ document.addEventListener('DOMContentLoaded', function() {
   // Make auth object globally available
   window.auth = auth;
 });
+

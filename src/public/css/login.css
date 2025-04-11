@@ -1,0 +1,127 @@
+/* Overall background and text */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #121212; /* pure black */
+    padding: 20px;
+    color: #f0f0f0; /* soft white text */
+  }
+  
+  /* The wrapper card */
+  .login-wrapper {
+    background: #000000; /* soft gray */
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9);
+    width: 100%;
+    max-width: 400px;
+    border: 2px solid #4F46E5; /* research-accent purple border */
+    transition: transform 0.3s ease;
+  }
+  
+  .login-wrapper:hover {
+    transform: translateY(-3px);
+  }
+  
+  /* Headings */
+  .login-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .login-header h1 {
+    margin-bottom: 10px;
+    font-size: 28px;
+    color: #1E40AF; /* research-blue */
+  }
+  
+  .login-header p {
+    color: #4F46E5; /* research-accent */
+  }
+  
+  /* Form styles */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-group{
+    color: #000000;
+    border: #000000;
+  }
+  .form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    display: block;
+    color: #3961a0; /* dark blue-gray for contrast */
+    border: #0c0c0c;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #ffffff; /* light gray background */
+    color: #a0a0a0; /* dark input text */
+    border: 1px solid #1f1f1f; /* slate border */
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .form-group input:focus {
+    border-color: #00eeff; /* research-purple */
+    outline: none;
+    box-shadow: 0 0 0 2px #a78bfa66; /* soft purple glow */
+  }
+  
+  /* Buttons */
+  .btn {
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .btn-primary .login-btn {
+    background-color: #4F46E5; /* research-accent */
+    color: #f8fafc;
+  }
+  
+  .btn-primary:hover {
+    background-color: #4338ca; /* darker purple */
+    transform: translateY(-2px);
+  }
+  
+  .full-width {
+    width: 100%;
+  }
+  
+  /* Footer */
+  .form-footer {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 10px;
+    color: #43484e; /* muted gray */
+  }
+  
+  .form-footer a {
+    color: #1E40AF; /* research-blue */
+    text-decoration: underline;
+    transition: color 0.3s ease;
+  }
+  
+  .form-footer a:hover {
+    color: #6D28D9; /* research-purple */
+  }
+  /* Style for checked "Remember me" label */
+.checkbox-group input[type="checkbox"]:checked + label {
+    color: #6D28D9;
+    font-weight: 500;
+}
+
+  
