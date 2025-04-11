@@ -1,4 +1,3 @@
-
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
@@ -46,7 +45,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
 
 // Custom middleware for logging
@@ -84,6 +83,16 @@ app.post('/api/login', async (req, res) => {
     
     if (error) {
       console.error(`[${new Date().toISOString()}] Login failed for ${email}: ${error.message}`);
+      
+      // Check if error is due to unconfirmed email - look for specific error messages
+      if (error.message.includes('Email not confirmed') || error.message.includes('not confirmed')) {
+        // This means the user exists but hasn't confirmed their email
+        return res.status(403).json({ 
+          message: 'Please confirm your email address before logging in. Check your inbox for a verification link.',
+          emailVerified: false
+        });
+      }
+      
       return res.status(400).json({ message: error.message });
     }
     
@@ -97,6 +106,7 @@ app.post('/api/login', async (req, res) => {
     return res.status(200).json({ 
       message: 'Login successful', 
       user: data.user,
+      session: data.session,
       redirectUrl: '/dashboard' // Add redirect URL to response
     });
   } catch (error) {
@@ -123,7 +133,7 @@ app.post('/api/signup', async (req, res) => {
       currentProject
     } = req.body;
     
-    console.log(`[${new Date().toISOString()}] Starting signup process for: ${email}`, req.body);
+    console.log(`[${new Date().toISOString()}] Starting signup process for: ${email}`);
     
     // Basic validation
     const errors = {};
@@ -173,18 +183,19 @@ app.post('/api/signup', async (req, res) => {
       userMetadata.currentProject = currentProject || '';
     }
     
-    console.log(`[${new Date().toISOString()}] User metadata:`, userMetadata);
+    console.log(`[${new Date().toISOString()}] User metadata prepared`);
     
     // Get the base URL for the redirect
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     
-    // IMPORTANT: Use the service role key to create users with email confirmation
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    // Use the regular signup method which automatically sends verification email
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: false, // Set to false to explicitly require email confirmation
-      user_metadata: userMetadata,
-      email_confirm_redirect_url: `${baseUrl}/login?verified=true`
+      options: {
+        data: userMetadata,
+        emailRedirectTo: `${baseUrl}/login?verified=true`
+      }
     });
     
     if (error) {
@@ -198,23 +209,7 @@ app.post('/api/signup', async (req, res) => {
     }
     
     console.log(`[${new Date().toISOString()}] ✅ USER CREATED SUCCESSFULLY: ${data.user.id} ✅`);
-    console.log(`[${new Date().toISOString()}] 📧 CONFIRMATION EMAIL SCHEDULED TO: ${email} 📧`);
-    
-    // Now explicitly send the confirmation email
-    const { error: confirmError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'signup',
-      email: email,
-      options: {
-        redirectTo: `${baseUrl}/login?verified=true`
-      }
-    });
-    
-    if (confirmError) {
-      console.error(`[${new Date().toISOString()}] Error sending confirmation email: ${confirmError.message}`);
-      // Continue anyway as the user is created
-    } else {
-      console.log(`[${new Date().toISOString()}] 📬 CONFIRMATION EMAIL SUCCESSFULLY SENT TO: ${email} 📬`);
-    }
+    console.log(`[${new Date().toISOString()}] 📧 CONFIRMATION EMAIL AUTOMATICALLY SENT BY SUPABASE TO: ${email} 📧`);
     
     return res.status(201).json({ 
       message: 'Account created successfully. Please check your email to verify your account.', 
@@ -225,6 +220,45 @@ app.post('/api/signup', async (req, res) => {
     console.error(`[${new Date().toISOString()}] Signup error: ${error.message}`);
     console.error(`[${new Date().toISOString()}] Error stack: ${error.stack}`);
     return res.status(500).json({ message: `Server error: ${error.message}` });
+  }
+});
+
+// Endpoint to resend email verification
+app.post('/api/resend-verification', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+  
+  try {
+    console.log(`[${new Date().toISOString()}] Resending verification email to: ${email}`);
+    
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    
+    // Use Supabase's built-in resend email verification function
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: {
+        emailRedirectTo: `${baseUrl}/login?verified=true`
+      }
+    });
+    
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Error resending verification: ${error.message}`);
+      return res.status(400).json({ message: error.message });
+    }
+    
+    console.log(`[${new Date().toISOString()}] Verification email resent to: ${email}`);
+    
+    return res.status(200).json({ 
+      message: 'Verification email sent. Please check your inbox.',
+      success: true
+    });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Resend verification error: ${error.message}`);
+    return res.status(500).json({ message: 'Error sending verification email' });
   }
 });
 
@@ -301,18 +335,6 @@ app.get('/signup', (req, res) => {
 // Serve dashboard HTML file
 app.get('/dashboard', requireAuth, (req, res) => {
   res.sendFile(join(__dirname, 'public', 'dashboard.html'));
-});
-
-// Handle email verification success
-app.get('/auth/verify-email', (req, res) => {
-  const token = req.query.token;
-  
-  if (!token) {
-    return res.redirect('/login?error=' + encodeURIComponent('Invalid verification link'));
-  }
-  
-  // Redirect to login page with success message
-  return res.redirect('/login?verified=true');
 });
 
 // Handle 404 errors
