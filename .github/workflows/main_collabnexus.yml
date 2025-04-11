@@ -1,40 +1,64 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - CollabNexus
-
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
-
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present
       
+      # Create web.config file for IIS
+      - name: Create web.config
+        run: |
+          echo '<?xml version="1.0" encoding="utf-8"?>' > web.config
+          echo '<configuration>' >> web.config
+          echo '  <system.webServer>' >> web.config
+          echo '    <handlers>' >> web.config
+          echo '      <add name="iisnode" path="src/server.js" verb="*" modules="iisnode" />' >> web.config
+          echo '    </handlers>' >> web.config
+          echo '    <rewrite>' >> web.config
+          echo '      <rules>' >> web.config
+          echo '        <rule name="nodejs">' >> web.config
+          echo '          <match url="/*" />' >> web.config
+          echo '          <action type="Rewrite" url="src/server.js" />' >> web.config
+          echo '        </rule>' >> web.config
+          echo '      </rules>' >> web.config
+          echo '    </rewrite>' >> web.config
+          echo '    <iisnode watchedFiles="*.js;node_modules\*;routes\*.js;views\*.js" />' >> web.config
+          echo '  </system.webServer>' >> web.config
+          echo '</configuration>' >> web.config
+      
+      # Create .env file with secrets
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}" >> .env
+          echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
+          echo "PORT=8080" >> .env
+          echo "NODE_ENV=production" >> .env
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
           path: .
-
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -44,7 +68,6 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
-
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -57,7 +80,47 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_92C40EADF2D347508B6F2294C072867C }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_415BF3DAEC4D4B579E36C58C1CE9703D }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_EA42EEAE86F845D7AAF61F6744B98049 }}
-
+      
+      # Configure App Service Settings
+      - name: Configure App Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: 'CollabNexus'
+          slot-name: 'Production'
+          app-settings-json: |
+            [
+              {
+                "name": "SUPABASE_URL",
+                "value": "${{ secrets.SUPABASE_URL }}",
+                "slotSetting": false
+              },
+              {
+                "name": "SUPABASE_ANON_KEY",
+                "value": "${{ secrets.SUPABASE_ANON_KEY }}",
+                "slotSetting": false
+              },
+              {
+                "name": "SUPABASE_SERVICE_KEY",
+                "value": "${{ secrets.SUPABASE_SERVICE_KEY }}",
+                "slotSetting": false
+              },
+              {
+                "name": "SESSION_SECRET",
+                "value": "${{ secrets.SESSION_SECRET }}",
+                "slotSetting": false
+              },
+              {
+                "name": "NODE_ENV",
+                "value": "production",
+                "slotSetting": false
+              },
+              {
+                "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                "value": "~20",
+                "slotSetting": false
+              }
+            ]
+      
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
