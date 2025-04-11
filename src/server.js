@@ -1,15 +1,9 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import express from 'express';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import bodyParser from 'body-parser';
-import session from 'express-session';
-import { createClient } from '@supabase/supabase-js';
-
-// Get the directory path for the current module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+require('dotenv').config();
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const { createClient } = require('@supabase/supabase-js');
 
 // Create the Express application
 const app = express();
@@ -40,7 +34,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Configure middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -321,25 +315,25 @@ app.get('/protected', requireAuth, (req, res) => {
 
 // Serve HTML files
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'login.html'));
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 app.get('/signup', (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'signup.html'));
+  res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
 // Serve dashboard HTML file
 app.get('/dashboard', requireAuth, (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'dashboard.html'));
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
 // Handle 404 errors
 app.use((req, res) => {
-  res.status(404).sendFile(join(__dirname, 'public', 'not-found.html'));
+  res.status(404).sendFile(path.join(__dirname, 'public', 'not-found.html'));
 });
 
 // Start the server
