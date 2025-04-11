@@ -1,4 +1,4 @@
-# University-Research-Collaboration-Platform
+# University-Research-Collaboration-Platforms
 
 ## Links of the softwares we will be using:
 # Deployed App (Live App)
