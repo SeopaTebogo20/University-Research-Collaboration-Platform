@@ -1,5 +1,0 @@
-nodeProcessCommandLine: "node --no-warnings --experimental-specifier-resolution=node"
-loggingEnabled: true
-debuggingEnabled: true
-watchedFiles: src/server.js;package.json;node_modules/
-devErrorsEnabled: true
