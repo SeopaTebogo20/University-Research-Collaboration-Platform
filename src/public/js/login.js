@@ -105,6 +105,25 @@ function createResendLink(email) {
   });
 }
 
+/**
+ * Get dashboard URL based on user role
+ * @param {string} role - User role (admin, reviewer, researcher)
+ * @returns {string} - URL path to appropriate dashboard
+ */
+function getDashboardUrlByRole(role) {
+  // Normalize role to lowercase for case-insensitive comparison
+  const normalizedRole = role.toLowerCase();
+  
+  switch (normalizedRole) {
+    case 'admin':
+      return '/roles/admin/dashboard.html';
+    case 'reviewer':
+      return '/roles/reviewer/dashboard.html';
+    case 'researcher':
+      return '/roles/researcher/dashboard.html';
+  }
+}
+
 // Form submission
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
@@ -132,7 +151,7 @@ if (loginForm) {
     }
     
     try {
-      // Send login request to server - Note the correct endpoint '/api/login'
+      // Send login request to server
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -162,9 +181,16 @@ if (loginForm) {
       formStatus.textContent = 'Login successful! Redirecting...';
       formStatus.className = 'form-status-message success';
       
-      // Redirect to dashboard or other appropriate page
+      // Get the user's role from the user metadata
+      // Supabase stores custom user data in the user.user_metadata object
+      const userRole = data.user?.user_metadata?.role || 'researcher';
+      
+      // Get the appropriate dashboard URL based on role
+      const dashboardUrl = getDashboardUrlByRole(userRole);
+      
+      // Redirect to the appropriate dashboard
       setTimeout(() => {
-        window.location.href = data.redirectUrl || '/dashboard';
+        window.location.href = dashboardUrl;
       }, 1500);
       
     } catch (error) {
