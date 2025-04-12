@@ -26,13 +26,23 @@ jobs:
       
       # Run tests with coverage using Jest
       - name: Run tests with coverage
-        run: npm test
+        run: |
+          npm test -- --coverage --coverageReporters=text --coverageReporters=text-summary --coverageReporters=json-summary
       
-      # Generate and display coverage summary
+      # Generate and display coverage summary using a more reliable method
       - name: Display coverage summary
         run: |
           echo "========= TEST COVERAGE SUMMARY ========="
-          node -e "const fs=require('fs');const summary=JSON.parse(fs.readFileSync('./coverage/coverage-summary.json'));console.log('Statements: ' + summary.total.statements.pct + '%');console.log('Branches: ' + summary.total.branches.pct + '%');console.log('Functions: ' + summary.total.functions.pct + '%');console.log('Lines: ' + summary.total.lines.pct + '%');"
+          if (Test-Path "./coverage/coverage-summary.json") {
+            $summary = Get-Content "./coverage/coverage-summary.json" | ConvertFrom-Json
+            Write-Output "Statements: $($summary.total.statements.pct)%"
+            Write-Output "Branches: $($summary.total.branches.pct)%"
+            Write-Output "Functions: $($summary.total.functions.pct)%"
+            Write-Output "Lines: $($summary.total.lines.pct)%"
+          } else {
+            Write-Output "Coverage summary not found. Check test output above for coverage information."
+            Write-Output "See the coverage directory artifact for more details."
+          }
           echo "========================================"
       
       # Upload coverage reports to GitHub Actions artifacts
