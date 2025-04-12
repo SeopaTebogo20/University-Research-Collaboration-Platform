@@ -19,14 +19,21 @@ jobs:
         with:
           node-version: '20.x'
       
-      - name: npm install, build, and test
+      - name: npm install and build
         run: |
           npm install
           npm run build --if-present
       
-      # Run tests with coverage
+      # Run tests with coverage using Jest
       - name: Run tests with coverage
-        run: npm test -- --coverage
+        run: npm test
+      
+      # Generate and display coverage summary
+      - name: Display coverage summary
+        run: |
+          echo "========= TEST COVERAGE SUMMARY ========="
+          node -e "const fs=require('fs');const summary=JSON.parse(fs.readFileSync('./coverage/coverage-summary.json'));console.log('Statements: ' + summary.total.statements.pct + '%');console.log('Branches: ' + summary.total.branches.pct + '%');console.log('Functions: ' + summary.total.functions.pct + '%');console.log('Lines: ' + summary.total.lines.pct + '%');"
+          echo "========================================"
       
       # Upload coverage reports to GitHub Actions artifacts
       - name: Upload coverage reports
@@ -34,14 +41,6 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
-      
-      # Add badge for test coverage (if using a reporting service like Codecov)
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./coverage/
-          fail_ci_if_error: true
       
       # Create web.config file for IIS
       - name: Create web.config
