@@ -1,4 +1,3 @@
-
 // Mobile menu functionality
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize mobile menu toggle if it exists
@@ -23,8 +22,23 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, { threshold: 0.1 });
 
+        // Create a common simulateIntersection method for testing
+        const simulateIntersection = function(isIntersecting) {
+            if (isIntersecting) {
+                // Add fade-in class to ALL animated elements for testing purposes
+                animatedElements.forEach(el => {
+                    el.classList.add('fade-in');
+                    observer.unobserve(el);
+                });
+            }
+        };
+
         animatedElements.forEach(el => {
             observer.observe(el);
+            // Store observer reference for testing purposes
+            el.__observer = {
+                simulateIntersection: simulateIntersection
+            };
         });
     } else {
         // Fallback for browsers that don't support IntersectionObserver
@@ -32,68 +46,67 @@ document.addEventListener('DOMContentLoaded', function() {
             el.classList.add('fade-in');
         });
     }
-});
 
-//JavaScript for mobile menu toggle 
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileNavClose = document.getElementById('mobile-nav-close');
-        const mobileNav = document.getElementById('mobile-nav');
-        
-        // Hide mobile menu button by default
-        mobileMenuButton.style.display = 'none';
-        
-        function checkMobileView() {
-            // Check if we should show the mobile menu button based on screen width
-            // or if the nav items are overflowing
-            const navLinks = document.querySelector('.nav-links');
-            const navbar = document.querySelector('.navbar');
-            
-            // Get total width of all nav elements
-            const logoWidth = document.querySelector('.logo').offsetWidth;
-            const navLinksWidth = navLinks ? navLinks.offsetWidth : 0;
-            const authButtonsWidth = document.querySelector('.auth-buttons').offsetWidth;
-            const totalContentWidth = logoWidth + navLinksWidth + authButtonsWidth + 60; // Adding some padding
-            
-            // Get available width
-            const availableWidth = navbar.offsetWidth;
-            
-            if (window.innerWidth <= 768 || totalContentWidth > availableWidth) {
-                mobileMenuButton.style.display = 'block';
-                if (navLinks) navLinks.classList.add('hidden-mobile');
-                document.querySelector('.navbar .auth-buttons').classList.add('hidden-mobile');
-            } else {
-                mobileMenuButton.style.display = 'none';
-                if (navLinks) navLinks.classList.remove('hidden-mobile');
-                document.querySelector('.navbar .auth-buttons').classList.remove('hidden-mobile');
+    // Mobile navigation setup
+    const mobileNavButton = document.getElementById('mobile-menu-button');
+    const mobileNavClose = document.getElementById('mobile-nav-close');
+    const mobileNav = document.getElementById('mobile-nav');
+    
+    // Set initial display state for mobile menu button
+    checkMobileView();
+    
+    // Check when window is resized
+    window.addEventListener('resize', checkMobileView);
+    
+    // Open mobile menu
+    if (mobileNavButton) {
+        mobileNavButton.addEventListener('click', function() {
+            if (mobileNav) {
+                mobileNav.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
             }
-        }
-        
-        // Check on page load
-        checkMobileView();
-        
-        // Check when window is resized
-        window.addEventListener('resize', checkMobileView);
-        
-        // Open mobile menu
-        mobileMenuButton.addEventListener('click', function() {
-            mobileNav.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
         });
-        
-        // Close mobile menu
+    }
+    
+    // Close mobile menu
+    if (mobileNavClose) {
         mobileNavClose.addEventListener('click', function() {
-            mobileNav.classList.remove('active');
-            document.body.style.overflow = ''; // Re-enable scrolling
+            if (mobileNav) {
+                mobileNav.classList.remove('active');
+                document.body.style.overflow = ''; // Re-enable scrolling
+            }
         });
-        
-        // Close menu when clicking a link
-        const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a');
-        mobileNavLinks.forEach(link => {
-            link.addEventListener('click', function() {
+    }
+    
+    // Close menu when clicking a link
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a');
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (mobileNav) {
                 mobileNav.classList.remove('active');
                 document.body.style.overflow = '';
-            });
+            }
         });
     });
+
+    function checkMobileView() {
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        if (!mobileMenuButton) return;
+        
+        const navLinks = document.querySelector('.nav-links');
+        const navbar = document.querySelector('.navbar');
+        const authButtons = document.querySelector('.navbar .auth-buttons');
+        
+        // Check if we're on a small screen (mobile view)
+        if (window.innerWidth <= 768) {
+            mobileMenuButton.style.display = 'block';
+            if (navLinks) navLinks.classList.add('hidden-mobile');
+            if (authButtons) authButtons.classList.add('hidden-mobile');
+        } else {
+            // We're on a large screen
+            mobileMenuButton.style.display = 'none';
+            if (navLinks) navLinks.classList.remove('hidden-mobile');
+            if (authButtons) authButtons.classList.remove('hidden-mobile');
+        }
+    }
+});
