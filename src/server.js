@@ -109,6 +109,40 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Add this new endpoint for checking if an email already exists
+app.get('/api/check-email', async (req, res) => {
+  const { email } = req.query;
+  
+  if (!email) {
+    return res.status(400).json({ message: 'Email parameter is required' });
+  }
+  
+  try {
+    console.log(`[${new Date().toISOString()}] Checking if email exists: ${email}`);
+    
+    // Use Supabase to check if the email exists by trying to get user by email
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Error checking email: ${error.message}`);
+      return res.status(500).json({ message: 'Error checking email existence' });
+    }
+    
+    // Check if the email exists in the returned users
+    const emailExists = data && data.users && data.users.some(user => 
+      user.email && user.email.toLowerCase() === email.toLowerCase()
+    );
+    
+    console.log(`[${new Date().toISOString()}] Email ${email} exists: ${emailExists}`);
+    
+    return res.status(200).json({ exists: emailExists });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Email check error: ${error.message}`);
+    return res.status(500).json({ message: 'Server error checking email existence' });
+  }
+});
+
+// Also modify the signup endpoint to check for existing emails before creating a user
 app.post('/api/signup', async (req, res) => {
   try {
     // Extract all form data
@@ -149,6 +183,27 @@ app.post('/api/signup', async (req, res) => {
     if (Object.keys(errors).length > 0) {
       console.error(`[${new Date().toISOString()}] Signup validation failed for ${email}:`, errors);
       return res.status(400).json({ message: 'Validation failed', errors });
+    }
+    
+    // First check if email already exists in the system
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (userError) {
+      console.error(`[${new Date().toISOString()}] Error checking for existing users: ${userError.message}`);
+      return res.status(500).json({ message: 'Error checking for existing users' });
+    }
+    
+    // Check if email already exists
+    const emailExists = userData && userData.users && userData.users.some(user => 
+      user.email && user.email.toLowerCase() === email.toLowerCase()
+    );
+    
+    if (emailExists) {
+      console.log(`[${new Date().toISOString()}] Email ${email} already exists. Preventing duplicate registration.`);
+      return res.status(409).json({ 
+        message: 'This email is already registered. Please use a different email or login with your existing account.',
+        errors: { email: 'Email already registered' }
+      });
     }
     
     // Create user metadata with all fields - store everything in one place, including email
@@ -194,6 +249,15 @@ app.post('/api/signup', async (req, res) => {
     
     if (error) {
       console.error(`[${new Date().toISOString()}] Supabase signup error for ${email}: ${error.message}`);
+      
+      // Check if error is related to duplicate emails
+      if (error.message.includes('already registered') || error.message.includes('already exists')) {
+        return res.status(409).json({ 
+          message: 'This email is already registered. Please use a different email or login with your existing account.',
+          errors: { email: 'Email already registered' }
+        });
+      }
+      
       return res.status(400).json({ message: error.message });
     }
     
@@ -216,7 +280,6 @@ app.post('/api/signup', async (req, res) => {
     return res.status(500).json({ message: `Server error: ${error.message}` });
   }
 });
-
 // Endpoint to resend email verification
 app.post('/api/resend-verification', async (req, res) => {
   const { email } = req.body;
