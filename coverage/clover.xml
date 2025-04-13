@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1744492050762" clover="3.2.0">
-  <project timestamp="1744492050762" name="All files">
+<coverage generated="1744495334179" clover="3.2.0">
+  <project timestamp="1744495334179" name="All files">
     <metrics statements="405" coveredstatements="0" conditionals="233" coveredconditionals="0" methods="62" coveredmethods="0" elements="700" coveredelements="0" complexity="0" loc="405" ncloc="405" packages="1" files="4" classes="4"/>
     <file name="auth.js" path="/Users/tebogoseopa/University-Research-Collaboration-Platform/src/public/js/auth.js">
       <metrics statements="76" coveredstatements="0" conditionals="60" coveredconditionals="0" methods="16" coveredmethods="0"/>
