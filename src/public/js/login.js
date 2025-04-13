@@ -83,7 +83,12 @@ function createResendLink(email) {
         body: JSON.stringify({ email })
       });
       
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        throw new Error('Unable to process server response. Please try again later.');
+      }
       
       if (!response.ok) {
         throw new Error(data.message || 'Failed to resend verification email');
@@ -121,6 +126,8 @@ function getDashboardUrlByRole(role) {
       return '/roles/reviewer/dashboard.html';
     case 'researcher':
       return '/roles/researcher/dashboard.html';
+    default:
+      return '/roles/researcher/dashboard.html'; // Default fallback
   }
 }
 
@@ -163,15 +170,45 @@ if (loginForm) {
         })
       });
       
-      const data = await response.json();
+      // Handle response data with proper error handling
+      let data;
+      try {
+        // Try to parse the response as JSON
+        data = await response.json();
+      } catch (parseError) {
+        // If parsing fails, create a user-friendly error message based on status
+        console.error('Response parsing error:', parseError);
+        
+        if (response.status === 400) {
+          throw new Error('Account not found. Please check your email or sign up for a new account.');
+        } else if (response.status === 401) {
+          throw new Error('Invalid login credentials. Please check your email and password.');
+        } else if (response.status === 403) {
+          // Create resend verification link for the user
+          createResendLink(emailInput.value);
+          throw new Error('Your email has not been verified. Please check your inbox for verification email.');
+        } else {
+          throw new Error(`Login failed (${response.status}). Please try again later.`);
+        }
+      }
       
+      // If we got JSON but the response is not OK
       if (!response.ok) {
-        // Check if this is an email verification issue
+        // Special handling for unverified email
         if (response.status === 403 && data.emailVerified === false) {
           // Create resend verification link
           createResendLink(emailInput.value);
+          throw new Error('Your email has not been verified. Please verify your email before logging in.');
         }
-        throw new Error(data.message || 'Login failed');
+        
+        // Handle other common error cases
+        if (response.status === 404) {
+          throw new Error('Account not found. Please check your email or sign up for a new account.');
+        } else if (response.status === 401) {
+          throw new Error('Incorrect password. Please try again.');
+        } else {
+          throw new Error(data.message || `Login failed (${response.status}). Please try again.`);
+        }
       }
       
       // Save authentication data - Store user in a consistent way to match auth.js
