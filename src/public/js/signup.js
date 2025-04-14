@@ -618,3 +618,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+const form = document.getElementById('signup-form');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  const role = document.getElementById('role').value;
+  const fullName = document.getElementById('full-name').value;
+
+  const { error } = await supabase
+    .from('users')
+    .insert([{ id: user.id, role, full_name: fullName }]);
+
+  if (error) {
+    console.error('Signup failed:', error.message);
+    return;
+  }
+
+  // Redirect based on role
+  switch (role) {
+    case 'Admin':
+      window.location.href = '/admin/dashboard.html';
+      break;
+    case 'Reviewer':
+      window.location.href = '/reviewer/dashboard.html';
+      break;
+    case 'Researcher':
+      window.location.href = '/researcher/dashboard.html';
+      break;
+  }
+});

@@ -1,0 +1,44 @@
+<script type="module">
+    import { supabase } from './supabaseClient.js';
+  
+    async function handleAuth() {
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+  
+      if (!user) {
+        console.error("User not authenticated.");
+        return;
+      }
+  
+      // Fetch profile info from your 'users' table
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+  
+      if (error || !profile) {
+        // First-time user: redirect to signup to set role
+        window.location.href = '/signup.html';
+      } else {
+        // Existing user: redirect to dashboard based on role
+        switch (profile.role) {
+          case 'Admin':
+            window.location.href = '/admin/dashboard.html';
+            break;
+          case 'Reviewer':
+            window.location.href = '/reviewer/dashboard.html';
+            break;
+          case 'Researcher':
+            window.location.href = '/researcher/dashboard.html';
+            break;
+          default:
+            window.location.href = '/signup.html'; // fallback
+        }
+      }
+    }
+  
+    handleAuth();
+  </script>
+  

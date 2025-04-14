@@ -241,3 +241,20 @@ if (loginForm) {
     }
   });
 }
+// Google Sign-In
+const googleLoginBtn = document.getElementById('google-login-btn');
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth-callback.html`,
+      }
+    });
+
+    if (error) {
+      alert('Google login failed: ' + error.message);
+    }
+  });
+}
