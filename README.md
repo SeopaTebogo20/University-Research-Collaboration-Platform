@@ -26,7 +26,8 @@ https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
  ## Run the following commands to install the necessary dependancies and to run the project
  1. npm install
  2. npm install express
- 3. node src/server.js
+ 3. npm install express-session
+ 4. node src/server.js
 
 # University Research and Collaboration Platform
 
