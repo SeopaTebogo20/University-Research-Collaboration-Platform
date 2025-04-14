@@ -7,9 +7,6 @@ https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/
 # For User Stories >
 https://trello.com/b/Z44Nb2UI/collanexus
 
-# For Mockups and Prototypes >
-https://www.figma.com/design/mhc0wo4Emo4F0UXpRRU9BU/Untitled?t=H5wf1evp1ymt6gXQ-0
-
 # For our Reposetory >
 https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
 
