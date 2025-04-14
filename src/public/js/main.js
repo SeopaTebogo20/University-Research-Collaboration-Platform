@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (navLinks) navLinks.classList.add('hidden-mobile');
             if (authButtons) authButtons.classList.add('hidden-mobile');
         } else {
-            // We're on a large screen
+            // We're on a big screen
             mobileMenuButton.style.display = 'none';
             if (navLinks) navLinks.classList.remove('hidden-mobile');
             if (authButtons) authButtons.classList.remove('hidden-mobile');
