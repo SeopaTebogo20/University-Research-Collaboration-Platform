@@ -1202,6 +1202,6 @@ textarea.styled-input {
     
     .google-button:hover {
       background-color: #f5f5f5;
-      border-color: #999;
+      border-color: rgb(80, 80, 80);
     }
     
