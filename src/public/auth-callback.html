@@ -1,44 +1,58 @@
-<script type="module">
-    import { supabase } from './supabaseClient.js';
-  
-    async function handleAuth() {
+<!-- /auth/callback.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting...</title>
+</head>
+<body>
+  <p>Redirecting, please wait...</p>
+
+  <script type="module">
+    import { supabase } from '../supabaseClient.js';
+
+    async function handleRedirect() {
       const {
-        data: { user }
+        data: { user },
+        error
       } = await supabase.auth.getUser();
-  
-      if (!user) {
-        console.error("User not authenticated.");
+
+      if (error || !user) {
+        console.error('No user found:', error);
+        window.location.href = '/login.html';
         return;
       }
-  
-      // Fetch profile info from your 'users' table
-      const { data: profile, error } = await supabase
+
+      // Now check if user exists in your 'users' table
+      const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single();
-  
-      if (error || !profile) {
-        // First-time user: redirect to signup to set role
+
+      if (profileError || !profile) {
+        // First-time user → redirect to signup
         window.location.href = '/signup.html';
-      } else {
-        // Existing user: redirect to dashboard based on role
-        switch (profile.role) {
-          case 'Admin':
-            window.location.href = '/admin/dashboard.html';
-            break;
-          case 'Reviewer':
-            window.location.href = '/reviewer/dashboard.html';
-            break;
-          case 'Researcher':
-            window.location.href = '/researcher/dashboard.html';
-            break;
-          default:
-            window.location.href = '/signup.html'; // fallback
-        }
+        return;
+      }
+
+      // Returning user → redirect to dashboard
+      switch (profile.role) {
+        case 'Admin':
+          window.location.href = '/admin/dashboard.html';
+          break;
+        case 'Reviewer':
+          window.location.href = '/reviewer/dashboard.html';
+          break;
+        case 'Researcher':
+          window.location.href = '/researcher/dashboard.html';
+          break;
+        default:
+          window.location.href = '/signup.html';
       }
     }
-  
-    handleAuth();
+
+    handleRedirect();
   </script>
-  
+</body>
+</html>
