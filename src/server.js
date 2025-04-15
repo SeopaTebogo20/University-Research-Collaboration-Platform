@@ -4,6 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const { createClient } = require('@supabase/supabase-js');
+const axios = require('axios'); // You'll need to install axios
 
 // Create the Express application
 const app = express();
@@ -31,6 +32,13 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
+// Google OAuth Configuration
+const clientId = process.env.GOOGLE_CLIENT_ID;
+const clientSecrete = process.env.GOOGLE_CLIENT_SECRET;
+const redirectURl= process.env.NODE_ENV === 'production' 
+  ?  process.env.PRODUCTION_REDIRECT_URL
+  : 'http://localhost:3000/auth/google/callback';
+
 // Configure middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -55,6 +63,312 @@ app.use((req, res, next) => {
     res.type('text/css');
   }
   next();
+});
+
+// Google Auth Endpoints
+app.get('/auth/google', (req, res) => {
+  const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  authUrl.searchParams.append('client_id', clientId);
+  authUrl.searchParams.append('redirect_uri', redirectURl);
+  authUrl.searchParams.append('response_type', 'code');
+  authUrl.searchParams.append('scope', 'email profile');
+  authUrl.searchParams.append('prompt', 'select_account');
+  
+  // Store the original redirect destination if provided
+  if (req.query.redirect) {
+    req.session.redirectAfterLogin = req.query.redirect;
+  }
+  
+  res.redirect(authUrl.toString());
+});
+
+// Google Auth Callback with Wits University Email Validation
+// Add this helper function near the top of your file, after your middleware definitions
+function getDashboardUrlByRole(role) {
+  // Normalize role to lowercase for case-insensitive comparison
+  const normalizedRole = role ? role.toLowerCase() : 'researcher';
+  
+  switch (normalizedRole) {
+    case 'admin':
+      return '/roles/admin/dashboard.html';
+    case 'reviewer':
+      return '/roles/reviewer/dashboard.html';
+    case 'researcher':
+      return '/roles/researcher/dashboard.html';
+    default:
+      return '/dashboard'; // Default fallback
+  }
+}
+
+// Replace your existing Google Auth Callback with this updated version
+app.get('/auth/google/callback', async (req, res) => {
+  const { code } = req.query;
+  
+  if (!code) {
+    return res.redirect('/login?error=google_auth_failed');
+  }
+  
+  try {
+    // Exchange authorization code for tokens
+    const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
+      code,
+      client_id: clientId,
+      client_secret: clientSecrete,
+      redirect_uri: redirectURl,
+      grant_type: 'authorization_code'
+    });
+    
+    // Get user info with the access token
+    const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenResponse.data.access_token}` }
+    });
+    
+    const { email, name, picture, sub: googleId } = userInfoResponse.data;
+    
+    console.log(`[${new Date().toISOString()}] Google login attempt for: ${email}`);
+    
+    // Validate Wits University student email format: digits@students.wits.ac.za
+    const emailRegex = /^\d+@students\.wits\.ac\.za$/i;
+    if (!emailRegex.test(email)) {
+      console.log(`[${new Date().toISOString()}] Rejected login: ${email} does not match Wits student email format`);
+      return res.redirect('/login?error=invalid_email_domain&message=Please use your Wits student email (student number@students.wits.ac.za)');
+    }
+    
+    // Check if user exists in Supabase
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (userError) {
+      console.error(`[${new Date().toISOString()}] Error checking for existing users: ${userError.message}`);
+      return res.redirect('/login?error=server_error');
+    }
+    
+    // Find user by email
+    const existingUser = userData && userData.users && userData.users.find(user => 
+      user.email && user.email.toLowerCase() === email.toLowerCase()
+    );
+    
+    // If user doesn't exist, store Google data in session and redirect to special signup page
+    if (!existingUser) {
+      console.log(`[${new Date().toISOString()}] New Google user, redirecting to complete profile: ${email}`);
+      
+      // Store Google profile data in session for use in signup
+      req.session.googleProfile = {
+        email,
+        name,
+        picture,
+        googleId
+      };
+      
+      // Redirect to Google-specific signup form
+      return res.redirect('/signupGoogle');
+    }
+    
+    // Existing user: proceed with normal login flow
+    console.log(`[${new Date().toISOString()}] Existing user found for Google login: ${email}`);
+    
+    // Sign in the user with Supabase
+    const { data: signInData, error: signInError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: email
+    });
+    
+    if (signInError) {
+      console.error(`[${new Date().toISOString()}] Error signing in Google user: ${signInError.message}`);
+      return res.redirect('/login?error=login_failed');
+    }
+    
+    // Extract authentication token from the magic link
+    const authToken = new URL(signInData.properties.action_link).searchParams.get('token');
+    
+    // Exchange the token for a session
+    const { data: sessionData, error: sessionError } = await supabase.auth.verifyOtp({
+      token_hash: authToken,
+      type: 'magiclink'
+    });
+    
+    if (sessionError) {
+      console.error(`[${new Date().toISOString()}] Error creating session for Google user: ${sessionError.message}`);
+      return res.redirect('/login?error=session_creation_failed');
+    }
+    
+    // Store session in express session
+    req.session.user = sessionData.user;
+    req.session.access_token = sessionData.session.access_token;
+    req.session.refresh_token = sessionData.session.refresh_token;
+    
+    console.log(`[${new Date().toISOString()}] Google login successful for: ${email}`);
+    
+    // Get the user's role from their metadata
+    const userRole = sessionData.user?.user_metadata?.role || 'researcher'; // Default to researcher if no role found
+    
+    // Get the appropriate dashboard URL based on role
+    const dashboardUrl = getDashboardUrlByRole(userRole);
+    
+    // Use original redirect destination if it exists, otherwise use role-specific dashboard
+    const redirectTo = req.session.redirectAfterLogin || dashboardUrl;
+    delete req.session.redirectAfterLogin;
+    
+    console.log(`[${new Date().toISOString()}] Redirecting user to: ${redirectTo} based on role: ${userRole}`);
+    return res.redirect(redirectTo);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Google auth error: ${error.message}`);
+    return res.redirect('/login?error=google_auth_error');
+  }
+});
+
+// Serve the Google signup page
+app.get('/signupGoogle', (req, res) => {
+  // Check if we have Google profile data in the session
+  if (!req.session.googleProfile) {
+    return res.redirect('/login?error=missing_google_profile');
+  }
+  
+  res.sendFile(path.join(__dirname, 'public', 'signupGoogle.html'));
+});
+
+// Add new endpoint to complete Google signup with additional profile information
+app.post('/api/signup-google', async (req, res) => {
+  try {
+    // Check if Google profile exists in session
+    if (!req.session.googleProfile) {
+      return res.status(400).json({ message: 'Google profile data not found. Please try logging in with Google again.' });
+    }
+    
+    const googleProfile = req.session.googleProfile;
+    
+    // Extract form data (additional profile fields)
+    const { 
+      role,
+      department,
+      academicRole,
+      researchArea,
+      researchExperience,
+      qualifications,
+      currentProject
+    } = req.body;
+    
+    console.log(`[${new Date().toISOString()}] Completing Google signup for: ${googleProfile.email}`);
+    
+    // Basic validation
+    const errors = {};
+    
+    if (!role) errors.role = 'Role is required';
+    
+    // Role-specific validation - only validate researcher required fields
+    if (role === 'researcher') {
+      if (!researchArea) errors.researchArea = 'Research Area is required for researchers';
+      if (!qualifications) errors.qualifications = 'Qualifications are required for researchers';
+      if (!currentProject) errors.currentProject = 'Current Project is required for researchers';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      console.error(`[${new Date().toISOString()}] Google signup validation failed for ${googleProfile.email}:`, errors);
+      return res.status(400).json({ message: 'Validation failed', errors });
+    }
+    
+    // Extract student number from email
+    const studentNumber = googleProfile.email.split('@')[0];
+    
+    // Create a random password since Supabase requires one (user won't use it)
+    const randomPassword = Math.random().toString(36).slice(-10);
+    
+    // Create user metadata with all fields
+    const userMetadata = {
+      name: googleProfile.name,
+      email: googleProfile.email,
+      googleId: googleProfile.googleId,
+      picture: googleProfile.picture,
+      role,
+      authProvider: 'google',
+      studentNumber
+    };
+    
+    // Add common fields for all roles - accept empty strings
+    userMetadata.department = department || '';
+    userMetadata.academicRole = academicRole || '';
+    
+    // Add specific fields based on role
+    if (role === 'researcher' || role === 'reviewer') {
+      userMetadata.researchArea = researchArea || '';
+      userMetadata.qualifications = qualifications || '';
+      
+      // For research experience, ensure it's a number or 0
+      userMetadata.researchExperience = researchExperience ? parseInt(researchExperience) : 0;
+    }
+    
+    // Add researcher-specific fields
+    if (role === 'researcher') {
+      userMetadata.currentProject = currentProject || '';
+    }
+    
+    // Create new user in Supabase with pre-confirmed email (since Google already verified it)
+    const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: googleProfile.email,
+      password: randomPassword,
+      email_confirm: true,
+      user_metadata: userMetadata
+    });
+    
+    if (createError) {
+      console.error(`[${new Date().toISOString()}] Error creating user from Google signup: ${createError.message}`);
+      return res.status(400).json({ message: createError.message });
+    }
+    
+    console.log(`[${new Date().toISOString()}] ✅ GOOGLE USER CREATED SUCCESSFULLY: ${newUser.user.id} ✅`);
+    
+    // Sign in the user with Supabase
+    const { data: signInData, error: signInError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: googleProfile.email
+    });
+    
+    if (signInError) {
+      console.error(`[${new Date().toISOString()}] Error signing in Google user after signup: ${signInError.message}`);
+      return res.status(400).json({ message: signInError.message });
+    }
+    
+    // Extract authentication token from the magic link
+    const authToken = new URL(signInData.properties.action_link).searchParams.get('token');
+    
+    // Exchange the token for a session
+    const { data: sessionData, error: sessionError } = await supabase.auth.verifyOtp({
+      token_hash: authToken,
+      type: 'magiclink'
+    });
+    
+    if (sessionError) {
+      console.error(`[${new Date().toISOString()}] Error creating session after Google signup: ${sessionError.message}`);
+      return res.status(400).json({ message: sessionError.message });
+    }
+    
+    // Store session in express session
+    req.session.user = sessionData.user;
+    req.session.access_token = sessionData.session.access_token;
+    req.session.refresh_token = sessionData.session.refresh_token;
+    
+    // Clear Google profile from session as it's no longer needed
+    delete req.session.googleProfile;
+    
+    return res.status(201).json({ 
+      message: 'Account created successfully!', 
+      user: newUser.user,
+      redirectUrl: '/dashboard'
+    });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Google signup error: ${error.message}`);
+    console.error(`[${new Date().toISOString()}] Error stack: ${error.stack}`);
+    return res.status(500).json({ message: `Server error: ${error.message}` });
+  }
+});
+
+// Endpoint to get Google profile data from session
+app.get('/api/auth/google-profile', (req, res) => {
+  if (req.session.googleProfile) {
+    return res.status(200).json({ 
+      profile: req.session.googleProfile 
+    });
+  }
+  return res.status(404).json({ message: 'Google profile not found in session' });
 });
 
 // Supabase Auth API endpoints

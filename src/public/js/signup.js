@@ -8,6 +8,136 @@ document.addEventListener('DOMContentLoaded', function() {
     const formStatus = document.getElementById('formStatus');
     const passwordToggles = document.querySelectorAll('.toggle-password-visibility');
     
+    // Name fields validation (text only)
+    const nameInputs = document.querySelectorAll('input[type="text"][id*="name"], input[type="text"][id="firstName"], input[type="text"][id="lastName"], input[type="text"][id="fullName"]');
+    nameInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            // Only allow letters, spaces, hyphens, and apostrophes
+            const value = this.value;
+            const sanitizedValue = value.replace(/[^a-zA-Z\s\-']/g, '');
+            
+            if (value !== sanitizedValue) {
+                this.value = sanitizedValue;
+                showError(this, 'Only letters, spaces, hyphens and apostrophes are allowed');
+            } else {
+                clearError(this);
+            }
+        });
+    });
+    
+    // South African phone number validation (+27 or starting with 06, 07, or 08)
+    const phoneInputs = document.querySelectorAll('input[type="tel"], input[id*="phone"], input[id*="contact"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = this.value.replace(/\s+/g, ''); // Remove all spaces
+            
+            // Allow only digits, '+', and the first character
+            const sanitizedValue = value.replace(/[^\d+]/g, '');
+            this.value = sanitizedValue;
+            
+            // Check for valid South African format
+            const isValid = validateSouthAfricanPhone(sanitizedValue);
+            
+            if (!isValid.valid) {
+                showError(this, isValid.message);
+            } else {
+                clearError(this);
+            }
+        });
+        
+        // Also validate on blur to ensure complete number
+        input.addEventListener('blur', function() {
+            const value = this.value.trim();
+            const isValid = validateSouthAfricanPhone(value);
+            
+            if (!isValid.valid) {
+                showError(this, isValid.message);
+            } else {
+                // Format the number nicely
+                if (value.startsWith('+27')) {
+                    this.value = value; // Keep as is with +27 format
+                } else if (value.startsWith('0')) {
+                    // Keep as is with 0 format
+                    this.value = value;
+                }
+                clearError(this);
+            }
+        });
+    });
+    
+    function validateSouthAfricanPhone(phone) {
+        // Empty is not valid but will be caught by required attribute
+        if (!phone) return { valid: true, message: '' };
+        
+        // Check for +27 format
+        if (phone.startsWith('+27')) {
+            // +27 should be followed by 9 digits
+            if (phone.length !== 12) {
+                return { valid: false, message: 'Phone number must be +27 followed by 9 digits' };
+            }
+            
+            // Check if the digit after +27 is 6, 7 or 8
+            const thirdDigit = phone.charAt(3);
+            if (!['6', '7', '8'].includes(thirdDigit)) {
+                return { valid: false, message: 'After +27, number must start with 6, 7, or 8' };
+            }
+            
+            return { valid: true, message: '' };
+        } 
+        // Check for 0 format (must be 10 digits starting with 06, 07, or 08)
+        else if (phone.startsWith('0')) {
+            if (phone.length !== 10) {
+                return { valid: false, message: 'Phone number must be 10 digits' };
+            }
+            
+            // Check if starts with 06, 07 or 08
+            const secondDigit = phone.charAt(1);
+            if (!['6', '7', '8'].includes(secondDigit)) {
+                return { valid: false, message: 'Number must start with 06, 07, or 08' };
+            }
+            
+            return { valid: true, message: '' };
+        } 
+        else {
+            return { valid: false, message: 'Must start with +27 or 0' };
+        }
+    }
+    
+    // Wits University student email validation
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            validateWitsEmail(this, value);
+        });
+        
+        emailInput.addEventListener('blur', function() {
+            const value = this.value.trim();
+            validateWitsEmail(this, value);
+        });
+    }
+    
+    function validateWitsEmail(input, email) {
+        if (!email) return; // Empty will be caught by required attribute
+        
+        // Must match pattern: digits@students.wits.ac.za
+        const witsEmailRegex = /^(\d+)@students\.wits\.ac\.za$/;
+        
+        if (!witsEmailRegex.test(email)) {
+            showError(input, 'Email must be in format: studentnumber@students.wits.ac.za');
+            return false;
+        } else {
+            clearError(input);
+            return true;
+        }
+    }
+    
+    // Override the isValidEmail function to use our Wits validation
+    function isValidEmail(email) {
+        const witsEmailRegex = /^(\d+)@students\.wits\.ac\.za$/;
+        return witsEmailRegex.test(email);
+    }
+    
     // Password visibility toggle
     passwordToggles.forEach(toggle => {
         toggle.addEventListener('click', function() {
@@ -104,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Email duplicate check
-    const emailInput = document.getElementById('email');
     let emailCheckTimeout;
     let emailCheckInProgress = false;
     let lastCheckedEmail = '';
@@ -130,11 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }
         });
-    }
-    
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
     }
     
     function checkEmailExists(email) {
@@ -179,17 +303,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                     showError(input, 'This field is required');
                 } else {
-                    clearError(input);
+                    // Additional validation for specific field types
+                    if (input.id === 'email') {
+                        if (!validateWitsEmail(input, input.value.trim())) {
+                            isValid = false;
+                        }
+                    } else if (input.type === 'tel' || input.id.includes('phone') || input.id.includes('contact')) {
+                        const phoneValid = validateSouthAfricanPhone(input.value.trim());
+                        if (!phoneValid.valid) {
+                            showError(input, phoneValid.message);
+                            isValid = false;
+                        }
+                    } else {
+                        clearError(input);
+                    }
                 }
             });
             
             // If email field exists in current step, validate email format and check for duplicates
             const emailInput = currentStep.querySelector('#email');
             if (emailInput && emailInput.value) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(emailInput.value)) {
+                if (!validateWitsEmail(emailInput, emailInput.value.trim())) {
                     isValid = false;
-                    showError(emailInput, 'Please enter a valid email address');
                 } else {
                     // Check for duplicate email before proceeding
                     const emailError = emailInput.nextElementSibling;
@@ -321,7 +456,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                     showError(input, 'This field is required');
                 } else {
-                    clearError(input);
+                    // Additional validation for specific field types
+                    if (input.id === 'email') {
+                        if (!validateWitsEmail(input, input.value.trim())) {
+                            isValid = false;
+                        }
+                    } else if (input.type === 'tel' || input.id.includes('phone') || input.id.includes('contact')) {
+                        const phoneValid = validateSouthAfricanPhone(input.value.trim());
+                        if (!phoneValid.valid) {
+                            showError(input, phoneValid.message);
+                            isValid = false;
+                        }
+                    } else {
+                        clearError(input);
+                    }
                 }
             });
             
@@ -334,9 +482,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearError(termsAgree);
             }
             
-            // Final email duplication check
+            // Final email validation and duplication check
             const emailInput = document.getElementById('email');
             if (emailInput) {
+                // Validate email format first
+                if (!validateWitsEmail(emailInput, emailInput.value.trim())) {
+                    isValid = false;
+                }
+                
                 const emailError = document.querySelector(`output[for="email"]`) || emailInput.nextElementSibling;
                 if (emailError && 
                     emailError.classList.contains('error-message') && 
@@ -352,6 +505,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             }
+            
+            // Final validation for all phone fields in the form
+            const allPhoneInputs = form.querySelectorAll('input[type="tel"], input[id*="phone"], input[id*="contact"]');
+            allPhoneInputs.forEach(input => {
+                if (input.value.trim()) {
+                    const phoneValid = validateSouthAfricanPhone(input.value.trim());
+                    if (!phoneValid.valid) {
+                        showError(input, phoneValid.message);
+                        isValid = false;
+                    }
+                }
+            });
+            
+            // Final validation for all name fields in the form
+            const allNameInputs = form.querySelectorAll('input[type="text"][id*="name"], input[type="text"][id="firstName"], input[type="text"][id="lastName"], input[type="text"][id="fullName"]');
+            allNameInputs.forEach(input => {
+                if (input.value.trim()) {
+                    if (/[^a-zA-Z\s\-']/.test(input.value)) {
+                        showError(input, 'Only letters, spaces, hyphens and apostrophes are allowed');
+                        isValid = false;
+                    }
+                }
+            });
             
             if (!isValid) {
                 // If there are validation errors, focus the first field with an error
