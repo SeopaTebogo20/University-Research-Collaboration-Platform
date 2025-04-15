@@ -117,6 +117,7 @@ jobs:
           app-name: 'CollabNexus'
           slot-name: 'Production'
           app-settings-json: |
+              app-settings-json: |
             [
               {
                 "name": "SUPABASE_URL",
@@ -138,14 +139,17 @@ jobs:
                 "value": "${{ secrets.SESSION_SECRET }}",
                 "slotSetting": false
               },
-               "name": "GOOGLE_CLIENT_ID",
+              {
+                "name": "GOOGLE_CLIENT_ID",
                 "value": "${{ secrets.GOOGLE_CLIENT_ID }}",
                 "slotSetting": false
               },
-               "name": "GOOGLE_CLIENT_SECRET",
+              {
+                "name": "GOOGLE_CLIENT_SECRET",
                 "value": "${{ secrets.GOOGLE_CLIENT_SECRET }}",
                 "slotSetting": false
               },
+              {
                 "name": "PRODUCTION_REDIRECT_URL",
                 "value": "${{ secrets.PRODUCTION_REDIRECT_URL }}",
                 "slotSetting": false
@@ -161,6 +165,7 @@ jobs:
                 "slotSetting": false
               }
             ]
+
       
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
