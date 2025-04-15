@@ -146,6 +146,10 @@ jobs:
                 "value": "${{ secrets.GOOGLE_CLIENT_SECRET }}",
                 "slotSetting": false
               },
+                "name": "PRODUCTION_REDIRECT_URL",
+                "value": "${{ secrets.PRODUCTION_REDIRECT_URL }}",
+                "slotSetting": false
+              },
               {
                 "name": "NODE_ENV",
                 "value": "production",
