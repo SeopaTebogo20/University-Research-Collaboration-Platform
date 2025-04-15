@@ -36,7 +36,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecrete = process.env.GOOGLE_CLIENT_SECRET;
 const redirectURl= process.env.NODE_ENV === 'production' 
-  ? 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/auth/google/callback' 
+  ?  process.env.PRODUCTION_REDIRECT_URL
   : 'http://localhost:3000/auth/google/callback';
 
 // Configure middleware
