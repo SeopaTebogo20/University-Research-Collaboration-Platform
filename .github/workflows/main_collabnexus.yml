@@ -138,6 +138,14 @@ jobs:
                 "value": "${{ secrets.SESSION_SECRET }}",
                 "slotSetting": false
               },
+               "name": "GOOGLE_CLIENT_ID",
+                "value": "${{ secrets.GOOGLE_CLIENT_ID }}",
+                "slotSetting": false
+              },
+               "name": "GOOGLE_CLIENT_SECRET",
+                "value": "${{ secrets.GOOGLE_CLIENT_SECRET }}",
+                "slotSetting": false
+              },
               {
                 "name": "NODE_ENV",
                 "value": "production",

@@ -33,8 +33,8 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Google OAuth Configuration
-const GOOGLE_CLIENT_ID = '615130615850-7g5ifisk0cgfqpgnh1v5mm098iffl5th.apps.googleusercontent.com';
-const GOOGLE_CLIENT_SECRET = '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';
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.NODE_ENV === 'production' 
   ? 'https://localhost:3000/auth/google/callback' 
   : 'http://localhost:3000/auth/google/callback';
