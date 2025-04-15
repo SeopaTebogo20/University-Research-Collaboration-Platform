@@ -33,10 +33,10 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Google OAuth Configuration
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.NODE_ENV === 'production' 
-  ? 'https://localhost:3000/auth/google/callback' 
+const clientId = process.env.GOOGLE_CLIENT_ID;
+const clientSecrete = process.env.GOOGLE_CLIENT_SECRET;
+const redirectURl= process.env.NODE_ENV === 'production' 
+  ? 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/auth/google/callback' 
   : 'http://localhost:3000/auth/google/callback';
 
 // Configure middleware
@@ -68,8 +68,8 @@ app.use((req, res, next) => {
 // Google Auth Endpoints
 app.get('/auth/google', (req, res) => {
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
-  authUrl.searchParams.append('redirect_uri', GOOGLE_REDIRECT_URI);
+  authUrl.searchParams.append('client_id', clientId);
+  authUrl.searchParams.append('redirect_uri', redirectURl);
   authUrl.searchParams.append('response_type', 'code');
   authUrl.searchParams.append('scope', 'email profile');
   authUrl.searchParams.append('prompt', 'select_account');
@@ -83,7 +83,24 @@ app.get('/auth/google', (req, res) => {
 });
 
 // Google Auth Callback with Wits University Email Validation
-// Modified Google Auth Callback with User Check and Signup Redirect
+// Add this helper function near the top of your file, after your middleware definitions
+function getDashboardUrlByRole(role) {
+  // Normalize role to lowercase for case-insensitive comparison
+  const normalizedRole = role ? role.toLowerCase() : 'researcher';
+  
+  switch (normalizedRole) {
+    case 'admin':
+      return '/roles/admin/dashboard.html';
+    case 'reviewer':
+      return '/roles/reviewer/dashboard.html';
+    case 'researcher':
+      return '/roles/researcher/dashboard.html';
+    default:
+      return '/dashboard'; // Default fallback
+  }
+}
+
+// Replace your existing Google Auth Callback with this updated version
 app.get('/auth/google/callback', async (req, res) => {
   const { code } = req.query;
   
@@ -95,9 +112,9 @@ app.get('/auth/google/callback', async (req, res) => {
     // Exchange authorization code for tokens
     const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
       code,
-      client_id: GOOGLE_CLIENT_ID,
-      client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri: GOOGLE_REDIRECT_URI,
+      client_id: clientId,
+      client_secret: clientSecrete,
+      redirect_uri: redirectURl,
       grant_type: 'authorization_code'
     });
     
@@ -181,10 +198,17 @@ app.get('/auth/google/callback', async (req, res) => {
     
     console.log(`[${new Date().toISOString()}] Google login successful for: ${email}`);
     
-    // Redirect to the original destination or dashboard
-    const redirectTo = req.session.redirectAfterLogin || '/dashboard';
+    // Get the user's role from their metadata
+    const userRole = sessionData.user?.user_metadata?.role || 'researcher'; // Default to researcher if no role found
+    
+    // Get the appropriate dashboard URL based on role
+    const dashboardUrl = getDashboardUrlByRole(userRole);
+    
+    // Use original redirect destination if it exists, otherwise use role-specific dashboard
+    const redirectTo = req.session.redirectAfterLogin || dashboardUrl;
     delete req.session.redirectAfterLogin;
     
+    console.log(`[${new Date().toISOString()}] Redirecting user to: ${redirectTo} based on role: ${userRole}`);
     return res.redirect(redirectTo);
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Google auth error: ${error.message}`);

@@ -13,6 +13,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentStep = 0;
     
+    /**
+     * Get dashboard URL based on user role
+     * @param {string} role - User role (admin, reviewer, researcher)
+     * @returns {string} - URL path to appropriate dashboard
+     */
+    function getDashboardUrlByRole(role) {
+        // Normalize role to lowercase for case-insensitive comparison
+        const normalizedRole = role.toLowerCase();
+        
+        switch (normalizedRole) {
+            case 'admin':
+                return '/roles/admin/dashboard.html';
+            case 'reviewer':
+                return '/roles/reviewer/dashboard.html';
+            case 'researcher':
+                return '/roles/researcher/dashboard.html';
+        }
+    }
+    
     // Fetch Google profile information from session
     async function fetchGoogleProfile() {
         try {
@@ -175,9 +194,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Success - show success message and redirect
                 formStatus.innerHTML = `<div class="success">${result.message}</div>`;
                 
+                // Save authentication data - Store user in a consistent way to match auth.js
+                if (result.user) {
+                    localStorage.setItem('supabaseUser', JSON.stringify(result.user));
+                }
+                
+                // Get the user's role to redirect to the appropriate dashboard
+                const userRole = result.user?.user_metadata?.role || selectedRole || 'researcher';
+                
+                // Get the appropriate dashboard URL based on role
+                const dashboardUrl = getDashboardUrlByRole(userRole);
+                
                 // Redirect to dashboard after successful signup
                 setTimeout(() => {
-                    window.location.href = result.redirectUrl || '/dashboard';
+                    window.location.href = dashboardUrl || '/dashboard';
                 }, 1500);
                 
             } catch (error) {
