@@ -372,11 +372,13 @@ app.get('/api/auth/google-profile', (req, res) => {
 });
 
 // Supabase Auth API endpoints
-// Update this portion of your /api/login endpoint
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
-  // [existing validation code remains the same]
+  // Basic validation
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
   
   try {
     console.log(`[${new Date().toISOString()}] Login attempt for user: ${email}`);
@@ -387,7 +389,20 @@ app.post('/api/login', async (req, res) => {
       password,
     });
     
-    // [error handling remains the same]
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Login failed for ${email}: ${error.message}`);
+      
+      // Check if error is due to unconfirmed email - look for specific error messages
+      if (error.message.includes('Email not confirmed') || error.message.includes('not confirmed')) {
+        // This means the user exists but hasn't confirmed their email
+        return res.status(403).json({ 
+          message: 'Please confirm your email address before logging in. Check your inbox for a verification link.',
+          emailVerified: false
+        });
+      }
+      
+      return res.status(400).json({ message: error.message });
+    }
     
     console.log(`[${new Date().toISOString()}] Login successful for user: ${email}`);
     
@@ -396,20 +411,15 @@ app.post('/api/login', async (req, res) => {
     req.session.access_token = data.session.access_token;
     req.session.refresh_token = data.session.refresh_token;
     
-    // Get the user's role from their metadata
-    const userRole = data.user?.user_metadata?.role || 'researcher'; // Default to researcher if no role found
-    
-    // Get the appropriate dashboard URL based on role
-    const dashboardUrl = getDashboardUrlByRole(userRole);
-    
     return res.status(200).json({ 
       message: 'Login successful', 
       user: data.user,
       session: data.session,
-      redirectUrl: dashboardUrl // Return the role-specific dashboard
+      redirectUrl: '/dashboard' // Add redirect URL to response
     });
   } catch (error) {
-    // [error handling remains the same]
+    console.error(`[${new Date().toISOString()}] Login error: ${error.message}`);
+    return res.status(500).json({ message: 'An error occurred during login' });
   }
 });
 
