@@ -1,3 +1,4 @@
+
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 name: Build and deploy Node.js app to Azure Web App - CollabNexus
@@ -86,30 +87,6 @@ jobs:
           echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
           echo "PORT=8080" >> .env
           echo "NODE_ENV=production" >> .env
-
-      # Create packages for release
-      - name: Create release packages
-        run: |
-          mkdir -p release-packages
-          
-          # Create deployment package (zip)
-          Compress-Archive -Path * -DestinationPath "release-packages/collabnexus-deploy-package.zip" -Force
-          
-          # Create source code package (excluding node_modules and other build artifacts)
-          mkdir -p temp-src
-          robocopy . temp-src /S /XD node_modules .git coverage build dist release-packages temp-src /XF *.zip *.env
-          Compress-Archive -Path temp-src/* -DestinationPath "release-packages/collabnexus-source.zip" -Force
-          
-          # Create a build info file
-          echo "Build Date: $(Get-Date)" > "release-packages/build-info.txt"
-          echo "Version: ${{ steps.package_version.outputs.version }}" >> "release-packages/build-info.txt"
-          echo "Commit: ${{ github.sha }}" >> "release-packages/build-info.txt"
-
-      - name: Upload release packages as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-packages
-          path: release-packages/
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -212,12 +189,6 @@ jobs:
         with:
           name: node-app
       
-      - name: Download release packages
-        uses: actions/download-artifact@v4
-        with:
-          name: release-packages
-          path: release-packages
-      
       - name: Get version from package.json
         id: package_version
         run: |
@@ -227,7 +198,6 @@ jobs:
           echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
           
       - name: Create Release
-        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -242,40 +212,5 @@ jobs:
             ## What's Changed
             * Automated release from CI/CD pipeline
             * Deployed to Azure Web App - CollabNexus
-            
-            ## Available Packages
-            * `collabnexus-deploy-package.zip` - Complete deployment package
-            * `collabnexus-source.zip` - Source code only
-            * `build-info.txt` - Build information
           draft: false
           prerelease: false
-          
-      - name: Upload Deployment Package
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-packages/collabnexus-deploy-package.zip
-          asset_name: collabnexus-deploy-package.zip
-          asset_content_type: application/zip
-          
-      - name: Upload Source Package
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-packages/collabnexus-source.zip
-          asset_name: collabnexus-source.zip
-          asset_content_type: application/zip
-          
-      - name: Upload Build Info
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release-packages/build-info.txt
-          asset_name: build-info.txt
-          asset_content_type: text/plain
