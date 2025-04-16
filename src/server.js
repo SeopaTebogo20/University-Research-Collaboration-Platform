@@ -95,8 +95,6 @@ function getDashboardUrlByRole(role) {
       return '/roles/reviewer/dashboard.html';
     case 'researcher':
       return '/roles/researcher/dashboard.html';
-    default:
-      return '/dashboard'; // Default fallback
   }
 }
 
