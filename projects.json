@@ -1,0 +1,174 @@
+{
+    "projects": [
+      {
+        "id": "PRJ001",
+        "projectDetails": {
+          "researcherName": "Dr. Sarah Johnson",
+          "projectTitle": "Machine Learning Applications in Climate Change Prediction",
+          "description": "This research project aims to develop advanced machine learning models to improve climate change prediction accuracy, with a focus on regional weather pattern analysis and long-term climate projections.",
+          "keyResearchArea": "Artificial Intelligence, Climate Science",
+          "startDate": "2025-05-01",
+          "endDate": "2026-12-31",
+          "fundingAvailable": true
+        },
+        "collaborationRequirements": {
+          "skillsAndExpertise": [
+            "Machine Learning",
+            "Data Analysis",
+            "Climate Modeling",
+            "Statistical Analysis"
+          ],
+          "experienceLevel": "Expert",
+          "positionsRequired": [
+            "Data Scientist",
+            "Machine Learning Engineer",
+            "Climate Researcher",
+            "Software Developer"
+          ],
+          "technicalRequirements": [
+            "Python",
+            "TensorFlow",
+            "PyTorch",
+            "R",
+            "SQL"
+          ]
+        }
+      },
+      {
+        "id": "PRJ002",
+        "projectDetails": {
+          "researcherName": "Prof. Michael Chen",
+          "projectTitle": "Sustainable Urban Infrastructure Development",
+          "description": "Research focused on integrating green technologies into urban planning and infrastructure development to create more sustainable and resilient cities.",
+          "keyResearchArea": "Urban Planning, Environmental Engineering",
+          "startDate": "2025-06-15",
+          "endDate": "2027-06-14",
+          "fundingAvailable": true
+        },
+        "collaborationRequirements": {
+          "skillsAndExpertise": [
+            "Urban Planning",
+            "Environmental Engineering",
+            "Sustainability Assessment",
+            "Geographic Information Systems"
+          ],
+          "experienceLevel": "Intermediate",
+          "positionsRequired": [
+            "Urban Planner",
+            "Environmental Engineer",
+            "GIS Specialist",
+            "Project Manager"
+          ],
+          "technicalRequirements": [
+            "ArcGIS",
+            "AutoCAD",
+            "QGIS",
+            "SketchUp",
+            "Python"
+          ]
+        }
+      },
+      {
+        "id": "PRJ003",
+        "projectDetails": {
+          "researcherName": "Dr. Emily Rodriguez",
+          "projectTitle": "Blockchain Applications in Healthcare Data Management",
+          "description": "Investigating the potential of blockchain technology to improve security, privacy, and accessibility of healthcare data across multiple stakeholders while ensuring regulatory compliance.",
+          "keyResearchArea": "Blockchain Technology, Healthcare Informatics",
+          "startDate": "2025-07-01",
+          "endDate": "2026-06-30",
+          "fundingAvailable": false
+        },
+        "collaborationRequirements": {
+          "skillsAndExpertise": [
+            "Blockchain Development",
+            "Healthcare Informatics",
+            "Data Security",
+            "Smart Contract Development"
+          ],
+          "experienceLevel": "Expert",
+          "positionsRequired": [
+            "Blockchain Developer",
+            "Healthcare IT Specialist",
+            "Security Analyst",
+            "UI/UX Designer"
+          ],
+          "technicalRequirements": [
+            "Solidity",
+            "JavaScript",
+            "Node.js",
+            "React",
+            "MongoDB"
+          ]
+        }
+      },
+      {
+        "id": "PRJ004",
+        "projectDetails": {
+          "researcherName": "Dr. James Wilson",
+          "projectTitle": "Genetic Basis of Longevity in Human Populations",
+          "description": "Study of genetic markers and environmental factors that contribute to exceptional longevity across diverse human populations worldwide.",
+          "keyResearchArea": "Genetics, Longevity Research",
+          "startDate": "2025-09-01",
+          "endDate": "2028-08-31",
+          "fundingAvailable": true
+        },
+        "collaborationRequirements": {
+          "skillsAndExpertise": [
+            "Genetic Analysis",
+            "Bioinformatics",
+            "Population Genetics",
+            "Data Mining"
+          ],
+          "experienceLevel": "Intermediate",
+          "positionsRequired": [
+            "Geneticist",
+            "Bioinformatician",
+            "Biostatistician",
+            "Research Assistant"
+          ],
+          "technicalRequirements": [
+            "R",
+            "Python",
+            "PLINK",
+            "GATK",
+            "SQL"
+          ]
+        }
+      },
+      {
+        "id": "PRJ005",
+        "projectDetails": {
+          "researcherName": "Prof. Aisha Patel",
+          "projectTitle": "Immersive AR/VR Educational Technologies",
+          "description": "Development and evaluation of augmented and virtual reality tools for enhancing learning outcomes in STEM education at secondary and tertiary levels.",
+          "keyResearchArea": "Educational Technology, AR/VR",
+          "startDate": "2025-08-15",
+          "endDate": "2027-02-28",
+          "fundingAvailable": false
+        },
+        "collaborationRequirements": {
+          "skillsAndExpertise": [
+            "AR/VR Development",
+            "Educational Technology",
+            "UI/UX Design",
+            "Learning Assessment"
+          ],
+          "experienceLevel": "Beginner",
+          "positionsRequired": [
+            "AR/VR Developer",
+            "Educational Technologist",
+            "UI/UX Designer",
+            "Education Researcher"
+          ],
+          "technicalRequirements": [
+            "Unity",
+            "C#",
+            "JavaScript",
+            "3D Modeling",
+            "WebXR"
+          ]
+        }
+      }
+    ]
+  }

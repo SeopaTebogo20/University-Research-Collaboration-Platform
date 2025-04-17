@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitations - CollabNexus</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/researcher.css">
+  <link rel="stylesheet" href="css/researcher-platform.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between h-20">
+          <div class="flex items-center">
+            <a href="dashboard.html" class="flex-shrink-0 flex items-center">
+              <i class="fas fa-book-open book-logo"></i>
+              <span class="font-playfair text-xl font-bold text-research-dark">
+                CollabNexus
+              </span>
+            </a>
+            <div class="hidden sm:ml-10 sm:flex sm:space-x-8">
+              <a href="/researcher" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Dashboard
+              </a>
+              <a href="/projects" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Projects
+              </a>
+              <a href="/collaborations" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Collaborators
+              </a>
+              <a href="/invitations" class="border-research-primary text-research-primary hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Invitations
+              </a>
+              <a href="/messaging" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Messages
+              </a>
+            </div>
+          </div>
+          <div class="hidden md:flex items-center space-x-4">
+            <button id="logout-btn" class="text-research-accent border-research-accent hover:bg-research-light hover:text-research-accent px-4 py-2 rounded border">
+              Logout
+            </button>
+          </div>
+          <div class="flex items-center md:hidden">
+            <button id="mobile-menu-button" class="text-gray-500 hover:text-research-accent">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page-container">
+    <section class="page-header">
+      <div class="page-title-container">
+        <h1 class="page-title">Research Invitations</h1>
+        <p class="page-subtitle">Manage project invitations you've sent and received from other researchers.</p>
+      </div>
+    </section>
+    
+    <section class="invitation-tabs">
+      <div class="invitation-tab active" data-tab="received">Invitations Received</div>
+      <div class="invitation-tab" data-tab="sent">Invitations Sent</div>
+    </section>
+    
+    <section id="invitations-received-section" class="invitations-list">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Invitations to Collaborate</h2>
+        <div class="flex gap-2">
+          <button id="refresh-received" class="btn btn-outline">
+            <i class="fas fa-sync-alt mr-2"></i> Refresh
+          </button>
+          <select id="status-filter-received" class="form-control">
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="declined">Declined</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="received-invitations">
+        <!-- Received invitations will be populated by JavaScript -->
+      </div>
+    </section>
+    
+    <section id="invitations-sent-section" class="invitations-list hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Invitations You've Sent</h2>
+        <div class="flex gap-2">
+          <button id="refresh-sent" class="btn btn-outline">
+            <i class="fas fa-sync-alt mr-2"></i> Refresh
+          </button>
+          <select id="status-filter-sent" class="form-control">
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="declined">Declined</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="sent-invitations">
+        <!-- Sent invitations will be populated by JavaScript -->
+      </div>
+    </section>
+    
+    <!-- View Project Modal -->
+    <div id="view-project-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="view-project-title" class="modal-title">Project Details</h2>
+          <button class="modal-close" id="close-view-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="project-details">
+            <!-- Project details will be populated by JavaScript -->
+          </div>
+          <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-3">Current Collaborators</h3>
+            <div id="project-collaborators" class="flex flex-wrap gap-4">
+              <!-- Collaborators will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="close-view-btn" class="btn btn-outline">Close</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- View Researcher Profile Modal -->
+    <div id="view-researcher-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Researcher Profile</h2>
+          <button class="modal-close" id="close-researcher-modal">&times;</button>
+        </div>
+        <div class="modal-body" id="researcher-profile">
+          <!-- Researcher profile will be populated by JavaScript -->
+        </div>
+        <div class="modal-footer">
+          <button id="close-researcher-btn" class="btn btn-outline">Close</button>
+          <button id="message-researcher-btn" class="btn btn-primary">
+            <i class="fas fa-envelope mr-2"></i> Send Message
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cancel Invitation Confirmation Modal -->
+    <div id="cancel-invitation-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Cancel Invitation</h2>
+          <button class="modal-close" id="close-cancel-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to cancel this invitation? This action cannot be undone.</p>
+          <div id="cancel-invitation-details" class="mt-4 p-4 bg-gray-100 rounded-lg">
+            <!-- Invitation details will be populated by JavaScript -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-cancel-invitation" class="btn btn-outline">Go Back</button>
+          <button id="confirm-cancel-invitation" class="btn btn-danger">Yes, Cancel Invitation</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Toast Notifications -->
+    <div class="toast-container">
+      <!-- Toasts will be populated by JavaScript -->
+    </div>
+  </main>
+
+<!-- Footer -->
+<footer class="footer">
+    <section class="container">
+      <section class="footer-content">
+        <article class="footer-column">
+          <header class="footer-logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </header>
+          <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+        </article>
+        <article class="footer-column">
+          <h3>Solutions</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">For Researchers</a></li>
+              <li><a href="#">For Universities</a></li>
+              <li><a href="#">For Industry</a></li>
+              <li><a href="#">For Funding Agencies</a></li>
+            </ul>
+          </nav>
+        </article>
+        <article class="footer-column">
+          <h3>Resources</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Research Guides</a></li>
+              <li><a href="#">Webinars</a></li>
+              <li><a href="#">Case Studies</a></li>
+            </ul>
+          </nav>
+        </article>
+        <article class="footer-column">
+          <h3>Company</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </nav>
+        </article>
+      </section>
+      <section class="footer-bottom">
+        <small>&copy; 2025 CollabNexus Research Hub. All rights reserved.</small>
+      </section>
+    </section>
+  </footer>
+  <script src="js/main.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/invitations.js"></script>
+</body>
+</html>
