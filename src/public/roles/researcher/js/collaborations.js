@@ -1,668 +1,776 @@
 
-/**
- * CollabNexus Research Hub - Collaborations Page
- * This file contains the functionality for the collaborations management page.
- */
+// Store for collaborators and filter state
+let allCollaborators = [];
+let filteredCollaborators = [];
+let currentFilter = 'all';
+let currentResearcher = null;
 
+// DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
-    initializeTabNavigation();
-    initializeCollaborationButtons();
-    initializeModals();
-    initializeUserMenu();
-    initializeMobileMenu();
-    initializeNotifications();
+  // Initialize the page
+  loadCollaborators();
+  
+  // Event Listeners
+  document.getElementById('search-button').addEventListener('click', searchCollaborators);
+  document.getElementById('collaborator-search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      searchCollaborators();
+    }
+  });
+  
+  document.getElementById('close-profile-modal').addEventListener('click', closeProfileModal);
+  document.getElementById('close-profile').addEventListener('click', closeProfileModal);
+  
+  document.getElementById('message-researcher').addEventListener('click', messageResearcher);
+  document.getElementById('invite-to-project').addEventListener('click', showInviteToProjectModal);
+  
+  document.getElementById('close-invite-project-modal').addEventListener('click', closeInviteProjectModal);
+  document.getElementById('cancel-project-invite').addEventListener('click', closeInviteProjectModal);
+  document.getElementById('send-project-invite').addEventListener('click', sendProjectInvitation);
+  
+  // Filter options
+  document.querySelectorAll('.filter-option').forEach(option => {
+    option.addEventListener('click', function() {
+      const filter = this.getAttribute('data-filter');
+      filterCollaborators(filter);
+      
+      // Update active filter UI
+      document.querySelectorAll('.filter-option').forEach(opt => {
+        opt.classList.remove('active');
+      });
+      this.classList.add('active');
+    });
+  });
 });
 
-/**
- * Initialize tab navigation
- */
-function initializeTabNavigation() {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    tabBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Update ARIA attributes
-            tabBtns.forEach(b => {
-                b.classList.remove('active');
-                b.setAttribute('aria-selected', 'false');
-            });
-            tabContents.forEach(c => c.classList.remove('active'));
-            
-            // Activate current tab
-            this.classList.add('active');
-            this.setAttribute('aria-selected', 'true');
-            const tabId = this.dataset.tab;
-            const tabContent = document.getElementById(tabId);
-            tabContent.classList.add('active');
-            
-            // Announce tab change for screen readers
-            announceForScreenReaders(`${this.textContent} tab selected`);
-        });
-    });
-}
-
-/**
- * Initialize collaboration action buttons
- */
-function initializeCollaborationButtons() {
-    // Accept collaboration requests
-    document.querySelectorAll('.collab-accept').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const collabId = this.dataset.collabId;
-            const collaborator = this.closest('.collaboration-item');
-            const collaboratorName = collaborator.querySelector('h4').textContent;
-            
-            // Animation for removal
-            collaborator.style.transition = 'opacity 0.3s, transform 0.3s';
-            collaborator.style.opacity = '0';
-            collaborator.style.transform = 'translateX(20px)';
-            
-            setTimeout(() => {
-                collaborator.remove();
-                
-                // Update request count
-                updateTabCount('requests', -1);
-                
-                // Update active collaborations count
-                updateTabCount('active', 1);
-                
-                // Show toast notification
-                showToast(`Collaboration with ${collaboratorName} accepted`, 'success');
-            }, 300);
-        });
-    });
-    
-    // Decline collaboration requests
-    document.querySelectorAll('.collab-decline').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const collabId = this.dataset.collabId;
-            const collaborator = this.closest('.collaboration-item');
-            const collaboratorName = collaborator.querySelector('h4').textContent;
-            
-            // Animation for removal
-            collaborator.style.transition = 'opacity 0.3s, transform 0.3s';
-            collaborator.style.opacity = '0';
-            collaborator.style.transform = 'translateX(20px)';
-            
-            setTimeout(() => {
-                collaborator.remove();
-                
-                // Update request count
-                updateTabCount('requests', -1);
-                
-                // Show toast notification
-                showToast(`Collaboration with ${collaboratorName} declined`, 'info');
-            }, 300);
-        });
-    });
-    
-    // Connect with suggested collaborators
-    document.querySelectorAll('.collab-connect').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const collabId = this.dataset.collabId;
-            const collaboratorCard = this.closest('.collaborator-card');
-            const collaboratorName = collaboratorCard.querySelector('h4').textContent;
-            
-            // Visual feedback
-            this.textContent = 'Request Sent';
-            this.classList.remove('btn-primary');
-            this.classList.add('btn-outline');
-            this.disabled = true;
-            
-            // Show toast notification
-            showToast(`Connection request sent to ${collaboratorName}`, 'success');
-        });
-    });
-    
-    // Message collaborators
-    document.querySelectorAll('.collab-message').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const collabId = this.dataset.collabId;
-            const collaboratorName = this.closest('.collaborator-card').querySelector('h4').textContent;
-            
-            // Open message modal
-            openMessageModal(collaboratorName, collabId);
-        });
-    });
-    
-    // View collaborator profiles
-    document.querySelectorAll('.collab-profile').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const collabId = this.dataset.collabId;
-            
-            let collaboratorName;
-            if (this.closest('.collaborator-card')) {
-                collaboratorName = this.closest('.collaborator-card').querySelector('h4').textContent;
-            } else if (this.closest('.collaboration-item')) {
-                collaboratorName = this.closest('.collaboration-item').querySelector('h4').textContent;
-            }
-            
-            // Open profile modal
-            openProfileModal(collaboratorName, collabId);
-        });
-    });
-    
-    // Find collaborators button
-    document.getElementById('findCollabBtn').addEventListener('click', function() {
-        // This would typically link to a search page or open a modal
-        showToast('Collaborator search feature opening...', 'info');
-        // For demo purposes, just activate the suggested tab
-        document.querySelector('[data-tab="suggested"]').click();
-    });
-    
-    // View all links
-    document.getElementById('viewAllActive').addEventListener('click', function(e) {
-        e.preventDefault();
-        showToast('Loading all active collaborations...', 'info');
-    });
-    
-    document.getElementById('viewAllSuggestions').addEventListener('click', function(e) {
-        e.preventDefault();
-        showToast('Loading all suggested collaborations...', 'info');
-    });
-}
-
-/**
- * Initialize modal functionality
- */
-function initializeModals() {
-    // Setup for all modals
-    const modals = document.querySelectorAll('.modal');
-    const closeButtons = document.querySelectorAll('.modal-close, .modal-close-btn');
-    
-    // Close modal when clicking close button
-    closeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            closeModal(modal);
-        });
-    });
-    
-    // Close modal when clicking outside content
-    modals.forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal(this);
-            }
-        });
-        
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                closeModal(modal);
-            }
-        });
-    });
-    
-    // Message modal send button
-    const sendMessageBtn = document.getElementById('sendMessageBtn');
-    if (sendMessageBtn) {
-        sendMessageBtn.addEventListener('click', function() {
-            const recipient = document.getElementById('messageRecipient').value;
-            const subject = document.getElementById('messageSubject').value;
-            const body = document.getElementById('messageBody').value;
-            
-            if (!subject || !body) {
-                showToast('Please fill out all message fields', 'error');
-                return;
-            }
-            
-            // Close modal
-            closeModal(document.getElementById('messageModal'));
-            
-            // Clear form
-            document.getElementById('messageForm').reset();
-            
-            // Show success message
-            showToast(`Message sent to ${recipient}`, 'success');
-        });
-    }
-    
-    // Profile modal connect button
-    const profileConnectBtn = document.getElementById('profileConnectBtn');
-    if (profileConnectBtn) {
-        profileConnectBtn.addEventListener('click', function() {
-            const researcherName = document.getElementById('profileModalTitle').textContent.replace('Profile: ', '');
-            
-            // Close modal
-            closeModal(document.getElementById('profileModal'));
-            
-            // Show success message
-            showToast(`Connection request sent to ${researcherName}`, 'success');
-        });
-    }
-}
-
-/**
- * Initialize user menu functionality
- */
-function initializeUserMenu() {
-    const profileBtn = document.getElementById('profileBtn');
-    const profileMenu = document.getElementById('profileMenu');
-    const notificationBtn = document.getElementById('notificationBtn');
-    const notificationModal = document.getElementById('notificationModal');
-    
-    // Toggle profile menu
-    if (profileBtn && profileMenu) {
-        profileBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            const isExpanded = profileBtn.getAttribute('aria-expanded') === 'true';
-            
-            // Toggle menu visibility
-            profileMenu.classList.toggle('active');
-            
-            // Update ARIA attributes
-            profileBtn.setAttribute('aria-expanded', !isExpanded);
-            
-            // Close notification modal if open
-            if (notificationModal && notificationModal.classList.contains('active')) {
-                closeModal(notificationModal);
-            }
-        });
-        
-        // Close menu when clicking elsewhere
-        document.addEventListener('click', function(e) {
-            if (profileMenu.classList.contains('active') && !profileMenu.contains(e.target)) {
-                profileMenu.classList.remove('active');
-                profileBtn.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-    
-    // Open notifications modal
-    if (notificationBtn && notificationModal) {
-        notificationBtn.addEventListener('click', function() {
-            // Close profile menu if open
-            if (profileMenu && profileMenu.classList.contains('active')) {
-                profileMenu.classList.remove('active');
-                profileBtn.setAttribute('aria-expanded', 'false');
-            }
-            
-            // Open notification modal
-            openModal(notificationModal);
-        });
-        
-        // Mark all notifications as read
-        const markAllReadBtn = document.getElementById('markAllReadBtn');
-        if (markAllReadBtn) {
-            markAllReadBtn.addEventListener('click', function() {
-                const unreadItems = document.querySelectorAll('.notification-item.unread');
-                unreadItems.forEach(item => {
-                    item.classList.remove('unread');
-                });
-                
-                // Update badge count
-                const badge = document.querySelector('.badge');
-                if (badge) {
-                    badge.textContent = '0';
-                    badge.style.display = 'none';
-                }
-                
-                showToast('All notifications marked as read', 'info');
-            });
-        }
-        
-        // Mark individual notifications as read
-        const notificationActions = document.querySelectorAll('.notification-action');
-        notificationActions.forEach(button => {
-            button.addEventListener('click', function() {
-                const notification = this.closest('.notification-item');
-                notification.classList.remove('unread');
-                
-                // Update badge count
-                const badge = document.querySelector('.badge');
-                if (badge) {
-                    const currentCount = parseInt(badge.textContent);
-                    const newCount = currentCount - 1;
-                    badge.textContent = newCount;
-                    
-                    if (newCount <= 0) {
-                        badge.style.display = 'none';
-                    }
-                }
-            });
-        });
-    }
-}
-
-/**
- * Initialize mobile menu functionality
- */
-function initializeMobileMenu() {
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const navLinks = document.getElementById('navLinks');
-    
-    if (mobileMenuToggle && navLinks) {
-        mobileMenuToggle.addEventListener('click', function() {
-            const isExpanded = mobileMenuToggle.getAttribute('aria-expanded') === 'true';
-            
-            // Toggle menu visibility
-            navLinks.classList.toggle('active');
-            
-            // Update ARIA attributes
-            mobileMenuToggle.setAttribute('aria-expanded', !isExpanded);
-            
-            // Toggle icon
-            const icon = mobileMenuToggle.querySelector('i');
-            if (icon) {
-                if (isExpanded) {
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                } else {
-                    icon.classList.remove('fa-bars');
-                    icon.classList.add('fa-times');
-                }
-            }
-        });
-    }
-}
-
-/**
- * Initialize notifications functionality
- */
-function initializeNotifications() {
-    // For demonstration purposes, we'll set up a notification that appears after 5 seconds
-    setTimeout(() => {
-        showToast('New collaboration request from Dr. Maria Silva', 'info');
-    }, 5000);
-}
-
-/**
- * Helper function to update tab counts
- */
-function updateTabCount(tabId, change) {
-    const tabButton = document.querySelector(`[data-tab="${tabId}"]`);
-    if (tabButton) {
-        const currentText = tabButton.textContent;
-        const countMatch = currentText.match(/\((\d+)\)/);
-        
-        if (countMatch) {
-            const currentCount = parseInt(countMatch[1]);
-            const newCount = currentCount + change;
-            
-            // Update button text
-            tabButton.textContent = currentText.replace(/\(\d+\)/, `(${newCount})`);
-        }
-    }
-}
-
-/**
- * Helper function to open a message modal
- */
-function openMessageModal(recipientName, collabId) {
-    const messageModal = document.getElementById('messageModal');
-    if (messageModal) {
-        // Set recipient
-        const recipientInput = document.getElementById('messageRecipient');
-        if (recipientInput) {
-            recipientInput.value = recipientName;
-        }
-        
-        // Store collaborator ID if needed
-        if (messageModal.dataset) {
-            messageModal.dataset.collabId = collabId;
-        }
-        
-        // Open modal
-        openModal(messageModal);
-        
-        // Focus on subject field
-        setTimeout(() => {
-            const subjectInput = document.getElementById('messageSubject');
-            if (subjectInput) {
-                subjectInput.focus();
-            }
-        }, 100);
-    }
-}
-
-/**
- * Helper function to open a profile modal
- */
-function openProfileModal(researcherName, collabId) {
-    const profileModal = document.getElementById('profileModal');
-    if (profileModal) {
-        // Set modal title
-        const modalTitle = document.getElementById('profileModalTitle');
-        if (modalTitle) {
-            modalTitle.textContent = `Profile: ${researcherName}`;
-        }
-        
-        // Store collaborator ID if needed
-        if (profileModal.dataset) {
-            profileModal.dataset.collabId = collabId;
-        }
-        
-        // Load researcher profile content (simulated)
-        const profileContent = document.getElementById('researcherProfileContent');
-        if (profileContent) {
-            profileContent.innerHTML = generateProfileContent(researcherName, collabId);
-        }
-        
-        // Open modal
-        openModal(profileModal);
-    }
-}
-
-/**
- * Generate profile content for the modal (simulated)
- */
-function generateProfileContent(name, id) {
-    // In a real application, this would load data from an API
-    return `
-        <div class="researcher-profile">
-            <div class="profile-header">
-                <img src="https://i.pravatar.cc/150?img=${parseInt(id) + 20}" alt="${name}" class="profile-avatar">
-                <div class="profile-info">
-                    <h4>${name}</h4>
-                    <p>Research Fellow</p>
-                    <p>Publications: 48 | Citations: 1,250</p>
-                </div>
-            </div>
-            <div class="profile-details">
-                <h5>Research Areas</h5>
-                <div class="research-tags">
-                    <span class="project-tag climate-tag">Climate Science</span>
-                    <span class="project-tag ai-tag">Machine Learning</span>
-                    <span class="project-tag sustainability-tag">Sustainability</span>
-                </div>
-                
-                <h5>Biography</h5>
-                <p>Leading researcher in the field of ${getResearchField(id)} with over 15 years of experience. 
-                   Published extensively in top journals including Nature and Science. 
-                   Currently focused on interdisciplinary approaches to solving global challenges.</p>
-                
-                <h5>Recent Publications</h5>
-                <ul class="publication-list">
-                    <li>"Novel Approaches to Climate Prediction Using Neural Networks" (2024)</li>
-                    <li>"Interdisciplinary Research Methods for Sustainable Development" (2023)</li>
-                    <li>"The Future of Collaborative Science in the Digital Age" (2022)</li>
-                </ul>
-                
-                <h5>Current Projects</h5>
-                <div class="project-cards">
-                    <div class="mini-project-card">
-                        <h6>Climate Prediction Model</h6>
-                        <p>Developing advanced models for accurate long-term climate forecasting</p>
-                    </div>
-                    <div class="mini-project-card">
-                        <h6>Sustainable Materials</h6>
-                        <p>Researching biodegradable alternatives to conventional plastics</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Helper function to get a research field based on ID (simulated)
- */
-function getResearchField(id) {
-    const fields = [
-        'Climate Science', 
-        'Quantum Computing', 
-        'Renewable Energy', 
-        'Artificial Intelligence', 
-        'Marine Biology',
-        'Sustainable Architecture',
-        'Materials Science',
-        'Genomics',
-        'Neural Networks',
-        'Energy Storage',
-        'Environmental Engineering'
+// Load collaborators
+async function loadCollaborators() {
+  try {
+    // In a real application, this would fetch from an API
+    // For demo, we'll use mock data
+    const mockCollaborators = [
+      {
+        id: "c1",
+        name: "Dr. Emily Chen",
+        title: "Assistant Professor of Bioinformatics",
+        institution: "Pacific University",
+        department: "Computational Biology",
+        email: "e.chen@pacific.edu",
+        phone: "+1 (555) 123-4567",
+        location: "San Francisco, CA",
+        bio: "Dr. Chen specializes in developing computational methods for analyzing high-throughput genomic data with applications in cancer research and personalized medicine.",
+        skills: ["RNA-seq", "Bioinformatics", "Python", "R", "Machine Learning", "Single-cell Analysis"],
+        publications: 28,
+        citations: 450,
+        projects: 8,
+        collaborations: 12,
+        isCollaborator: true,
+        isSameField: true,
+        isSameInstitution: false,
+        isRecommended: true,
+        education: [
+          {
+            degree: "Ph.D. in Bioinformatics",
+            institution: "Stanford University",
+            year: "2018"
+          },
+          {
+            degree: "M.S. in Computer Science",
+            institution: "University of California, Berkeley",
+            year: "2014"
+          },
+          {
+            degree: "B.S. in Biology",
+            institution: "MIT",
+            year: "2012"
+          }
+        ],
+        experience: [
+          {
+            title: "Assistant Professor",
+            organization: "Pacific University",
+            period: "2018 - Present"
+          },
+          {
+            title: "Postdoctoral Researcher",
+            organization: "Stanford Medicine",
+            period: "2016 - 2018"
+          }
+        ],
+        projects: [
+          "Genomic Analysis of Drug Resistance in Cancer",
+          "Machine Learning for Predicting Treatment Responses",
+          "Systems Biology of Tumor Microenvironments"
+        ]
+      },
+      {
+        id: "c2",
+        name: "Prof. Michael Rodriguez",
+        title: "Associate Professor of Marine Biology",
+        institution: "Coastal Science Institute",
+        department: "Marine Ecosystems",
+        email: "m.rodriguez@csi.edu",
+        phone: "+1 (555) 987-6543",
+        location: "Miami, FL",
+        bio: "Prof. Rodriguez studies the impacts of climate change on coral reef ecosystems and develops strategies for marine conservation and restoration.",
+        skills: ["Coral Reef Ecology", "Climate Science", "Field Research", "Ecological Modeling", "Conservation Biology"],
+        publications: 45,
+        citations: 780,
+        projects: 12,
+        collaborations: 20,
+        isCollaborator: true,
+        isSameField: false,
+        isSameInstitution: false,
+        isRecommended: true,
+        education: [
+          {
+            degree: "Ph.D. in Marine Biology",
+            institution: "University of Miami",
+            year: "2010"
+          },
+          {
+            degree: "M.S. in Ecology",
+            institution: "University of Florida",
+            year: "2006"
+          },
+          {
+            degree: "B.S. in Environmental Science",
+            institution: "University of California, San Diego",
+            year: "2004"
+          }
+        ],
+        experience: [
+          {
+            title: "Associate Professor",
+            organization: "Coastal Science Institute",
+            period: "2016 - Present"
+          },
+          {
+            title: "Assistant Professor",
+            organization: "University of Florida",
+            period: "2010 - 2016"
+          },
+          {
+            title: "Research Scientist",
+            organization: "NOAA",
+            period: "2008 - 2010"
+          }
+        ],
+        projects: [
+          "Climate Change Effects on Coral Reef Biodiversity",
+          "Restoration Ecology in Marine Ecosystems",
+          "Sustainable Management of Coastal Resources"
+        ]
+      },
+      {
+        id: "c3",
+        name: "Dr. Sarah Kim",
+        title: "Research Scientist",
+        institution: "Medical Research Foundation",
+        department: "AI in Healthcare",
+        email: "s.kim@mrf.org",
+        phone: "+1 (555) 345-6789",
+        location: "Boston, MA",
+        bio: "Dr. Kim develops deep learning algorithms for medical image analysis, focusing on early detection of diseases and improving diagnostic accuracy.",
+        skills: ["Deep Learning", "Medical Imaging", "Neural Networks", "TensorFlow", "PyTorch", "Computer Vision"],
+        publications: 32,
+        citations: 530,
+        projects: 7,
+        collaborations: 15,
+        isCollaborator: false,
+        isSameField: true,
+        isSameInstitution: true,
+        isRecommended: true,
+        education: [
+          {
+            degree: "Ph.D. in Computer Science",
+            institution: "Massachusetts Institute of Technology",
+            year: "2017"
+          },
+          {
+            degree: "M.S. in Biomedical Engineering",
+            institution: "Johns Hopkins University",
+            year: "2013"
+          },
+          {
+            degree: "B.S. in Electrical Engineering",
+            institution: "Carnegie Mellon University",
+            year: "2011"
+          }
+        ],
+        experience: [
+          {
+            title: "Research Scientist",
+            organization: "Medical Research Foundation",
+            period: "2019 - Present"
+          },
+          {
+            title: "AI Researcher",
+            organization: "HealthTech Solutions",
+            period: "2017 - 2019"
+          },
+          {
+            title: "Data Science Intern",
+            organization: "Google Health",
+            period: "2016 - 2017"
+          }
+        ],
+        projects: [
+          "Deep Learning for Early Cancer Detection",
+          "Automated Diagnosis of Neurological Disorders",
+          "AI-assisted Radiology Workflow Optimization"
+        ]
+      },
+      {
+        id: "c4",
+        name: "Dr. James Wilson",
+        title: "Professor of Computer Science",
+        institution: "Tech University",
+        department: "Artificial Intelligence",
+        email: "j.wilson@techu.edu",
+        phone: "+1 (555) 234-5678",
+        location: "Seattle, WA",
+        bio: "Dr. Wilson researches advanced machine learning techniques with applications in natural language processing and multimodal learning systems.",
+        skills: ["Machine Learning", "Natural Language Processing", "Deep Learning", "Reinforcement Learning", "Computer Vision"],
+        publications: 78,
+        citations: 1350,
+        projects: 15,
+        collaborations: 30,
+        isCollaborator: false,
+        isSameField: false,
+        isSameInstitution: false,
+        isRecommended: true,
+        education: [
+          {
+            degree: "Ph.D. in Computer Science",
+            institution: "Carnegie Mellon University",
+            year: "2005"
+          },
+          {
+            degree: "M.S. in Artificial Intelligence",
+            institution: "Stanford University",
+            year: "2001"
+          },
+          {
+            degree: "B.S. in Computer Science",
+            institution: "University of Washington",
+            year: "1999"
+          }
+        ],
+        experience: [
+          {
+            title: "Professor",
+            organization: "Tech University",
+            period: "2015 - Present"
+          },
+          {
+            title: "Associate Professor",
+            organization: "University of Washington",
+            period: "2010 - 2015"
+          },
+          {
+            title: "Senior Research Scientist",
+            organization: "Microsoft Research",
+            period: "2005 - 2010"
+          }
+        ],
+        projects: [
+          "Neural Architectures for Multimodal Understanding",
+          "Ethical AI and Algorithmic Fairness",
+          "Large Language Models for Scientific Discovery"
+        ]
+      },
+      {
+        id: "c5",
+        name: "Dr. Lisa Martinez",
+        title: "Associate Professor of Genetics",
+        institution: "State University Medical Center",
+        department: "Human Genetics",
+        email: "l.martinez@sumc.edu",
+        phone: "+1 (555) 876-5432",
+        location: "Chicago, IL",
+        bio: "Dr. Martinez studies genetic factors contributing to complex diseases, utilizing advanced genomic technologies and computational approaches to identify therapeutic targets.",
+        skills: ["Genomics", "CRISPR", "Genetic Engineering", "Molecular Biology", "Next-generation Sequencing"],
+        publications: 42,
+        citations: 890,
+        projects: 9,
+        collaborations: 18,
+        isCollaborator: true,
+        isSameField: true,
+        isSameInstitution: false,
+        isRecommended: false,
+        education: [
+          {
+            degree: "Ph.D. in Genetics",
+            institution: "Harvard University",
+            year: "2011"
+          },
+          {
+            degree: "M.D.",
+            institution: "University of Chicago",
+            year: "2007"
+          },
+          {
+            degree: "B.S. in Biochemistry",
+            institution: "Yale University",
+            year: "2003"
+          }
+        ],
+        experience: [
+          {
+            title: "Associate Professor",
+            organization: "State University Medical Center",
+            period: "2017 - Present"
+          },
+          {
+            title: "Assistant Professor",
+            organization: "Northwestern University",
+            period: "2011 - 2017"
+          },
+          {
+            title: "Clinical Research Fellow",
+            organization: "Massachusetts General Hospital",
+            period: "2009 - 2011"
+          }
+        ],
+        projects: [
+          "Genetic Basis of Autoimmune Disorders",
+          "CRISPR Applications in Genetic Disease Treatment",
+          "Personalized Genomic Medicine"
+        ]
+      }
     ];
     
-    return fields[id % fields.length];
+    allCollaborators = mockCollaborators;
+    filteredCollaborators = [...allCollaborators];
+    renderCollaborators();
+  } catch (error) {
+    console.error('Error loading collaborators:', error);
+    showToast('error', 'Error', 'Failed to load collaborators. Please try again.');
+  }
 }
 
-/**
- * Helper function to open a modal
- */
-function openModal(modal) {
-    if (modal) {
-        // Show modal
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
+// Render collaborators
+function renderCollaborators() {
+  const container = document.getElementById('collaborators-grid');
+  container.innerHTML = '';
+  
+  if (filteredCollaborators.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-12">
+        <div class="text-6xl mb-4 text-gray-300">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-500">No Collaborators Found</h3>
+        <p class="text-gray-400 mt-2">Try changing your search criteria or filters</p>
+      </div>
+    `;
+    return;
+  }
+  
+  filteredCollaborators.forEach(collaborator => {
+    const collaboratorCard = document.createElement('div');
+    collaboratorCard.className = 'collaborator-card';
+    collaboratorCard.innerHTML = `
+      <div class="collaborator-header">
+        <div class="collaborator-avatar">
+          ${getInitials(collaborator.name)}
+        </div>
+        <h3 class="collaborator-name">${collaborator.name}</h3>
+        <p class="collaborator-title">${collaborator.title}</p>
+      </div>
+      
+      <div class="collaborator-body">
+        <div class="collaborator-info">
+          <div class="collaborator-info-label">Institution</div>
+          <div class="collaborator-info-value">${collaborator.institution}</div>
+        </div>
         
-        // Trap focus inside modal
-        trapFocus(modal);
+        <div class="collaborator-info">
+          <div class="collaborator-info-label">Department</div>
+          <div class="collaborator-info-value">${collaborator.department}</div>
+        </div>
         
-        // Prevent body scrolling
-        document.body.style.overflow = 'hidden';
+        <div class="collaborator-info">
+          <div class="collaborator-info-label">Research Focus</div>
+          <div class="collaborator-info-value">${truncateText(collaborator.bio, 100)}</div>
+        </div>
         
-        // Announce for screen readers
-        announceForScreenReaders(`${modal.getAttribute('aria-labelledby')} dialog opened`);
-    }
-}
-
-/**
- * Helper function to close a modal
- */
-function closeModal(modal) {
-    if (modal) {
-        // Hide modal
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-        
-        // Restore body scrolling
-        document.body.style.overflow = '';
-        
-        // Announce for screen readers
-        announceForScreenReaders('Dialog closed');
-    }
-}
-
-/**
- * Helper function to trap focus inside a modal
- */
-function trapFocus(element) {
-    const focusableElements = element.querySelectorAll('a[href], button:not([disabled]), textarea, input, select');
-    
-    if (focusableElements.length > 0) {
-        setTimeout(() => {
-            focusableElements[0].focus();
-        }, 100);
-    }
-}
-
-/**
- * Helper function for screen reader announcements
- */
-function announceForScreenReaders(message) {
-    let srAnnouncement = document.getElementById('sr-announcement');
-    
-    if (!srAnnouncement) {
-        srAnnouncement = document.createElement('div');
-        srAnnouncement.id = 'sr-announcement';
-        srAnnouncement.setAttribute('aria-live', 'polite');
-        srAnnouncement.classList.add('sr-only');
-        document.body.appendChild(srAnnouncement);
-    }
-    
-    srAnnouncement.textContent = message;
-}
-
-/**
- * Helper function to show toast notifications
- */
-function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toastContainer');
-    
-    if (!toastContainer) {
-        return;
-    }
-    
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.setAttribute('role', 'alert');
-    
-    // Add icon based on type
-    let icon;
-    switch (type) {
-        case 'success':
-            icon = '<i class="fas fa-check-circle"></i>';
-            break;
-        case 'error':
-            icon = '<i class="fas fa-exclamation-circle"></i>';
-            break;
-        case 'warning':
-            icon = '<i class="fas fa-exclamation-triangle"></i>';
-            break;
-        case 'info':
-        default:
-            icon = '<i class="fas fa-info-circle"></i>';
-            break;
-    }
-    
-    // Set content
-    toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">${message}</div>
-        <button class="toast-close" aria-label="Close notification">
-            <i class="fas fa-times"></i>
+        <div class="collaborator-info">
+          <div class="collaborator-info-label">Skills & Expertise</div>
+          <div class="collaborator-skills">
+            ${collaborator.skills.slice(0, 4).map(skill => 
+              `<div class="collaborator-skill">${skill}</div>`
+            ).join('')}
+            ${collaborator.skills.length > 4 ? `<div class="collaborator-skill">+${collaborator.skills.length - 4} more</div>` : ''}
+          </div>
+        </div>
+      </div>
+      
+      <div class="collaborator-footer">
+        <button class="collaborator-action collaborator-view" data-id="${collaborator.id}">
+          <i class="fas fa-user mr-2"></i> View Profile
         </button>
+        ${collaborator.isCollaborator ? `
+          <button class="collaborator-action collaborator-message" data-id="${collaborator.id}">
+            <i class="fas fa-envelope mr-2"></i> Message
+          </button>
+        ` : `
+          <button class="collaborator-action collaborator-invite" data-id="${collaborator.id}">
+            <i class="fas fa-user-plus mr-2"></i> Invite
+          </button>
+        `}
+      </div>
     `;
     
-    // Add to container
-    toastContainer.appendChild(toast);
+    container.appendChild(collaboratorCard);
     
-    // Add event listener to close button
-    const closeButton = toast.querySelector('.toast-close');
-    if (closeButton) {
-        closeButton.addEventListener('click', function() {
-            removeToast(toast);
-        });
+    // Add event listeners
+    collaboratorCard.querySelector('.collaborator-view').addEventListener('click', () => {
+      viewResearcherProfile(collaborator.id);
+    });
+    
+    if (collaborator.isCollaborator) {
+      collaboratorCard.querySelector('.collaborator-message').addEventListener('click', () => {
+        window.location.href = 'messaging.html';
+        // Alternatively, show a message modal
+        // messageResearcher(collaborator.id);
+      });
+    } else {
+      collaboratorCard.querySelector('.collaborator-invite').addEventListener('click', () => {
+        inviteResearcher(collaborator.id);
+      });
     }
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        removeToast(toast);
-    }, 5000);
-    
-    // Slide in animation
-    setTimeout(() => {
-        toast.classList.add('show');
-    }, 10);
+  });
 }
 
-/**
- * Helper function to remove toast notifications
- */
-function removeToast(toast) {
-    // Add removing class for animation
-    toast.classList.add('removing');
-    
-    // Remove element after animation
+// Search collaborators
+function searchCollaborators() {
+  const searchQuery = document.getElementById('collaborator-search').value.trim().toLowerCase();
+  
+  if (!searchQuery) {
+    filteredCollaborators = filterByCategory(allCollaborators, currentFilter);
+    renderCollaborators();
+    return;
+  }
+  
+  // Filter collaborators based on search query and current filter
+  const searchResults = allCollaborators.filter(collaborator => {
+    return (
+      collaborator.name.toLowerCase().includes(searchQuery) ||
+      collaborator.title.toLowerCase().includes(searchQuery) ||
+      collaborator.institution.toLowerCase().includes(searchQuery) ||
+      collaborator.department.toLowerCase().includes(searchQuery) ||
+      collaborator.bio.toLowerCase().includes(searchQuery) ||
+      collaborator.skills.some(skill => skill.toLowerCase().includes(searchQuery))
+    );
+  });
+  
+  filteredCollaborators = filterByCategory(searchResults, currentFilter);
+  renderCollaborators();
+}
+
+// Filter collaborators by category
+function filterCollaborators(filter) {
+  currentFilter = filter;
+  filteredCollaborators = filterByCategory(allCollaborators, filter);
+  renderCollaborators();
+}
+
+// Apply category filter
+function filterByCategory(collaborators, filter) {
+  switch (filter) {
+    case 'all':
+      return collaborators;
+    case 'collaborators':
+      return collaborators.filter(c => c.isCollaborator);
+    case 'recommended':
+      return collaborators.filter(c => c.isRecommended);
+    case 'same-field':
+      return collaborators.filter(c => c.isSameField);
+    case 'same-institution':
+      return collaborators.filter(c => c.isSameInstitution);
+    default:
+      return collaborators;
+  }
+}
+
+// View researcher profile
+function viewResearcherProfile(researcherId) {
+  const researcher = allCollaborators.find(c => c.id === researcherId);
+  if (!researcher) return;
+  
+  currentResearcher = researcher;
+  
+  const profileContent = document.getElementById('profile-content');
+  profileContent.innerHTML = `
+    <div class="collaborator-profile">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          ${getInitials(researcher.name)}
+        </div>
+        <h2 class="profile-name">${researcher.name}</h2>
+        <p class="profile-title">${researcher.title}</p>
+        <p class="text-center">
+          <i class="fas fa-map-marker-alt mr-1"></i> ${researcher.location}
+        </p>
+        
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="profile-stat-value">${researcher.publications}</div>
+            <div class="profile-stat-label">Publications</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-value">${researcher.citations}</div>
+            <div class="profile-stat-label">Citations</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-value">${researcher.projects}</div>
+            <div class="profile-stat-label">Projects</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-value">${researcher.collaborations}</div>
+            <div class="profile-stat-label">Collaborations</div>
+          </div>
+        </div>
+        
+        <div class="profile-actions">
+          <button class="profile-action">
+            <i class="fas fa-envelope"></i> Contact
+          </button>
+          <button class="profile-action">
+            <i class="fas fa-user-plus"></i> Connect
+          </button>
+          <button class="profile-action">
+            <i class="fas fa-share-alt"></i> Share
+          </button>
+        </div>
+      </div>
+      
+      <div class="profile-content">
+        <div class="profile-section">
+          <h3 class="profile-section-title">Biography</h3>
+          <p>${researcher.bio}</p>
+        </div>
+        
+        <div class="profile-section">
+          <h3 class="profile-section-title">Contact Information</h3>
+          <p><i class="fas fa-envelope mr-2"></i> ${researcher.email}</p>
+          <p><i class="fas fa-phone mr-2"></i> ${researcher.phone}</p>
+        </div>
+        
+        <div class="profile-section">
+          <h3 class="profile-section-title">Skills & Expertise</h3>
+          <div class="expertise-tags">
+            ${researcher.skills.map(skill => 
+              `<div class="expertise-tag">${skill}</div>`
+            ).join('')}
+          </div>
+        </div>
+        
+        <div class="profile-section">
+          <h3 class="profile-section-title">Education</h3>
+          ${researcher.education.map(edu => `
+            <div class="education-item">
+              <div class="education-degree">${edu.degree}</div>
+              <div class="education-institution">${edu.institution}</div>
+              <div class="education-date">${edu.year}</div>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="profile-section">
+          <h3 class="profile-section-title">Experience</h3>
+          ${researcher.experience.map(exp => `
+            <div class="experience-item">
+              <div class="experience-title">${exp.title}</div>
+              <div class="experience-company">${exp.organization}</div>
+              <div class="experience-date">${exp.period}</div>
+            </div>
+          `).join('')}
+        </div>
+        
+        <div class="profile-section">
+          <h3 class="profile-section-title">Current Projects</h3>
+          <ul class="list-disc list-inside">
+            ${researcher.projects.map(project => 
+              `<li class="mb-2">${project}</li>`
+            ).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('profile-modal').classList.add('active');
+}
+
+// Message researcher
+function messageResearcher() {
+  if (!currentResearcher) return;
+  
+  // Redirect to messaging page
+  window.location.href = '/messaging';
+  
+  // Alternatively, show a message modal or toast
+  // showToast('info', 'Messaging', `Opening conversation with ${currentResearcher.name}`);
+}
+
+// Show invite to project modal
+function showInviteToProjectModal() {
+  if (!currentResearcher) return;
+  
+  // Close the profile modal
+  closeProfileModal();
+  
+  // Display researcher info in the invite modal
+  const researcherInfo = document.getElementById('invite-researcher-info');
+  researcherInfo.innerHTML = `
+    <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+      <div class="w-12 h-12 rounded-full bg-research-primary flex items-center justify-center text-white font-semibold mr-4">
+        ${getInitials(currentResearcher.name)}
+      </div>
+      <div>
+        <h3 class="font-semibold">${currentResearcher.name}</h3>
+        <p class="text-sm text-gray-600">${currentResearcher.title}</p>
+      </div>
+    </div>
+  `;
+  
+  // Populate project select dropdown
+  populateProjectSelect();
+  
+  // Reset invitation message
+  document.getElementById('project-invite-message').value = '';
+  
+  // Show the invite project modal
+  document.getElementById('invite-project-modal').classList.add('active');
+}
+
+// Populate project select dropdown
+function populateProjectSelect() {
+  const selectElement = document.getElementById('invite-project-select');
+  selectElement.innerHTML = '';
+  
+  // In a real application, this would fetch from an API
+  // For demo, we'll use mock data
+  const mockProjects = [
+    { id: "p1", title: "Gene Expression Analysis in Cancer Cells" },
+    { id: "p2", title: "Climate Change Impact on Marine Ecosystems" },
+    { id: "p3", title: "Neural Networks for Medical Diagnosis" }
+  ];
+  
+  mockProjects.forEach(project => {
+    const option = document.createElement('option');
+    option.value = project.id;
+    option.textContent = project.title;
+    selectElement.appendChild(option);
+  });
+}
+
+// Send project invitation
+function sendProjectInvitation() {
+  if (!currentResearcher) return;
+  
+  const projectId = document.getElementById('invite-project-select').value;
+  const projectName = document.getElementById('invite-project-select').options[document.getElementById('invite-project-select').selectedIndex].text;
+  const message = document.getElementById('project-invite-message').value;
+  
+  if (!message.trim()) {
+    showToast('warning', 'Message Required', 'Please write an invitation message.');
+    return;
+  }
+  
+  // In a real application, this would send invitation via an API
+  // For demo, we'll just show a toast
+  showToast('success', 'Invitation Sent', `Invitation sent to ${currentResearcher.name} for project "${projectName}"`);
+  
+  closeInviteProjectModal();
+}
+
+// Invite researcher (direct action from collaborator card)
+function inviteResearcher(researcherId) {
+  const researcher = allCollaborators.find(c => c.id === researcherId);
+  if (!researcher) return;
+  
+  currentResearcher = researcher;
+  showInviteToProjectModal();
+}
+
+// Helper functions
+function getInitials(name) {
+  return name
+    .split(' ')
+    .map(part => part.charAt(0))
+    .join('');
+}
+
+function truncateText(text, maxLength) {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
+// Modal control functions
+function closeProfileModal() {
+  document.getElementById('profile-modal').classList.remove('active');
+}
+
+function closeInviteProjectModal() {
+  document.getElementById('invite-project-modal').classList.remove('active');
+}
+
+// Toast notification function
+function showToast(type, title, message) {
+  const toastContainer = document.querySelector('.toast-container');
+  
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="toast-icon">
+      <i class="fas ${getToastIcon(type)}"></i>
+    </div>
+    <div class="toast-content">
+      <h3 class="toast-title">${title}</h3>
+      <p class="toast-message">${message}</p>
+    </div>
+    <button class="toast-close">&times;</button>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Activate toast with a slight delay for animation
+  setTimeout(() => {
+    toast.classList.add('active');
+  }, 10);
+  
+  // Set up event listener for close button
+  toast.querySelector('.toast-close').addEventListener('click', () => {
+    toast.classList.remove('active');
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
+      toast.remove();
+    }, 300); // Wait for animation to complete
+  });
+  
+  // Auto-remove toast after 5 seconds
+  setTimeout(() => {
+    if (toast.parentNode) { // Check if toast is still in the DOM
+      toast.classList.remove('active');
+      setTimeout(() => {
+        if (toast.parentNode) { // Check again before removing
+          toast.remove();
         }
-    }, 300);
+      }, 300);
+    }
+  }, 5000);
+}
+
+// Get icon class for toast type
+function getToastIcon(type) {
+  switch (type) {
+    case 'success': return 'fa-check-circle';
+    case 'error': return 'fa-times-circle';
+    case 'warning': return 'fa-exclamation-triangle';
+    case 'info': return 'fa-info-circle';
+    default: return 'fa-info-circle';
+  }
 }

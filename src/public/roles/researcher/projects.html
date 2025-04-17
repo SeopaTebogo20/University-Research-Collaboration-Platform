@@ -1,1389 +1,315 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Research Projects - CollabNexus</title>
-  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/researcher.css">
+  <link rel="stylesheet" href="css/projects.css">
+  <link rel="stylesheet" href="css/researcher-platform.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --research-primary: #4F46E5;
-      --research-secondary: #818CF8;
-      --research-accent: #6D28D9;
-      --research-neutral: #F1F5F9;
-      --research-dark: #1E293B;
-      --progress-green: #10B981;
-      --progress-yellow: #F59E0B;
-      --progress-blue: #3B82F6;
-      --progress-purple: #8B5CF6;
-      --progress-red: #EF4444;
-    }
-    
-    body {
-      background-color: #F8FAFC;
-      color: var(--research-dark);
-      font-family: 'Inter', sans-serif;
-      line-height: 1.6;
-    }
-    
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
-    
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-    
-    .page-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--research-dark);
-    }
-    
-    .page-actions {
-      display: flex;
-      gap: 1rem;
-    }
-    
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      border: none;
-    }
-    
-    .btn-primary {
-      background-color: var(--research-primary);
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background-color: var(--research-accent);
-    }
-    
-    .btn-outline {
-      background-color: transparent;
-      border: 1px solid var(--research-primary);
-      color: var(--research-primary);
-    }
-    
-    .btn-outline:hover {
-      background-color: var(--research-neutral);
-    }
-    
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid #E2E8F0;
-      margin-bottom: 2rem;
-    }
-    
-    .tab {
-      padding: 0.75rem 1.5rem;
-      font-weight: 500;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.3s ease;
-    }
-    
-    .tab.active {
-      border-color: var(--research-primary);
-      color: var(--research-primary);
-    }
-    
-    .tab:hover:not(.active) {
-      border-color: #CBD5E1;
-    }
-    
-    .filters {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-    }
-    
-    .filter {
-      position: relative;
-    }
-    
-    .filter-select {
-      appearance: none;
-      padding: 0.75rem 2.5rem 0.75rem 1rem;
-      border: 1px solid #E2E8F0;
-      border-radius: 0.5rem;
-      background-color: white;
-      font-size: 0.875rem;
-      cursor: pointer;
-    }
-    
-    .filter::after {
-      content: "\f107";
-      font-family: "Font Awesome 5 Free";
-      font-weight: 900;
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-    }
-    
-    .search-bar {
-      flex-grow: 1;
-      position: relative;
-    }
-    
-    .search-input {
-      width: 100%;
-      padding: 0.75rem 1rem 0.75rem 2.5rem;
-      border: 1px solid #E2E8F0;
-      border-radius: 0.5rem;
-      background-color: white;
-      font-size: 0.875rem;
-    }
-    
-    .search-bar::before {
-      content: "\f002";
-      font-family: "Font Awesome 5 Free";
-      font-weight: 900;
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #94A3B8;
-    }
-    
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 2rem;
-    }
-    
-    .project-card {
-      background-color: white;
-      border-radius: 1rem;
-      overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    .project-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-    
-    .project-header {
-      position: relative;
-      height: 160px;
-      background-color: #E2E8F0;
-      overflow: hidden;
-    }
-    
-    .project-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .project-status {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      padding: 0.25rem 0.75rem;
-      border-radius: 1rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    
-    .status-active {
-      background-color: rgba(16, 185, 129, 0.2);
-      color: #10B981;
-    }
-    
-    .status-pending {
-      background-color: rgba(245, 158, 11, 0.2);
-      color: #F59E0B;
-    }
-    
-    .status-completed {
-      background-color: rgba(59, 130, 246, 0.2);
-      color: #3B82F6;
-    }
-    
-    .project-content {
-      padding: 1.5rem;
-    }
-    
-    .project-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--research-dark);
-    }
-    
-    .project-desc {
-      color: #64748B;
-      font-size: 0.875rem;
-      margin-bottom: 1rem;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    
-    .project-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 1rem;
-      border-top: 1px solid #E2E8F0;
-    }
-    
-    .project-date {
-      font-size: 0.75rem;
-      color: #94A3B8;
-    }
-    
-    .project-members {
-      display: flex;
-    }
-    
-    .member-avatar {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      border: 2px solid white;
-      margin-left: -0.75rem;
-      background-color: #CBD5E1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: white;
-    }
-    
-    .member-avatar:first-child {
-      margin-left: 0;
-    }
-    
-    .progress-bar {
-      width: 100%;
-      height: 0.5rem;
-      background-color: #E2E8F0;
-      border-radius: 1rem;
-      margin: 1rem 0;
-      overflow: hidden;
-    }
-    
-    .progress-value {
-      height: 100%;
-      border-radius: 1rem;
-    }
-    
-    /* Modal Styles */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    
-    .modal {
-      width: 90%;
-      max-width: 700px;
-      background-color: white;
-      border-radius: 1rem;
-      overflow: hidden;
-      transform: translateY(-20px);
-      transition: all 0.3s ease;
-    }
-    
-    .modal-overlay.active .modal {
-      transform: translateY(0);
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem;
-      border-bottom: 1px solid #E2E8F0;
-    }
-    
-    .modal-title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--research-dark);
-    }
-    
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #94A3B8;
-      transition: color 0.3s ease;
-    }
-    
-    .modal-close:hover {
-      color: var(--research-dark);
-    }
-    
-    .modal-body {
-      padding: 1.5rem;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    
-    .form-label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: var(--research-dark);
-    }
-    
-    .form-input,
-    .form-textarea,
-    .form-select {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #E2E8F0;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-    }
-    
-    .form-textarea {
-      min-height: 6rem;
-      resize: vertical;
-    }
-    
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      padding: 1.5rem;
-      border-top: 1px solid #E2E8F0;
-    }
-    
-    .project-details {
-      padding: 2rem;
-      display: none;
-    }
-    
-    .project-details.active {
-      display: block;
-    }
-    
-    .detail-header {
-      margin-bottom: 2rem;
-    }
-    
-    .detail-title {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-    
-    .detail-meta {
-      display: flex;
-      gap: 2rem;
-      color: #64748B;
-    }
-    
-    .detail-meta-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    
-    .detail-section {
-      margin-bottom: 2rem;
-    }
-    
-    .detail-section-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #E2E8F0;
-    }
-    
-    .team-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1rem;
-    }
-    
-    .team-member {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    
-    .team-avatar {
-      width: 4rem;
-      height: 4rem;
-      border-radius: 50%;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: white;
-    }
-    
-    .team-name {
-      font-weight: 500;
-      margin-bottom: 0.25rem;
-    }
-    
-    .team-role {
-      font-size: 0.875rem;
-      color: #64748B;
-    }
-    
-    .milestones {
-      margin-top: 1rem;
-    }
-    
-    .milestone {
-      position: relative;
-      padding-left: 2rem;
-      padding-bottom: 2rem;
-    }
-    
-    .milestone:before {
-      content: "";
-      position: absolute;
-      left: 0.5rem;
-      top: 0;
-      width: 1px;
-      height: 100%;
-      background-color: #E2E8F0;
-    }
-    
-    .milestone:last-child:before {
-      height: 1rem;
-    }
-    
-    .milestone-indicator {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 1rem;
-      height: 1rem;
-      border-radius: 50%;
-      background-color: #CBD5E1;
-    }
-    
-    .milestone.completed .milestone-indicator {
-      background-color: var(--progress-green);
-    }
-    
-    .milestone-content {
-      margin-bottom: 0.5rem;
-    }
-    
-    .milestone-date {
-      font-size: 0.875rem;
-      color: #64748B;
-    }
-    
-    .back-btn {
-      margin-bottom: 1rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #64748B;
-      cursor: pointer;
-      transition: color 0.3s ease;
-    }
-    
-    .back-btn:hover {
-      color: var(--research-dark);
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .filters {
-        flex-direction: column;
-      }
-      
-      .search-bar {
-        order: -1;
-        margin-bottom: 1rem;
-      }
-      
-      .projects-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .detail-meta {
-        flex-direction: column;
-        gap: 1rem;
-      }
-      
-      .team-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      }
-    }
-  </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-          <h1 class="logo"><i class="fas fa-book-open book-logo"></i> CollabNexus</h1>
-          <ul class="nav-links">
-            <li><a href="dashboard.html"><i class="fas fa-flask"></i> Dashboard</a></li>
-            <li><a href="collaborations.html"><i class="fas fa-users"></i> Collaborations</a></li>
-            <li><a href="resources.html"><i class="fas fa-bookmark"></i> Resources</a></li>
-            <li><a href="funding.html"><i class="fas fa-user-circle"></i> Funding</a></li>
-          </ul>
-          <button id="mobile-menu-button" class="mobile-menu">
-            <i class="fas fa-bars"></i>
-          </button>
-        </nav>
-
-        <!-- Mobile Navigation -->
-        <nav id="mobile-nav" class="mobile-nav">
-            <header class="mobile-nav-header">
-              <h1 class="logo">
-                <i class="fas fa-book-open book-logo"></i>
+  <header>
+    <nav class="navbar">
+      <section class="max-w-7xl mx-auto px-4">
+        <section class="flex justify-between h-20">
+          <section class="flex items-center">
+            <a href="dashboard.html" class="flex-shrink-0 flex items-center">
+              <i class="fas fa-book-open book-logo"></i>
+              <strong class="font-playfair text-xl font-bold text-research-dark">
                 CollabNexus
-              </h1>
-              <button id="mobile-nav-close" class="mobile-nav-close">
-                <i class="fas fa-times"></i>
-              </button>
-            </header>
-            <ul class="mobile-nav-links">
-                <li><a href="dashboard.html"><i class="fas fa-flask"></i> Dashboard</a></li>
-                <li><a href="collaborations.html"><i class="fas fa-users"></i> Collaborations</a></li>
-                <li><a href="resources.html"><i class="fas fa-bookmark"></i> Resources</a></li>
-                <li><a href="funding.html"><i class="fas fa-user-circle"></i> Funding</a></li>
-              </ul>
-        </nav>
-      </header>
-
-  <main class="container">
-    <section class="page-header">
-      <h1 class="page-title">Research Projects</h1>
-      <div class="page-actions">
-        <button class="btn btn-outline" id="import-btn">
-          <i class="fas fa-file-import"></i> Import
-        </button>
-        <button class="btn btn-primary" id="create-project-btn">
-          <i class="fas fa-plus"></i> New Project
-        </button>
-      </div>
-    </section>
-    
-    <section class="tabs" id="project-tabs">
-      <button class="tab active" data-tab="all">All Projects</button>
-      <button class="tab" data-tab="active">Active</button>
-      <button class="tab" data-tab="pending">Pending</button>
-      <button class="tab" data-tab="completed">Completed</button>
-    </section>
-    
-    <section class="filters">
-      <div class="filter">
-        <select class="filter-select" id="sort-select">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="az">A-Z</option>
-          <option value="za">Z-A</option>
-          <option value="progress">Progress</option>
-        </select>
-      </div>
-      <div class="filter">
-        <select class="filter-select" id="area-select">
-          <option value="all">All Research Areas</option>
-          <option value="biology">Biology</option>
-          <option value="chemistry">Chemistry</option>
-          <option value="physics">Physics</option>
-          <option value="medicine">Medicine</option>
-          <option value="climate">Climate Science</option>
-        </select>
-      </div>
-      <div class="search-bar">
-        <input type="text" class="search-input" id="search-input" placeholder="Search projects...">
-      </div>
-    </section>
-    
-    <section class="projects-list">
-      <div class="projects-grid" id="projects-grid">
-        <!-- Projects will be populated here by JavaScript -->
-      </div>
-    </section>
-    
-    <section class="project-details" id="project-details">
-      <button class="back-btn" id="back-to-projects">
-        <i class="fas fa-arrow-left"></i> Back to Projects
-      </button>
-      
-      <article class="detail-header">
-        <h1 class="detail-title" id="detail-title"></h1>
-        <div class="detail-meta" id="detail-meta">
-          <!-- Project metadata will be populated here -->
-        </div>
-      </article>
-      
-      <article class="detail-section">
-        <h2 class="detail-section-title">Project Overview</h2>
-        <p id="detail-description"></p>
-      </article>
-      
-      <article class="detail-section">
-        <h2 class="detail-section-title">Progress</h2>
-        <div class="progress-bar">
-          <div class="progress-value" id="detail-progress"></div>
-        </div>
-        <p id="detail-progress-text"></p>
-      </article>
-      
-      <article class="detail-section">
-        <h2 class="detail-section-title">Research Team</h2>
-        <div class="team-grid" id="team-grid">
-          <!-- Team members will be populated here -->
-        </div>
-      </article>
-      
-      <article class="detail-section">
-        <h2 class="detail-section-title">Milestones</h2>
-        <div class="milestones" id="milestones">
-          <!-- Milestones will be populated here -->
-        </div>
-      </article>
-    </section>
-  </main>
-  
-  <!-- New Project Modal -->
-  <section class="modal-overlay" id="new-project-modal">
-    <article class="modal">
-      <header class="modal-header">
-        <h2 class="modal-title">Create New Project</h2>
-        <button class="modal-close" id="close-modal">&times;</button>
-      </header>
-      <div class="modal-body">
-        <form id="new-project-form">
-          <div class="form-group">
-            <label for="project-title" class="form-label">Project Title</label>
-            <input type="text" id="project-title" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label for="project-area" class="form-label">Research Area</label>
-            <select id="project-area" class="form-select" required>
-              <option value="" selected disabled>Select Research Area</option>
-              <option value="biology">Biology</option>
-              <option value="chemistry">Chemistry</option>
-              <option value="physics">Physics</option>
-              <option value="medicine">Medicine</option>
-              <option value="climate">Climate Science</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="project-description" class="form-label">Project Description</label>
-            <textarea id="project-description" class="form-textarea" required></textarea>
-          </div>
-          <div class="form-group">
-            <label for="project-start" class="form-label">Start Date</label>
-            <input type="date" id="project-start" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label for="project-end" class="form-label">Expected End Date</label>
-            <input type="date" id="project-end" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label for="project-status" class="form-label">Status</label>
-            <select id="project-status" class="form-select" required>
-              <option value="pending">Pending</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <footer class="modal-footer">
-        <button class="btn btn-outline" id="cancel-project">Cancel</button>
-        <button class="btn btn-primary" id="save-project">Create Project</button>
-      </footer>
-    </article>
-  </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <section class="container">
-            <section class="footer-content">
-                <article class="footer-column">
-                    <header class="footer-logo">
-                          <i class="fas fa-book-open book-logo"></i>
-                          CollabNexus
-                    </header>
-                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
-                </article>
-                <article class="footer-column">
-                    <h3>Solutions</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">For Researchers</a></li>
-                        <li><a href="#">For Universities</a></li>
-                        <li><a href="#">For Industry</a></li>
-                        <li><a href="#">For Funding Agencies</a></li>
-                    </ul>
-                </article>
-                <article class="footer-column">
-                    <h3>Resources</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Research Guides</a></li>
-                        <li><a href="#">Webinars</a></li>
-                        <li><a href="#">Case Studies</a></li>
-                    </ul>
-                </article>
-                <article class="footer-column">
-                    <h3>Company</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </article>
-            </section>
-            <section class="footer-bottom">
-                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
-            </section>
+              </strong>
+            </a>
+            <menu class="hidden sm:ml-10 sm:flex sm:space-x-8">
+              <li><a href="/researcher" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Dashboard
+              </a></li>
+              <li><a href="/projects" class="border-research-primary text-research-primary hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Projects
+              </a></li>
+              <li><a href="/collaborations" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Collaborations
+              </a></li>
+              <li><a href="/invitations" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Invitations
+              </a></li>
+              <li><a href="/messaging" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Messages
+              </a></li>
+            </menu>
+          </section>
+          <section class="hidden md:flex items-center space-x-4">
+            <button id="logout-btn" class="text-research-accent border-research-accent hover:bg-research-light hover:text-research-accent px-4 py-2 rounded border">
+              Logout
+            </button>
+          </section>
+          <section class="flex items-center md:hidden">
+            <button id="mobile-menu-button" class="text-gray-500 hover:text-research-accent">
+              <i class="fas fa-bars"></i>
+            </button>
+          </section>
         </section>
-    </footer>
-  <script src="/public/js/main.js"></script>
-  <script src="/public/js/auth.js"></script>
-  <script>
-    // Sample project data
-    const projects = [
-      {
-        id: 1,
-        title: "Gene Expression Analysis in Cancer Cells",
-        description: "Investigating the effects of novel drug compounds on gene expression patterns in various cancer cell lines using RNA sequencing and bioinformatics analysis.",
-        status: "active",
-        progress: 65,
-        area: "biology",
-        startDate: "2025-01-15",
-        endDate: "2025-07-30",
-        image: "https://images.unsplash.com/photo-1530026186672-2cd00ffc50fe?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        members: [
-          { name: "Dr. Jane Davis", initials: "JD", color: "#4F46E5", role: "Lead Researcher" },
-          { name: "Dr. Alex Smith", initials: "AS", color: "#10B981", role: "Bioinformatics Specialist" },
-          { name: "Dr. Mark Kim", initials: "MK", color: "#F59E0B", role: "Cell Biologist" },
-          { name: "Dr. Lisa Wong", initials: "LW", color: "#EF4444", role: "Research Assistant" }
-        ],
-        milestones: [
-          { title: "Project Initiation", date: "Jan 15, 2025", completed: true },
-          { title: "Sample Collection", date: "Feb 28, 2025", completed: true },
-          { title: "RNA Sequencing", date: "Apr 10, 2025", completed: true },
-          { title: "Data Analysis", date: "May 30, 2025", completed: false },
-          { title: "Final Report", date: "Jul 30, 2025", completed: false }
-        ]
-      },
-      {
-        id: 2,
-        title: "Climate Change Impact on Marine Ecosystems",
-        description: "Analyzing the effects of rising ocean temperatures and acidity levels on coral reef biodiversity and ecosystem function through field studies and remote sensing.",
-        status: "active",
-        progress: 30,
-        area: "climate",
-        startDate: "2025-03-10",
-        endDate: "2025-12-15",
-        image: "https://i.pinimg.com/474x/83/ff/5f/83ff5faffea1975f15923ff1add2b72b.jpg",
-        members: [
-          { name: "Dr. Rachel Lee", initials: "RL", color: "#8B5CF6", role: "Lead Researcher" },
-          { name: "Dr. Kevin Martinez", initials: "KM", color: "#10B981", role: "Marine Biologist" },
-          { name: "Dr. Paul Thomas", initials: "PT", color: "#3B82F6", role: "Climate Scientist" }
-        ],
-        milestones: [
-          { title: "Project Planning", date: "Mar 10, 2025", completed: true },
-          { title: "Field Site Selection", date: "Apr 15, 2025", completed: true },
-          { title: "Initial Data Collection", date: "Jun 20, 2025", completed: false },
-          { title: "Midpoint Analysis", date: "Aug 30, 2025", completed: false },
-          { title: "Final Analysis", date: "Nov 15, 2025", completed: false },
-          { title: "Publication Submission", date: "Dec 15, 2025", completed: false }
-        ]
-      },
-      {
-        id: 3,
-        title: "Quantum Computing Algorithms for Drug Discovery",
-        description: "Developing novel quantum computing algorithms to accelerate the drug discovery process through improved molecular simulations and binding prediction models.",
-        status: "pending",
-        progress: 10,
-        area: "physics",
-        startDate: "2025-05-01",
-        endDate: "2026-04-30",
-        image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        members: [
-          { name: "Dr. Alan Yang", initials: "AY", color: "#3B82F6", role: "Quantum Physicist" },
-          { name: "Dr. Sophia Chen", initials: "SC", color: "#10B981", role: "Computational Chemist" },
-          { name: "Dr. Omar Hassan", initials: "OH", color: "#F59E0B", role: "Software Engineer" }
-        ],
-        milestones: [
-          { title: "Project Initiation", date: "May 01, 2025", completed: true },
-          { title: "Algorithm Design", date: "Jul 15, 2025", completed: false },
-          { title: "Initial Testing", date: "Oct 30, 2025", completed: false },
-          { title: "Optimization Phase", date: "Jan 15, 2026", completed: false },
-          { title: "Final Testing", date: "Mar 30, 2026", completed: false },
-          { title: "Documentation", date: "Apr 30, 2026", completed: false }
-        ]
-      },
-      {
-        id: 4,
-        title: "Antibiotic Resistance in Urban Environments",
-        description: "Investigating the prevalence and mechanisms of antibiotic resistance in bacterial populations within urban water systems and public spaces.",
-        status: "completed",
-        progress: 100,
-        area: "medicine",
-        startDate: "2024-08-15",
-        endDate: "2025-02-28",
-        image: "https://images.unsplash.com/photo-1587854692152-cbe660dbde88?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1169&q=80",
-        members: [
-          { name: "Dr. Emily Johnson", initials: "EJ", color: "#EF4444", role: "Microbiologist" },
-          { name: "Dr. Michael Brown", initials: "MB", color: "#8B5CF6", role: "Epidemiologist" },
-          { name: "Dr. Sarah Williams", initials: "SW", color: "#F59E0B", role: "Public Health Specialist" }
-        ],
-        milestones: [
-          { title: "Project Planning", date: "Aug 15, 2024", completed: true },
-          { title: "Sample Collection", date: "Sep 30, 2024", completed: true },
-          { title: "Laboratory Analysis", date: "Nov 15, 2024", completed: true },
-          { title: "Data Interpretation", date: "Jan 10, 2025", completed: true },
-          { title: "Publication", date: "Feb 28, 2025", completed: true }
-        ]
-      },
-      {
-        id: 5,
-        title: "Sustainable Materials for Solar Cell Technology",
-        description: "Researching and developing sustainable, non-toxic materials for next-generation solar cells with improved efficiency and reduced environmental impact.",
-        status: "active",
-        progress: 45,
-        area: "chemistry",
-        startDate: "2025-02-01",
-        endDate: "2025-11-30",
-        image: "https://images.unsplash.com/photo-1509391366360-2e959784a276?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1172&q=80",
-        members: [
-          { name: "Dr. Robert Zhang", initials: "RZ", color: "#10B981", role: "Materials Scientist" },
-          { name: "Dr. Priya Patel", initials: "PP", color: "#4F46E5", role: "Physical Chemist" },
-          { name: "Dr. James Wilson", initials: "JW", color: "#3B82F6", role: "Solar Engineer" }
-        ],
-        milestones: [
-          { title: "Material Selection", date: "Feb 01, 2025", completed: true },
-          { title: "Initial Synthesis", date: "Mar 15, 2025", completed: true },
-          { title: "Property Characterization", date: "May 30, 2025", completed: true },
-          { title: "Prototype Development", date: "Aug 15, 2025", completed: false },
-          { title: "Performance Testing", date: "Oct 30, 2025", completed: false },
-          { title: "Final Report", date: "Nov 30, 2025", completed: false }
-        ]
-      },
-      {
-        id: 6,
-        title: "Neuroplasticity in Aging Populations",
-        description: "Studying the mechanisms of neuroplasticity in aging populations and developing interventions to enhance cognitive function and prevent age-related cognitive decline.",
-        status: "pending",
-        progress: 5,
-        area: "biology",
-        startDate: "2025-06-15",
-        endDate: "2026-06-15",
-        image: "https://i.pinimg.com/474x/f0/4f/6b/f04f6b8fae853b515553ec51ba85ba67.jpg",
-        members: [
-          { name: "Dr. Nina Rodriguez", initials: "NR", color: "#8B5CF6", role: "Neuroscientist" },
-          { name: "Dr. David Kim", initials: "DK", color: "#EF4444", role: "Gerontologist" },
-          { name: "Dr. Linda Chen", initials: "LC", color: "#10B981", role: "Cognitive Psychologist" }
-        ],
-        milestones: [
-          { title: "Study Design", date: "Jun 15, 2025", completed: true },
-          { title: "Participant Recruitment", date: "Aug 30, 2025", completed: false },
-          { title: "Initial Assessments", date: "Oct 15, 2025", completed: false },
-          { title: "Intervention Phase", date: "Jan 15, 2026", completed: false },
-          { title: "Follow-up Assessments", date: "Apr 30, 2026", completed: false },
-          { title: "Data Analysis", date: "Jun 15, 2026", completed: false }
-        ]
-      }
-    ];
-    
-    // DOM Elements
-    const projectsGrid = document.getElementById('projects-grid');
-    const projectDetails = document.getElementById('project-details');
-    const projectTabs = document.getElementById('project-tabs');
-    const searchInput = document.getElementById('search-input');
-    const sortSelect = document.getElementById('sort-select');
-    const areaSelect = document.getElementById('area-select');
-    const backToProjects = document.getElementById('back-to-projects');
-    const newProjectModal = document.getElementById('new-project-modal');
-    const createProjectBtn = document.getElementById('create-project-btn');
-    const closeModalBtn = document.getElementById('close-modal');
-    const cancelProjectBtn = document.getElementById('cancel-project');
-    const saveProjectBtn = document.getElementById('save-project');
-    const newProjectForm = document.getElementById('new-project-form');
-    
-    // Current filter state
-    let currentFilter = {
-      tab: 'all',
-      search: '',
-      sort: 'newest',
-      area: 'all'
-    };
-    
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-      renderProjects();
-      
-      // Event listeners
-      projectTabs.addEventListener('click', handleTabClick);
-      searchInput.addEventListener('input', handleSearch);
-      sortSelect.addEventListener('change', handleSort);
-      areaSelect.addEventListener('change', handleAreaFilter);
-      backToProjects.addEventListener('click', showProjectsList);
-      createProjectBtn.addEventListener('click', openNewProjectModal);
-      closeModalBtn.addEventListener('click', closeNewProjectModal);
-      cancelProjectBtn.addEventListener('click', closeNewProjectModal);
-      saveProjectBtn.addEventListener('click', handleSaveProject);
-      
-      // Check auth status
-      checkAuthStatus();
-    });
-    
-    // Check if user is authenticated
-    async function checkAuthStatus() {
-      try {
-        const response = await fetch('/api/auth/status');
-        const data = await response.json();
-        
-        if (!data.authenticated) {
-          window.location.href = '/login';
-        }
-      } catch (error) {
-        console.error('Error checking auth status:', error);
-      }
-    }
-    
-    // Filter projects based on current filters
-    function filterProjects() {
-      let filteredProjects = [...projects];
-      
-      // Filter by tab
-      if (currentFilter.tab !== 'all') {
-        filteredProjects = filteredProjects.filter(project => project.status === currentFilter.tab);
-      }
-      
-      // Filter by area
-      if (currentFilter.area !== 'all') {
-        filteredProjects = filteredProjects.filter(project => project.area === currentFilter.area);
-      }
-      
-      // Filter by search
-      if (currentFilter.search) {
-        const searchTerm = currentFilter.search.toLowerCase();
-        filteredProjects = filteredProjects.filter(project => 
-          project.title.toLowerCase().includes(searchTerm) || 
-          project.description.toLowerCase().includes(searchTerm)
-        );
-      }
-      
-      // Sort projects
-      switch (currentFilter.sort) {
-        case 'newest':
-          filteredProjects.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
-          break;
-        case 'oldest':
-          filteredProjects.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-          break;
-        case 'az':
-          filteredProjects.sort((a, b) => a.title.localeCompare(b.title));
-          break;
-        case 'za':
-          filteredProjects.sort((a, b) => b.title.localeCompare(a.title));
-          break;
-        case 'progress':
-          filteredProjects.sort((a, b) => b.progress - a.progress);
-          break;
-      }
-      
-      return filteredProjects;
-    }
-    
-    // Render projects grid
-    function renderProjects() {
-      const filteredProjects = filterProjects();
-      
-      projectsGrid.innerHTML = '';
-      
-      if (filteredProjects.length === 0) {
-        projectsGrid.innerHTML = `
-          <div class="col-span-full text-center py-8">
-            <i class="fas fa-search text-gray-400 text-5xl mb-4"></i>
-            <h3 class="text-xl font-medium text-gray-600">No projects found</h3>
-            <p class="text-gray-500 mt-2">Try adjusting your filters or create a new project.</p>
-          </div>
-        `;
-        return;
-      }
-      
-      filteredProjects.forEach(project => {
-        const projectCard = document.createElement('article');
-        projectCard.className = 'project-card';
-        projectCard.dataset.id = project.id;
-        
-        // Create member avatars HTML
-        const memberAvatars = project.members.slice(0, 3).map(member => `
-          <div class="member-avatar" style="background-color: ${member.color};">
-            ${member.initials}
-          </div>
-        `).join('');
-        
-        // Add "more" avatar if there are additional members
-        const moreMembers = project.members.length > 3 ? `
-          <div class="member-avatar" style="background-color: #64748B;">
-            +${project.members.length - 3}
-          </div>
-        ` : '';
-        
-        projectCard.innerHTML = `
-          <header class="project-header">
-            <img src="${project.image}" alt="${project.title}" class="project-img">
-            <div class="project-status status-${project.status}">${project.status}</div>
-          </header>
-          <div class="project-content">
-            <h3 class="project-title">${project.title}</h3>
-            <p class="project-desc">${project.description}</p>
-            <div class="progress-bar">
-              <div class="progress-value" style="width: ${project.progress}%; background-color: ${getProgressColor(project.progress)};"></div>
-            </div>
-            <div class="project-meta">
-              <div class="project-date">
-                <i class="far fa-calendar-alt"></i> ${formatDate(project.startDate)}
-              </div>
-              <div class="project-members">
-                ${memberAvatars}
-                ${moreMembers}
-              </div>
-            </div>
-          </div>
-        `;
-        
-        projectCard.addEventListener('click', () => showProjectDetails(project.id));
-        
-        projectsGrid.appendChild(projectCard);
-      });
-    }
-    
-    // Show project details
-    function showProjectDetails(projectId) {
-      const project = projects.find(p => p.id === projectId);
-      
-      if (!project) return;
-      
-      document.getElementById('detail-title').textContent = project.title;
-      document.getElementById('detail-description').textContent = project.description;
-      
-      const detailMeta = document.getElementById('detail-meta');
-      detailMeta.innerHTML = `
-        <div class="detail-meta-item">
-          <i class="far fa-calendar-alt"></i>
-          <span>Start: ${formatDate(project.startDate)}</span>
-        </div>
-        <div class="detail-meta-item">
-          <i class="far fa-calendar-check"></i>
-          <span>End: ${formatDate(project.endDate)}</span>
-        </div>
-        <div class="detail-meta-item">
-          <i class="fas fa-flask"></i>
-          <span>Area: ${formatResearchArea(project.area)}</span>
-        </div>
-        <div class="detail-meta-item">
-          <i class="fas fa-tag"></i>
-          <span>Status: ${formatStatus(project.status)}</span>
-        </div>
-      `;
-      
-      const detailProgress = document.getElementById('detail-progress');
-      detailProgress.style.width = `${project.progress}%`;
-      detailProgress.style.backgroundColor = getProgressColor(project.progress);
-      
-      document.getElementById('detail-progress-text').textContent = 
-        `${project.progress}% complete`;
-      
-      // Render team members
-      const teamGrid = document.getElementById('team-grid');
-      teamGrid.innerHTML = '';
-      
-      project.members.forEach(member => {
-        const memberEl = document.createElement('div');
-        memberEl.className = 'team-member';
-        memberEl.innerHTML = `
-          <div class="team-avatar" style="background-color: ${member.color};">
-            ${member.initials}
-          </div>
-          <h3 class="team-name">${member.name}</h3>
-          <p class="team-role">${member.role}</p>
-        `;
-        teamGrid.appendChild(memberEl);
-      });
-      
-      // Render milestones
-      const milestones = document.getElementById('milestones');
-      milestones.innerHTML = '';
-      
-      project.milestones.forEach(milestone => {
-        const milestoneEl = document.createElement('div');
-        milestoneEl.className = `milestone ${milestone.completed ? 'completed' : ''}`;
-        milestoneEl.innerHTML = `
-          <div class="milestone-indicator"></div>
-          <h3 class="milestone-content">${milestone.title}</h3>
-          <p class="milestone-date">${milestone.date}</p>
-        `;
-        milestones.appendChild(milestoneEl);
-      });
-      
-      // Hide projects list, show details
-      document.querySelector('.projects-list').style.display = 'none';
-      document.querySelector('.tabs').style.display = 'none';
-      document.querySelector('.filters').style.display = 'none';
-      document.querySelector('.page-header').style.display = 'none';
-      projectDetails.classList.add('active');
-    }
-    
-    // Show projects list
-    function showProjectsList() {
-      document.querySelector('.projects-list').style.display = 'block';
-      document.querySelector('.tabs').style.display = 'flex';
-      document.querySelector('.filters').style.display = 'flex';
-      document.querySelector('.page-header').style.display = 'flex';
-      projectDetails.classList.remove('active');
-    }
-    
-    // Handle tab click
-    function handleTabClick(e) {
-      if (e.target.classList.contains('tab')) {
-        const tab = e.target;
-        const tabType = tab.dataset.tab;
-        
-        // Update active tab
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        
-        // Update filter and render
-        currentFilter.tab = tabType;
-        renderProjects();
-      }
-    }
-    
-    // Handle search
-    function handleSearch(e) {
-      currentFilter.search = e.target.value;
-      renderProjects();
-    }
-    
-    // Handle sort
-    function handleSort(e) {
-      currentFilter.sort = e.target.value;
-      renderProjects();
-    }
-    
-    // Handle area filter
-    function handleAreaFilter(e) {
-      currentFilter.area = e.target.value;
-      renderProjects();
-    }
-    
-    // Open new project modal
-    function openNewProjectModal() {
-      newProjectModal.classList.add('active');
-      
-      // Set default start date to today
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('project-start').value = today;
-      
-      // Set default end date to 6 months from now
-      const sixMonthsLater = new Date();
-      sixMonthsLater.setMonth(sixMonthsLater.getMonth() + 6);
-      document.getElementById('project-end').value = sixMonthsLater.toISOString().split('T')[0];
-    }
-    
-    // Close new project modal
-    function closeNewProjectModal() {
-      newProjectModal.classList.remove('active');
-      newProjectForm.reset();
-    }
-    
-    // Handle save new project
-    function handleSaveProject(e) {
-      e.preventDefault();
-      
-      // Basic form validation
-      const title = document.getElementById('project-title').value;
-      const area = document.getElementById('project-area').value;
-      const description = document.getElementById('project-description').value;
-      const startDate = document.getElementById('project-start').value;
-      const endDate = document.getElementById('project-end').value;
-      const status = document.getElementById('project-status').value;
-      
-      if (!title || !area || !description || !startDate || !endDate || !status) {
-        alert('Please fill in all required fields.');
-        return;
-      }
-      
-      // Create new project
-      const newProject = {
-        id: projects.length + 1,
-        title,
-        description,
-        area,
-        startDate,
-        endDate,
-        status,
-        progress: status === 'completed' ? 100 : status === 'active' ? 10 : 0,
-        image: getRandomProjectImage(),
-        members: [
-          { name: "You", initials: "YO", color: "#4F46E5", role: "Lead Researcher" }
-        ],
-        milestones: [
-          { title: "Project Initiation", date: formatDate(startDate), completed: true },
-          { title: "Project Completion", date: formatDate(endDate), completed: false }
-        ]
-      };
-      
-      // Add to projects array
-      projects.unshift(newProject);
-      
-      // Close modal and render projects
-      closeNewProjectModal();
-      renderProjects();
-    }
-    
-    // Helper function: Format date
-    function formatDate(dateString) {
-      const date = new Date(dateString);
-      const options = { year: 'numeric', month: 'short', day: 'numeric' };
-      return date.toLocaleDateString('en-US', options);
-    }
-    
-    // Helper function: Get progress color
-    function getProgressColor(progress) {
-      if (progress < 25) return 'var(--progress-red)';
-      if (progress < 50) return 'var(--progress-yellow)';
-      if (progress < 75) return 'var(--progress-blue)';
-      return 'var(--progress-green)';
-    }
-    
-    // Helper function: Format research area
-    function formatResearchArea(area) {
-      return area.charAt(0).toUpperCase() + area.slice(1);
-    }
-    
-    // Helper function: Format status
-    function formatStatus(status) {
-      return status.charAt(0).toUpperCase() + status.slice(1);
-    }
-    
-    // Helper function: Get random project image
-    function getRandomProjectImage() {
-      const images = [
-        "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80",
-        "https://images.unsplash.com/photo-1507413245164-6160d8298b31?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80"
-      ];
-      return images[Math.floor(Math.random() * images.length)];
-    }
+      </section>
+    </nav>
+  </header>
 
-         // Mobile navigation setup
-         const mobileNavButton = document.getElementById('mobile-menu-button');
-         const mobileNavClose = document.getElementById('mobile-nav-close');
-         const mobileNav = document.getElementById('mobile-nav');
-         
-         // Set initial display state for mobile menu button
-         checkMobileView();
-         
-         // Check when window is resized
-         window.addEventListener('resize', checkMobileView);
-         
-         // Open mobile menu
-         if (mobileNavButton) {
-             mobileNavButton.addEventListener('click', function() {
-                 if (mobileNav) {
-                     mobileNav.classList.add('active');
-                     document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
-                 }
-             });
-         }
-         
-         // Close mobile menu
-         if (mobileNavClose) {
-             mobileNavClose.addEventListener('click', function() {
-                 if (mobileNav) {
-                     mobileNav.classList.remove('active');
-                     document.body.style.overflow = ''; // Re-enable scrolling
-                 }
-             });
-         }
-         
-         // Close menu when clicking a link
-         const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a');
-         mobileNavLinks.forEach(link => {
-             link.addEventListener('click', function() {
-                 if (mobileNav) {
-                     mobileNav.classList.remove('active');
-                     document.body.style.overflow = '';
-                 }
-             });
-         });
-     
-         function checkMobileView() {
-             const mobileMenuButton = document.getElementById('mobile-menu-button');
-             if (!mobileMenuButton) return;
-             
-             const navLinks = document.querySelector('.nav-links');
-             const navbar = document.querySelector('.navbar');
-             const authButtons = document.querySelector('.navbar .auth-buttons');
-             
-             // Check if we're on a small screen (mobile view)
-             if (window.innerWidth <= 768) {
-                 mobileMenuButton.style.display = 'block';
-                 if (navLinks) navLinks.classList.add('hidden-mobile');
-                 if (authButtons) authButtons.classList.add('hidden-mobile');
-             } else {
-                 // We're on a large screen
-                 mobileMenuButton.style.display = 'none';
-                 if (navLinks) navLinks.classList.remove('hidden-mobile');
-                 if (authButtons) authButtons.classList.remove('hidden-mobile');
-             }
-         }
+  <main class="page-container">
+    <section class="page-header">
+      <header class="page-title-container">
+        <h1 class="page-title">Research Projects</h1>
+        <p class="page-subtitle">Create and manage your research projects, invite collaborators, and track progress.</p>
+      </header>
+      
+      <section class="flex justify-between items-center mb-8">
+        <menu class="flex gap-4">
+          <li>
+            <button id="create-project-btn" class="btn btn-primary">
+              <i class="fas fa-plus mr-2"></i> Create New Project
+            </button>
+          </li>
+        </menu>
+        <section class="flex items-center">
+          <label for="project-sort" class="mr-2">Sort by:</label>
+          <select id="project-sort" class="form-control w-auto">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="title-asc">Title (A-Z)</option>
+            <option value="title-desc">Title (Z-A)</option>
+          </select>
+        </section>
+      </section>
+    </section>
     
-  </script>
+    <!-- Projects List -->
+    <section id="projects-container" class="projects-grid">
+      <!-- Projects will be populated by JavaScript -->
+      <div class="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Loading projects...</p>
+      </div>
+    </section>
+    
+    <!-- Create/Edit Project Modal -->
+    <dialog id="project-modal" class="modal-overlay">
+      <article class="modal">
+        <header class="modal-header">
+          <h2 id="modal-title" class="modal-title">Create New Project</h2>
+          <button class="modal-close" id="close-modal">&times;</button>
+        </header>
+        <section class="modal-body">
+          <form id="project-form">
+            <input type="hidden" id="project-id">
+            <fieldset class="form-group">
+              <label for="project-title">Project Title</label>
+              <input type="text" id="project-title" class="form-control" required>
+            </fieldset>
+            <fieldset class="form-group">
+              <label for="research-goal">Research Goal</label>
+              <textarea id="research-goal" class="form-control" required></textarea>
+            </fieldset>
+            <section class="form-grid">
+              <fieldset class="form-group">
+                <label for="research-area">Key Research Area</label>
+                <input type="text" id="research-area" class="form-control" required>
+              </fieldset>
+              <fieldset class="form-group">
+                <label for="start-date">Start Date</label>
+                <input type="date" id="start-date" class="form-control" required>
+              </fieldset>
+              <fieldset class="form-group">
+                <label for="end-date">End Date</label>
+                <input type="date" id="end-date" class="form-control" required>
+              </fieldset>
+            </section>
+            <fieldset class="form-group">
+              <section class="form-check">
+                <input type="checkbox" id="funding-available" class="form-check-input">
+                <label for="funding-available">Funding Available for This Project</label>
+              </section>
+            </fieldset>
+            <section class="form-grid">
+              <fieldset class="form-group">
+                <label for="skills-expertise">Skills and Expertise</label>
+                <input type="text" id="skills-expertise" class="form-control" placeholder="Separate with commas">
+              </fieldset>
+              <fieldset class="form-group">
+                <label for="experience-level">Experience Level</label>
+                <select id="experience-level" class="form-control">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="expert">Expert</option>
+                </select>
+              </fieldset>
+            </section>
+            <section class="form-grid">
+              <fieldset class="form-group">
+                <label for="positions-required">Positions Required</label>
+                <input type="text" id="positions-required" class="form-control" placeholder="Separate with commas">
+              </fieldset>
+              <fieldset class="form-group">
+                <label for="technical-requirements">Technical Requirements</label>
+                <input type="text" id="technical-requirements" class="form-control" placeholder="Separate with commas">
+              </fieldset>
+            </section>
+          </form>
+        </section>
+        <footer class="modal-footer">
+          <button id="cancel-project" class="btn btn-outline">Cancel</button>
+          <button id="save-project" class="btn btn-primary">Save Project</button>
+        </footer>
+      </article>
+    </dialog>
+    
+    <!-- Delete Confirmation Modal -->
+    <dialog id="delete-modal" class="modal-overlay">
+      <article class="modal">
+        <header class="modal-header">
+          <h2 class="modal-title">Confirm Delete</h2>
+          <button class="modal-close" id="close-delete-modal">&times;</button>
+        </header>
+        <section class="modal-body">
+          <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+          <p class="font-semibold mt-4" id="delete-project-title"></p>
+        </section>
+        <footer class="modal-footer">
+          <button id="cancel-delete" class="btn btn-outline">Cancel</button>
+          <button id="confirm-delete" class="btn btn-danger">Yes, Delete Project</button>
+        </footer>
+      </article>
+    </dialog>
+    
+    <!-- Invite Collaborators Modal -->
+    <dialog id="invite-modal" class="modal-overlay">
+      <article class="modal">
+        <header class="modal-header">
+          <h2 class="modal-title">Invite Collaborators</h2>
+          <button class="modal-close" id="close-invite-modal">&times;</button>
+        </header>
+        <section class="modal-body">
+          <fieldset class="form-group">
+            <label for="project-select">Select Project</label>
+            <select id="project-select" class="form-control">
+              <!-- Options will be populated by JavaScript -->
+            </select>
+          </fieldset>
+          <fieldset class="form-group">
+            <label for="invite-search">Search Researchers</label>
+            <section class="search-box">
+              <input type="text" id="invite-search" class="search-input" placeholder="Search by name or expertise">
+              <button id="search-researchers" class="search-button">
+                <i class="fas fa-search"></i> Search
+              </button>
+            </section>
+          </fieldset>
+          <section id="researchers-results" class="collaborators-grid mt-4">
+            <!-- Results will be populated by JavaScript -->
+            <p class="text-center text-gray-500">Search for researchers to invite</p>
+          </section>
+          <section id="selected-researchers" class="mt-4">
+            <h3 class="text-lg font-semibold mb-2">Selected Researchers</h3>
+            <ul id="selected-list" class="flex flex-wrap gap-2">
+              <!-- Selected researchers will be populated by JavaScript -->
+              <li class="text-gray-500">No researchers selected</li>
+            </ul>
+          </section>
+          <fieldset class="form-group mt-4">
+            <label for="invitation-message">Invitation Message</label>
+            <textarea id="invitation-message" class="form-control" placeholder="Write a personal message to invite the researchers..."></textarea>
+          </fieldset>
+        </section>
+        <footer class="modal-footer">
+          <button id="cancel-invite" class="btn btn-outline">Cancel</button>
+          <button id="send-invites" class="btn btn-primary">Send Invitations</button>
+        </footer>
+      </article>
+    </dialog>
+    
+    <!-- View Project Details Modal -->
+    <dialog id="view-project-modal" class="modal-overlay">
+      <article class="modal">
+        <header class="modal-header">
+          <h2 id="view-project-title" class="modal-title">Project Details</h2>
+          <button class="modal-close" id="close-view-modal">&times;</button>
+        </header>
+        <section class="modal-body">
+          <article id="project-details">
+            <!-- Project details will be populated by JavaScript -->
+          </article>
+          <section class="mt-6">
+            <h3 class="text-lg font-semibold mb-3">Current Collaborators</h3>
+            <ul id="project-collaborators" class="flex flex-wrap gap-4">
+              <!-- Collaborators will be populated by JavaScript -->
+            </ul>
+          </section>
+        </section>
+        <footer class="modal-footer">
+          <button id="close-view-btn" class="btn btn-outline">Close</button>
+          <button id="invite-collaborators" class="btn btn-primary">Invite Collaborators</button>
+        </footer>
+      </article>
+    </dialog>
+    
+    <!-- Toast Notifications -->
+    <aside class="toast-container">
+      <!-- Toasts will be populated by JavaScript -->
+    </aside>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <section class="container">
+      <section class="footer-content">
+        <article class="footer-column">
+          <header class="footer-logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </header>
+          <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+        </article>
+        <article class="footer-column">
+          <h3>Solutions</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">For Researchers</a></li>
+              <li><a href="#">For Universities</a></li>
+              <li><a href="#">For Industry</a></li>
+              <li><a href="#">For Funding Agencies</a></li>
+            </ul>
+          </nav>
+        </article>
+        <article class="footer-column">
+          <h3>Resources</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Research Guides</a></li>
+              <li><a href="#">Webinars</a></li>
+              <li><a href="#">Case Studies</a></li>
+            </ul>
+          </nav>
+        </article>
+        <article class="footer-column">
+          <h3>Company</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </nav>
+        </article>
+      </section>
+      <section class="footer-bottom">
+        <small>&copy; 2025 CollabNexus Research Hub. All rights reserved.</small>
+      </section>
+    </section>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/projects.js"></script>
 </body>
 </html>

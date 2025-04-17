@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messaging - CollabNexus</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/researcher.css">
+  <link rel="stylesheet" href="css/researcher-platform.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between h-20">
+          <div class="flex items-center">
+            <a href="dashboard.html" class="flex-shrink-0 flex items-center">
+              <i class="fas fa-book-open book-logo"></i>
+              <span class="font-playfair text-xl font-bold text-research-dark">
+                CollabNexus
+              </span>
+            </a>
+            <div class="hidden sm:ml-10 sm:flex sm:space-x-8">
+              <a href="/researcher" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Dashboard
+              </a>
+              <a href="/projects" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Projects
+              </a>
+              <a href="/collaborations" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Collaborators
+              </a>
+              <a href="/invitations" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Invitations
+              </a>
+              <a href="/messaging" class="border-research-primary text-research-primary hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                Messages
+              </a>
+            </div>
+          </div>
+          <div class="hidden md:flex items-center space-x-4">
+            <button id="logout-btn" class="text-research-accent border-research-accent hover:bg-research-light hover:text-research-accent px-4 py-2 rounded border">
+              Logout
+            </button>
+          </div>
+          <div class="flex items-center md:hidden">
+            <button id="mobile-menu-button" class="text-gray-500 hover:text-research-accent">
+              <i class="fas fa-bars"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page-container">
+    <section class="page-header">
+      <div class="page-title-container">
+        <h1 class="page-title">Research Messages</h1>
+        <p class="page-subtitle">Communicate with your research collaborators and colleagues.</p>
+      </div>
+    </section>
+    
+    <section class="messaging-container">
+      <aside class="contacts-sidebar">
+        <div class="contacts-search">
+          <input type="text" class="contacts-search-input" placeholder="Search contacts...">
+        </div>
+        <div class="contacts-list" id="contacts-list">
+          <!-- Contacts will be populated by JavaScript -->
+        </div>
+      </aside>
+      
+      <div class="chat-container">
+        <div class="chat-header">
+          <div class="contact-avatar mr-3" id="chat-avatar">
+            <!-- Avatar will be populated by JavaScript -->
+          </div>
+          <div class="chat-header-info">
+            <div class="chat-header-name" id="chat-name">Select a conversation</div>
+            <div class="chat-header-status" id="chat-status"></div>
+          </div>
+          <div class="chat-header-actions">
+            <div class="chat-header-action">
+              <i class="fas fa-phone"></i>
+            </div>
+            <div class="chat-header-action">
+              <i class="fas fa-video"></i>
+            </div>
+            <div class="chat-header-action">
+              <i class="fas fa-info-circle"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="messages-container" id="messages-container">
+          <!-- Empty state for messages -->
+          <div id="empty-chat-state" class="text-center py-12">
+            <div class="text-6xl mb-4 text-gray-300">
+              <i class="fas fa-comments"></i>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-500">No Conversation Selected</h3>
+            <p class="text-gray-400 mt-2">Choose a contact from the list to start messaging</p>
+          </div>
+          
+          <!-- Messages will be populated by JavaScript -->
+        </div>
+        
+        <div class="message-input-container" id="message-input-area" style="display: none;">
+          <textarea class="message-input" id="message-input" placeholder="Type a message..."></textarea>
+          <div class="message-actions">
+            <button class="message-action">
+              <i class="fas fa-paperclip"></i>
+            </button>
+            <button class="message-action">
+              <i class="fas fa-smile"></i>
+            </button>
+            <button class="message-action message-send" id="send-message">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Toast Notifications -->
+    <div class="toast-container">
+      <!-- Toasts will be populated by JavaScript -->
+    </div>
+  </main>
+
+  <!-- Footer -->
+<!-- Footer -->
+<footer class="footer">
+    <section class="container">
+      <section class="footer-content">
+        <article class="footer-column">
+          <header class="footer-logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </header>
+          <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+        </article>
+        <article class="footer-column">
+          <h3>Solutions</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">For Researchers</a></li>
+              <li><a href="#">For Universities</a></li>
+              <li><a href="#">For Industry</a></li>
+              <li><a href="#">For Funding Agencies</a></li>
+            </ul>
+          </nav>
+        </article>
+        <article class="footer-column">
+          <h3>Resources</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">Blog</a></li>
+              <li><a href="#">Research Guides</a></li>
+              <li><a href="#">Webinars</a></li>
+              <li><a href="#">Case Studies</a></li>
+            </ul>
+          </nav>
+        </article>
+        <article class="footer-column">
+          <h3>Company</h3>
+          <nav>
+            <ul class="footer-links">
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </nav>
+        </article>
+      </section>
+      <section class="footer-bottom">
+        <small>&copy; 2025 CollabNexus Research Hub. All rights reserved.</small>
+      </section>
+    </section>
+  </footer>
+
+
+  <script src="js/main.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/messaging.js"></script>
+</body>
+</html>
