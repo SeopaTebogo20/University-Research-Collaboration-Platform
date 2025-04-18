@@ -69,6 +69,7 @@
               <i class="fas fa-plus mr-2"></i> Create New Project
             </button>
           </li>
+          <button type="button" id="newProjectBtn">New Project</button>
         </menu>
         <section class="flex items-center">
           <label for="project-sort" class="mr-2">Sort by:</label>
@@ -81,7 +82,84 @@
         </section>
       </section>
     </section>
-    
+    <section id="formSection" style="display:none;">
+      <h2>Create a New Project Listing</h2>
+      <form id="projectForm">
+          <!-- Form fields remain exactly the same as before -->
+          <fieldset>
+              <legend>Project Details</legend>
+              
+              <label for="projectTitle">Project Title*:</label>
+              <input type="text" id="projectTitle" required>
+              
+              <label for="projectDescription">Project Description*:</label>
+              <textarea id="projectDescription" rows="4" required></textarea>
+              
+              <label for="researchGoals">Research Goals*:</label>
+              <textarea id="researchGoals" rows="4" required></textarea>
+              
+              <label for="keyResearchArea">Key Research Area*:</label>
+              <select id="keyResearchArea" required>
+                  <option value="">Select an area</option>
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Biology">Biology</option>
+                  <option value="Physics">Physics</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="Social Sciences">Social Sciences</option>
+              </select>
+              
+              <label for="startDate">Start Date*:</label>
+              <input type="date" id="startDate" required>
+              
+              <label for="endDate">End Date*:</label>
+              <input type="date" id="endDate" required>
+              
+              <label>
+                  <input type="checkbox" id="fundingAvailable"> Funding Available
+              </label>
+          </fieldset>
+
+          <fieldset>
+              <legend>Collaborator Requirements</legend>
+              
+              <label for="skills">Required Skills and Expertise*:</label>
+              <textarea id="skills" rows="3" required></textarea>
+              
+              <label>Required Experience Level*:</label>
+              <select id="experienceLevel" required>
+                  <option value="">Select level</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Expert">Expert</option>
+              </select>
+              
+              <label for="positions">Positions Required*:</label>
+              <input type="text" id="positions" placeholder="e.g., 2 Developers, 1 Researcher" required>
+              
+              <label for="techRequirements">Technical Requirements:</label>
+              <textarea id="techRequirements" rows="3"></textarea>
+          </fieldset>
+
+          <button type="button" id="previewBtn">Preview Project</button>
+          <button type="submit" id="publishBtn">Publish Project</button>
+          <button type="button" id="cancelBtn">Cancel</button>
+      </form>
+  </section>
+
+  <section id="previewSection" style="display:none;">
+      <h2>Project Preview</h2>
+      <article id="projectPreview"></article>
+      <button type="button" id="editBtn">Edit Project</button>
+      <button type="button" id="confirmPublishBtn">Confirm Publish</button>
+  </section>
+
+  <section id="projectsList">
+      <h2>Your Published Projects</h2>
+      <ul id="publishedProjects"></ul>
+  </section>
+
+
     <!-- Projects List -->
     <section id="projects-container" class="projects-grid">
       <!-- Projects will be populated by JavaScript -->

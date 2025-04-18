@@ -1263,3 +1263,128 @@
     animation-delay: 0.4s;
   }
   
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+h1, h2, h3, h4 {
+    color: #2c3e50;
+}
+
+fieldset {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+legend {
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 0 10px;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 10px 5px 0 0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+#newProjectBtn {
+    background-color: #2ecc71;
+}
+
+#newProjectBtn:hover {
+    background-color: #27ae60;
+}
+
+.view-btn {
+    background-color: #3498db;
+}
+
+.delete-btn {
+    background-color: #e74c3c;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+}
+
+#previewSection, #projectsList {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+#projectPreview {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 15px 0;
+    border: 1px solid #ddd;
+}
+
+#publishedProjects {
+    list-style-type: none;
+    padding: 0;
+}
+
+#publishedProjects li {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+input:required, select:required, textarea:required {
+    border-left: 3px solid #e74c3c;
+}
+
+input:valid, select:valid, textarea:valid {
+    border-left: 3px solid #2ecc71;
+}

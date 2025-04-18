@@ -477,3 +477,204 @@ function saveProjectsToServer() {
   // For demo purposes, we'll just log the data
   localStorage.setItem('projects', JSON.stringify({ projects }));
 }
+
+//mine
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('projectForm');
+  const previewBtn = document.getElementById('previewBtn');
+  const publishBtn = document.getElementById('publishBtn');
+  const editBtn = document.getElementById('editBtn');
+  const confirmPublishBtn = document.getElementById('confirmPublishBtn');
+  const newProjectBtn = document.getElementById('newProjectBtn');
+  const formSection = document.getElementById('formSection');
+  const previewSection = document.getElementById('previewSection');
+  const projectPreview = document.getElementById('projectPreview');
+  const publishedProjects = document.getElementById('publishedProjects');
+
+  let projects = [];
+
+  // New Project button click handler
+  newProjectBtn.addEventListener('click', function() {
+      resetForm();
+      formSection.style.display = 'block';
+      previewSection.style.display = 'none';
+  });
+
+  // Preview button click handler
+  previewBtn.addEventListener('click', function() {
+      if (validateForm()) {
+          generatePreview();
+          formSection.style.display = 'none';
+          previewSection.style.display = 'block';
+      }
+  });
+
+
+  // Publish button click handler
+  publishBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (validateForm()) {
+          if (confirm('Are you ready to publish this project?')) {
+              publishProject();
+          }
+      }
+  });
+
+  cancelBtn.addEventListener('click', function() {
+    resetForm();
+    formSection.style.display = 'none';
+    previewSection.style.display = 'none';
+    projectsList.style.display = projects.length ? 'block' : 'none';
+});
+  // Confirm publish button click handler
+  confirmPublishBtn.addEventListener('click', function() {
+      publishProject();
+  });
+
+  function validateForm() {
+      const requiredFields = [
+          'projectTitle', 'projectDescription', 'researchGoals', 
+          'keyResearchArea', 'startDate', 'endDate', 
+          'skills', 'experienceLevel', 'positions'
+      ];
+
+      let isValid = true;
+
+      requiredFields.forEach(fieldId => {
+          const field = document.getElementById(fieldId);
+          if (!field.value.trim()) {
+              alert(`Please fill in the ${field.labels[0].textContent} field`);
+              field.focus();
+              isValid = false;
+              return false; // exit forEach early
+          }
+      });
+
+      // Validate dates
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      if (startDate >= endDate) {
+          alert('End date must be after start date');
+          isValid = false;
+      }
+
+      return isValid;
+  }
+
+  function generatePreview() {
+      const fundingAvailable = document.getElementById('fundingAvailable').checked ? 'Yes' : 'No';
+      
+      projectPreview.innerHTML = `
+          <h3>${document.getElementById('projectTitle').value}</h3>
+          <p><strong>Description:</strong> ${document.getElementById('projectDescription').value}</p>
+          <p><strong>Research Goals:</strong> ${document.getElementById('researchGoals').value}</p>
+          <p><strong>Key Research Area:</strong> ${document.getElementById('keyResearchArea').value}</p>
+          <p><strong>Duration:</strong> ${document.getElementById('startDate').value} to ${document.getElementById('endDate').value}</p>
+          <p><strong>Funding Available:</strong> ${fundingAvailable}</p>
+          
+          <h4>Collaborator Requirements</h4>
+          <p><strong>Skills and Expertise:</strong> ${document.getElementById('skills').value}</p>
+          <p><strong>Experience Level:</strong> ${document.getElementById('experienceLevel').value}</p>
+          <p><strong>Positions Required:</strong> ${document.getElementById('positions').value}</p>
+          <p><strong>Technical Requirements:</strong> ${document.getElementById('techRequirements').value || 'None specified'}</p>
+      `;
+  }
+
+  function publishProject() {
+      const projectData = {
+          title: document.getElementById('projectTitle').value,
+          description: document.getElementById('projectDescription').value,
+          researchGoals: document.getElementById('researchGoals').value,
+          keyResearchArea: document.getElementById('keyResearchArea').value,
+          startDate: document.getElementById('startDate').value,
+          endDate: document.getElementById('endDate').value,
+          fundingAvailable: document.getElementById('fundingAvailable').checked,
+          skills: document.getElementById('skills').value,
+          experienceLevel: document.getElementById('experienceLevel').value,
+          positions: document.getElementById('positions').value,
+          techRequirements: document.getElementById('techRequirements').value,
+          publishedDate: new Date().toLocaleDateString()
+      };
+
+      projects.push(projectData);
+      updateProjectsList();
+      
+      alert('Project published successfully!');
+      resetForm();
+      formSection.style.display = 'block';
+      previewSection.style.display = 'none';
+  }
+
+  function updateProjectsList() {
+      publishedProjects.innerHTML = '';
+      projects.forEach((project, index) => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+              <h3>${project.title}</h3>
+              <p><strong>Published:</strong> ${project.publishedDate}</p>
+              <p><strong>Research Area:</strong> ${project.keyResearchArea}</p>
+              <button class="view-btn" data-index="${index}">View Details</button>
+              <button class="delete-btn" data-index="${index}">Delete</button>
+          `;
+          publishedProjects.appendChild(li);
+      });
+
+      // Add event listeners to the new buttons
+      cancelBtn.addEventListener('click', function() {
+        resetForm();
+        formSection.style.display = 'none';
+        previewSection.style.display = 'none';
+        projectsList.style.display = projects.length ? 'block' : 'none';
+    });
+      document.querySelectorAll('.view-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+              viewProjectDetails(parseInt(this.getAttribute('data-index')));
+          });
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+              deleteProject(parseInt(this.getAttribute('data-index')));
+          });
+      });
+  }
+
+  function viewProjectDetails(index) {
+      const project = projects[index];
+      projectPreview.innerHTML = `
+          <h3>${project.title}</h3>
+          <p><strong>Published:</strong> ${project.publishedDate}</p>
+          <p><strong>Description:</strong> ${project.description}</p>
+          <p><strong>Research Goals:</strong> ${project.researchGoals}</p>
+          <p><strong>Key Research Area:</strong> ${project.keyResearchArea}</p>
+          <p><strong>Duration:</strong> ${project.startDate} to ${project.endDate}</p>
+          <p><strong>Funding Available:</strong> ${project.fundingAvailable ? 'Yes' : 'No'}</p>
+          
+          <h4>Collaborator Requirements</h4>
+          <p><strong>Skills and Expertise:</strong> ${project.skills}</p>
+          <p><strong>Experience Level:</strong> ${project.experienceLevel}</p>
+          <p><strong>Positions Required:</strong> ${project.positions}</p>
+          <p><strong>Technical Requirements:</strong> ${project.techRequirements || 'None specified'}</p>
+          
+          <button type="button" id="closePreviewBtn">Close</button>
+      `;
+
+      document.getElementById('closePreviewBtn').addEventListener('click', function() {
+          previewSection.style.display = 'none';
+      });
+
+      formSection.style.display = 'none';
+      previewSection.style.display = 'block';
+  }
+
+  function deleteProject(index) {
+      if (confirm('Are you sure you want to delete this project?')) {
+          projects.splice(index, 1);
+          updateProjectsList();
+      }
+  }
+
+  function resetForm() {
+      form.reset();
+  }
+});
