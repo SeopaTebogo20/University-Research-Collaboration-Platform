@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/researcher.css">
   <link rel="stylesheet" href="css/researcher-platform.css">
+  <link rel="stylesheet" href="css/invitations.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -84,8 +84,17 @@
         </div>
       </div>
       
-      <div id="received-invitations">
+      <div id="received-invitations" class="invitation-cards">
         <!-- Received invitations will be populated by JavaScript -->
+        <div class="loading-spinner">
+          <i class="fas fa-circle-notch fa-spin"></i>
+          <span>Loading invitations...</span>
+        </div>
+      </div>
+      
+      <div id="no-received-invitations" class="empty-state hidden">
+        <i class="fas fa-inbox"></i>
+        <p>You haven't received any invitations yet.</p>
       </div>
     </section>
     
@@ -98,15 +107,24 @@
           </button>
           <select id="status-filter-sent" class="form-control">
             <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
+            <option value="invited">Pending</option>
             <option value="accepted">Accepted</option>
             <option value="declined">Declined</option>
           </select>
         </div>
       </div>
       
-      <div id="sent-invitations">
+      <div id="sent-invitations" class="invitation-cards">
         <!-- Sent invitations will be populated by JavaScript -->
+        <div class="loading-spinner">
+          <i class="fas fa-circle-notch fa-spin"></i>
+          <span>Loading invitations...</span>
+        </div>
+      </div>
+      
+      <div id="no-sent-invitations" class="empty-state hidden">
+        <i class="fas fa-paper-plane"></i>
+        <p>You haven't sent any invitations yet.</p>
       </div>
     </section>
     
@@ -118,12 +136,22 @@
           <button class="modal-close" id="close-view-modal">&times;</button>
         </div>
         <div class="modal-body">
-          <div id="project-details">
+          <div id="project-details" class="project-detail-container">
             <!-- Project details will be populated by JavaScript -->
+            <div class="loading-spinner">
+              <i class="fas fa-circle-notch fa-spin"></i>
+              <span>Loading project details...</span>
+            </div>
+          </div>
+          <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-3">Required Skills & Expertise</h3>
+            <div id="project-requirements" class="tags-container">
+              <!-- Requirements will be populated by JavaScript -->
+            </div>
           </div>
           <div class="mt-6">
             <h3 class="text-lg font-semibold mb-3">Current Collaborators</h3>
-            <div id="project-collaborators" class="flex flex-wrap gap-4">
+            <div id="project-collaborators" class="collaborators-container">
               <!-- Collaborators will be populated by JavaScript -->
             </div>
           </div>
@@ -138,11 +166,15 @@
     <div id="view-researcher-modal" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
-          <h2 class="modal-title">Researcher Profile</h2>
+          <h2 id="researcher-name-title" class="modal-title">Researcher Profile</h2>
           <button class="modal-close" id="close-researcher-modal">&times;</button>
         </div>
         <div class="modal-body" id="researcher-profile">
           <!-- Researcher profile will be populated by JavaScript -->
+          <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span>Loading researcher profile...</span>
+          </div>
         </div>
         <div class="modal-footer">
           <button id="close-researcher-btn" class="btn btn-outline">Close</button>
@@ -153,7 +185,7 @@
       </div>
     </div>
     
-    <!-- Cancel Invitation Confirmation Modal -->
+    <!-- Cancel/Delete Invitation Confirmation Modal -->
     <div id="cancel-invitation-modal" class="modal-overlay">
       <div class="modal">
         <div class="modal-header">
@@ -173,14 +205,38 @@
       </div>
     </div>
     
+    <!-- Response to Invitation Modal -->
+    <div id="respond-invitation-modal" class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Respond to Invitation</h2>
+          <button class="modal-close" id="close-respond-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="respond-invitation-details" class="mb-4 p-4 bg-gray-100 rounded-lg">
+            <!-- Invitation details will be populated by JavaScript -->
+          </div>
+          <div class="mt-4">
+            <label for="response-message" class="form-label">Response Message (Optional):</label>
+            <textarea id="response-message" class="form-control" rows="3" placeholder="Add a personal message with your response..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="close-respond-btn" class="btn btn-outline">Cancel</button>
+          <button id="decline-invitation" class="btn btn-danger">Decline Invitation</button>
+          <button id="accept-invitation" class="btn btn-success">Accept Invitation</button>
+        </div>
+      </div>
+    </div>
+    
     <!-- Toast Notifications -->
-    <div class="toast-container">
+    <div id="toast-container" class="toast-container">
       <!-- Toasts will be populated by JavaScript -->
     </div>
   </main>
 
-<!-- Footer -->
-<footer class="footer">
+  <!-- Footer -->
+  <footer class="footer">
     <section class="container">
       <section class="footer-content">
         <article class="footer-column">
