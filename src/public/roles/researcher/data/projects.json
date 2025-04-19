@@ -1,174 +1,186 @@
 {
-    "projects": [
-      {
-        "id": "PRJ001",
-        "projectDetails": {
-          "researcherName": "Dr. Sarah Johnson",
-          "projectTitle": "Machine Learning Applications in Climate Change Prediction",
-          "description": "This research project aims to develop advanced machine learning models to improve climate change prediction accuracy, with a focus on regional weather pattern analysis and long-term climate projections.",
-          "keyResearchArea": "Artificial Intelligence, Climate Science",
-          "startDate": "2025-05-01",
-          "endDate": "2026-12-31",
-          "fundingAvailable": true
-        },
-        "collaborationRequirements": {
-          "skillsAndExpertise": [
-            "Machine Learning",
-            "Data Analysis",
-            "Climate Modeling",
-            "Statistical Analysis"
-          ],
-          "experienceLevel": "Expert",
-          "positionsRequired": [
-            "Data Scientist",
-            "Machine Learning Engineer",
-            "Climate Researcher",
-            "Software Developer"
-          ],
-          "technicalRequirements": [
+  "projects": [
+    {
+      "projectDetails": {
+        "researcherName": "Dr. James Wilson",
+        "projectTitle": "Machine Drawing",
+        "description": "Win is a win but only one can win",
+        "keyResearchArea": "Newton laws oof motion",
+        "startDate": "2025-04-20",
+        "endDate": "2025-04-30",
+        "fundingAvailable": true
+      },
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "FrondEnd",
+          "BackEnd",
+          "Full Stack",
+          ""
+        ],
+        "experienceLevel": "Intermediate",
+        "positionsRequired": [
+          "Geneticist",
+          "Bioinformatician",
+          "Biostatistician",
+          "Research Assistant"
+        ],
+        "technicalRequirements": [
+          "R",
+          "Python",
+          "PLINK",
+          "GATK",
+          "SQL"
+        ]
+      },
+      "id": "PRJ001",
+      "invitedCollaborators": [
+        {
+          "id": "c1",
+          "name": "Dr. Emily Chen",
+          "title": "Assistant Professor of Bioinformatics",
+          "institution": "Pacific University",
+          "email": "e.chen@pacific.edu",
+          "status": "invited",
+          "invitedDate": "2025-04-19T08:37:38.346Z",
+          "skills": [
+            "RNA-seq",
+            "Bioinformatics",
             "Python",
+            "R",
+            "Machine Learning",
+            "Single-cell Analysis"
+          ]
+        },
+        {
+          "id": "c2",
+          "name": "Prof. Michael Rodriguez",
+          "title": "Associate Professor of Marine Biology",
+          "institution": "Coastal Science Institute",
+          "email": "m.rodriguez@csi.edu",
+          "status": "invited",
+          "invitedDate": "2025-04-19T08:38:12.383Z",
+          "skills": [
+            "Coral Reef Ecology",
+            "Climate Science",
+            "Field Research",
+            "Ecological Modeling",
+            "Conservation Biology"
+          ]
+        },
+        {
+          "id": "c3",
+          "name": "Dr. Sarah Kim",
+          "title": "Research Scientist",
+          "institution": "Medical Research Foundation",
+          "email": "s.kim@mrf.org",
+          "status": "invited",
+          "invitedDate": "2025-04-19T08:38:17.166Z",
+          "skills": [
+            "Deep Learning",
+            "Medical Imaging",
+            "Neural Networks",
             "TensorFlow",
             "PyTorch",
-            "R",
-            "SQL"
+            "Computer Vision"
           ]
-        }
-      },
-      {
-        "id": "PRJ002",
-        "projectDetails": {
-          "researcherName": "Prof. Michael Chen",
-          "projectTitle": "Sustainable Urban Infrastructure Development",
-          "description": "Research focused on integrating green technologies into urban planning and infrastructure development to create more sustainable and resilient cities.",
-          "keyResearchArea": "Urban Planning, Environmental Engineering",
-          "startDate": "2025-06-15",
-          "endDate": "2027-06-14",
-          "fundingAvailable": true
         },
-        "collaborationRequirements": {
-          "skillsAndExpertise": [
-            "Urban Planning",
-            "Environmental Engineering",
-            "Sustainability Assessment",
-            "Geographic Information Systems"
-          ],
-          "experienceLevel": "Intermediate",
-          "positionsRequired": [
-            "Urban Planner",
-            "Environmental Engineer",
-            "GIS Specialist",
-            "Project Manager"
-          ],
-          "technicalRequirements": [
-            "ArcGIS",
-            "AutoCAD",
-            "QGIS",
-            "SketchUp",
-            "Python"
+        {
+          "id": "c5",
+          "name": "Dr. Lisa Martinez",
+          "title": "Associate Professor of Genetics",
+          "institution": "State University Medical Center",
+          "email": "l.martinez@sumc.edu",
+          "status": "invited",
+          "invitedDate": "2025-04-19T08:40:09.440Z",
+          "skills": [
+            "Genomics",
+            "CRISPR",
+            "Genetic Engineering",
+            "Molecular Biology",
+            "Next-generation Sequencing"
           ]
-        }
-      },
-      {
-        "id": "PRJ003",
-        "projectDetails": {
-          "researcherName": "Dr. Emily Rodriguez",
-          "projectTitle": "Blockchain Applications in Healthcare Data Management",
-          "description": "Investigating the potential of blockchain technology to improve security, privacy, and accessibility of healthcare data across multiple stakeholders while ensuring regulatory compliance.",
-          "keyResearchArea": "Blockchain Technology, Healthcare Informatics",
-          "startDate": "2025-07-01",
-          "endDate": "2026-06-30",
-          "fundingAvailable": false
         },
-        "collaborationRequirements": {
-          "skillsAndExpertise": [
-            "Blockchain Development",
-            "Healthcare Informatics",
-            "Data Security",
-            "Smart Contract Development"
-          ],
-          "experienceLevel": "Expert",
-          "positionsRequired": [
-            "Blockchain Developer",
-            "Healthcare IT Specialist",
-            "Security Analyst",
-            "UI/UX Designer"
-          ],
-          "technicalRequirements": [
-            "Solidity",
-            "JavaScript",
-            "Node.js",
-            "React",
-            "MongoDB"
+        {
+          "id": "c4",
+          "name": "Dr. James Wilson",
+          "title": "Professor of Computer Science",
+          "institution": "Tech University",
+          "email": "j.wilson@techu.edu",
+          "status": "invited",
+          "invitedDate": "2025-04-19T08:51:12.123Z",
+          "skills": [
+            "Machine Learning",
+            "Natural Language Processing",
+            "Deep Learning",
+            "Reinforcement Learning",
+            "Computer Vision"
           ]
         }
-      },
-      {
-        "id": "PRJ004",
-        "projectDetails": {
-          "researcherName": "Dr. James Wilson",
-          "projectTitle": "Genetic Basis of Longevity in Human Populations",
-          "description": "Study of genetic markers and environmental factors that contribute to exceptional longevity across diverse human populations worldwide.",
-          "keyResearchArea": "Genetics, Longevity Research",
-          "startDate": "2025-09-01",
-          "endDate": "2028-08-31",
-          "fundingAvailable": true
+      ],
+      "receivedInvitations": [
+        {
+          "id": "INV001",
+          "projectId": "EXT123",
+          "projectTitle": "Neural Networks for Climate Prediction",
+          "invitedBy": {
+            "name": "Dr. Alex Johnson",
+            "title": "Director of Climate Research",
+            "institution": "Global Climate Institute",
+            "email": "a.johnson@gci.org"
+          },
+          "invitedDate": "2025-04-17T14:22:43.120Z",
+          "status": "pending",
+          "description": "Collaboration on applying neural networks to improve climate prediction models",
+          "requiredSkills": [
+            "Machine Learning",
+            "Climate Modeling",
+            "Data Analysis"
+          ],
+          "duration": "6 months"
         },
-        "collaborationRequirements": {
-          "skillsAndExpertise": [
-            "Genetic Analysis",
-            "Bioinformatics",
-            "Population Genetics",
-            "Data Mining"
+        {
+          "id": "INV002",
+          "projectId": "EXT456",
+          "projectTitle": "Quantum Computing Applications in Drug Discovery",
+          "invitedBy": {
+            "name": "Dr. Sophia Patel",
+            "title": "Lead Researcher, Quantum Computing Division",
+            "institution": "Pharmaceutical Innovations Inc.",
+            "email": "s.patel@pharminnovate.com"
+          },
+          "invitedDate": "2025-04-18T09:15:32.876Z",
+          "status": "pending",
+          "description": "Exploring quantum computing algorithms to accelerate drug discovery processes",
+          "requiredSkills": [
+            "Quantum Computing",
+            "Molecular Modeling",
+            "Drug Discovery",
+            "Algorithm Development"
           ],
-          "experienceLevel": "Intermediate",
-          "positionsRequired": [
-            "Geneticist",
-            "Bioinformatician",
-            "Biostatistician",
-            "Research Assistant"
-          ],
-          "technicalRequirements": [
-            "R",
-            "Python",
-            "PLINK",
-            "GATK",
-            "SQL"
-          ]
-        }
-      },
-      {
-        "id": "PRJ005",
-        "projectDetails": {
-          "researcherName": "Prof. Aisha Patel",
-          "projectTitle": "Immersive AR/VR Educational Technologies",
-          "description": "Development and evaluation of augmented and virtual reality tools for enhancing learning outcomes in STEM education at secondary and tertiary levels.",
-          "keyResearchArea": "Educational Technology, AR/VR",
-          "startDate": "2025-08-15",
-          "endDate": "2027-02-28",
-          "fundingAvailable": false
+          "duration": "12 months"
         },
-        "collaborationRequirements": {
-          "skillsAndExpertise": [
-            "AR/VR Development",
-            "Educational Technology",
-            "UI/UX Design",
-            "Learning Assessment"
+        {
+          "id": "INV003",
+          "projectId": "EXT789",
+          "projectTitle": "Autonomous Systems for Agricultural Monitoring",
+          "invitedBy": {
+            "name": "Prof. Thomas Garcia",
+            "title": "Chair of Agricultural Technology",
+            "institution": "Agricultural Research Center",
+            "email": "t.garcia@arc.edu"
+          },
+          "invitedDate": "2025-04-19T11:05:27.390Z",
+          "status": "pending",
+          "description": "Developing autonomous drones and sensors for monitoring crop health and environmental conditions",
+          "requiredSkills": [
+            "Robotics",
+            "Computer Vision",
+            "IoT",
+            "Environmental Sensing"
           ],
-          "experienceLevel": "Beginner",
-          "positionsRequired": [
-            "AR/VR Developer",
-            "Educational Technologist",
-            "UI/UX Designer",
-            "Education Researcher"
-          ],
-          "technicalRequirements": [
-            "Unity",
-            "C#",
-            "JavaScript",
-            "3D Modeling",
-            "WebXR"
-          ]
+          "duration": "9 months"
         }
-      }
-    ]
-  }
+      ]
+    }
+  ]
+}

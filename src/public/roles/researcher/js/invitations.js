@@ -1,706 +1,756 @@
-
-// Store for invitations
-let receivedInvitations = [];
-let sentInvitations = [];
+// Configuration
+const API_URL = 'http://localhost:3000/api/projects';
+let currentUser = null;
+let currentProject = null;
 let currentInvitation = null;
+let currentInvitationType = null;
 
 // DOM Elements
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize the page
-  loadInvitations();
-  
-  // Event Listeners
-  document.querySelectorAll('.invitation-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      switchTab(this.getAttribute('data-tab'));
-    });
+document.addEventListener('DOMContentLoaded', () => {
+  // Get current user (assume authentication is handled in auth.js)
+  // For this implementation, we'll simulate a current user
+  getCurrentUser().then(user => {
+    currentUser = user;
+    initializeInvitations();
   });
-  
+});
+
+// Simulate getting current user
+async function getCurrentUser() {
+  // In a real app, this would come from your auth service
+  return {
+    id: 'user123',
+    name: 'Dr. James Wilson',
+    email: 'j.wilson@techu.edu'
+  };
+}
+
+function initializeInvitations() {
+  // Tab switching
+  const tabs = document.querySelectorAll('.invitation-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+
+  // Refresh buttons
+  document.getElementById('refresh-received').addEventListener('click', () => loadReceivedInvitations());
+  document.getElementById('refresh-sent').addEventListener('click', () => loadSentInvitations());
+
+  // Filter dropdowns
   document.getElementById('status-filter-received').addEventListener('change', filterReceivedInvitations);
   document.getElementById('status-filter-sent').addEventListener('change', filterSentInvitations);
-  document.getElementById('refresh-received').addEventListener('click', refreshReceivedInvitations);
-  document.getElementById('refresh-sent').addEventListener('click', refreshSentInvitations);
-  
-  document.getElementById('close-view-modal').addEventListener('click', closeViewModal);
-  document.getElementById('close-view-btn').addEventListener('click', closeViewModal);
-  
+
+  // Modal buttons
+  document.getElementById('close-view-modal').addEventListener('click', closeProjectModal);
+  document.getElementById('close-view-btn').addEventListener('click', closeProjectModal);
   document.getElementById('close-researcher-modal').addEventListener('click', closeResearcherModal);
   document.getElementById('close-researcher-btn').addEventListener('click', closeResearcherModal);
   document.getElementById('message-researcher-btn').addEventListener('click', messageResearcher);
-  
   document.getElementById('close-cancel-modal').addEventListener('click', closeCancelModal);
   document.getElementById('cancel-cancel-invitation').addEventListener('click', closeCancelModal);
-  document.getElementById('confirm-cancel-invitation').addEventListener('click', cancelInvitation);
-});
+  document.getElementById('confirm-cancel-invitation').addEventListener('click', deleteInvitation);
+  document.getElementById('close-respond-modal').addEventListener('click', closeRespondModal);
+  document.getElementById('close-respond-btn').addEventListener('click', closeRespondModal);
+  document.getElementById('accept-invitation').addEventListener('click', () => respondToInvitation('accepted'));
+  document.getElementById('decline-invitation').addEventListener('click', () => respondToInvitation('declined'));
 
-// Load invitations
-async function loadInvitations() {
-  try {
-    // In a real application, this would fetch from an API
-    // For demo, we'll use mock data
-    const mockReceivedInvitations = [
-      {
-        id: "i1",
-        projectId: "p1",
-        projectTitle: "Neural Networks for Medical Diagnosis",
-        senderId: "u1",
-        senderName: "Dr. James Wilson",
-        senderTitle: "Professor of Computer Science",
-        senderInstitution: "Tech University",
-        message: "Hi there! I'm impressed by your work in medical imaging and would love to have you join our project on neural networks for medical diagnosis. Your expertise would be invaluable to our research team.",
-        sentDate: "2025-04-15T10:30:00",
-        status: "pending",
-        role: "AI Researcher"
-      },
-      {
-        id: "i2",
-        projectId: "p2",
-        projectTitle: "Climate Change Impact on Marine Ecosystems",
-        senderId: "u2",
-        senderName: "Prof. Michael Rodriguez",
-        senderTitle: "Associate Professor of Marine Biology",
-        senderInstitution: "Coastal Science Institute",
-        message: "We're building a multidisciplinary team to study the effects of climate change on marine ecosystems. Your background in ecological modeling would be a great addition to our project. Would you be interested in joining us?",
-        sentDate: "2025-04-10T14:45:00",
-        status: "accepted",
-        role: "Data Analyst"
-      },
-      {
-        id: "i3",
-        projectId: "p3",
-        projectTitle: "Genomic Analysis of Drug Resistance",
-        senderId: "u3",
-        senderName: "Dr. Lisa Martinez",
-        senderTitle: "Associate Professor of Genetics",
-        senderInstitution: "State University Medical Center",
-        message: "I've been following your publications on genomic analysis and would like to invite you to collaborate on our project studying drug resistance mechanisms. We need someone with your expertise in bioinformatics.",
-        sentDate: "2025-04-05T09:15:00",
-        status: "declined",
-        role: "Bioinformatician"
-      }
-    ];
-    
-    const mockSentInvitations = [
-      {
-        id: "i4",
-        projectId: "p4",
-        projectTitle: "Gene Expression Analysis in Cancer Cells",
-        recipientId: "u4",
-        recipientName: "Dr. Emily Chen",
-        recipientTitle: "Assistant Professor of Bioinformatics",
-        recipientInstitution: "Pacific University",
-        message: "I'm excited about your work in RNA sequencing and would like to invite you to join our project on gene expression analysis in cancer cells. Your expertise would be a valuable addition to our team.",
-        sentDate: "2025-04-16T11:20:00",
-        status: "pending",
-        role: "Computational Biologist"
-      },
-      {
-        id: "i5",
-        projectId: "p5",
-        projectTitle: "Neural Networks for Medical Diagnosis",
-        recipientId: "u5",
-        recipientName: "Dr. Sarah Kim",
-        recipientTitle: "Research Scientist",
-        recipientInstitution: "Medical Research Foundation",
-        message: "Your work in deep learning for medical imaging is impressive. We're working on a neural network-based diagnostic tool and would love to have you on board as a collaborator.",
-        sentDate: "2025-04-12T15:30:00",
-        status: "accepted",
-        role: "AI Specialist"
-      },
-      {
-        id: "i6",
-        projectId: "p6",
-        projectTitle: "Quantum Computing Applications in Drug Discovery",
-        recipientId: "u6",
-        recipientName: "Dr. Robert Adams",
-        recipientTitle: "Quantum Computing Researcher",
-        recipientInstitution: "Quantum Technologies Institute",
-        message: "We're exploring quantum computing applications in drug discovery and would like to invite you to collaborate. Your expertise in quantum algorithms would be invaluable to our research.",
-        sentDate: "2025-04-08T13:45:00",
-        status: "declined",
-        role: "Quantum Algorithm Developer"
-      }
-    ];
-    
-    receivedInvitations = mockReceivedInvitations;
-    sentInvitations = mockSentInvitations;
-    
-    renderReceivedInvitations();
-    renderSentInvitations();
-  } catch (error) {
-    console.error('Error loading invitations:', error);
-    showToast('error', 'Error', 'Failed to load invitations. Please try again.');
-  }
+  // Initial load
+  loadReceivedInvitations();
+  loadSentInvitations();
 }
 
-// Render received invitations
-function renderReceivedInvitations(filteredInvitations = null) {
-  const container = document.getElementById('received-invitations');
-  const invitations = filteredInvitations || receivedInvitations;
-  container.innerHTML = '';
-  
-  if (invitations.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-12">
-        <div class="text-6xl mb-4 text-gray-300">
-          <i class="fas fa-inbox"></i>
-        </div>
-        <h3 class="text-xl font-semibold text-gray-500">No Invitations Received</h3>
-        <p class="text-gray-400 mt-2">You haven't received any collaboration invitations yet</p>
-      </div>
-    `;
-    return;
-  }
-  
-  invitations.forEach(invitation => {
-    const invitationCard = document.createElement('div');
-    invitationCard.className = 'invitation-card';
-    invitationCard.innerHTML = `
-      <div class="invitation-header">
-        <h3 class="invitation-title">Invitation to Collaborate</h3>
-        <div class="flex items-center gap-2">
-          <span class="invitation-date">${formatDate(invitation.sentDate)}</span>
-          <span class="invitation-status status-${invitation.status}">${capitalizeFirstLetter(invitation.status)}</span>
-        </div>
-      </div>
-      
-      <h3 class="invitation-project">Project: ${invitation.projectTitle}</h3>
-      <h4 class="text-sm text-gray-600 mb-2">Role: ${invitation.role}</h4>
-      
-      <div class="invitation-user">
-        <div class="invitation-user-avatar">
-          ${getInitials(invitation.senderName)}
-        </div>
-        <div>
-          <div class="invitation-user-name">${invitation.senderName}</div>
-          <div class="invitation-user-info">${invitation.senderTitle}, ${invitation.senderInstitution}</div>
-        </div>
-      </div>
-      
-      <div class="invitation-message">
-        "${invitation.message}"
-      </div>
-      
-      <div class="invitation-actions">
-        ${invitation.status === 'pending' ? `
-          <button class="invitation-action accept" data-id="${invitation.id}">
-            <i class="fas fa-check mr-2"></i> Accept
-          </button>
-          <button class="invitation-action decline" data-id="${invitation.id}">
-            <i class="fas fa-times mr-2"></i> Decline
-          </button>
-        ` : ''}
-        <button class="invitation-action view" data-id="${invitation.projectId}">
-          <i class="fas fa-eye mr-2"></i> View Project
-        </button>
-        <button class="invitation-action view-profile" data-id="${invitation.senderId}">
-          <i class="fas fa-user mr-2"></i> View Researcher
-        </button>
-      </div>
-    `;
-    
-    container.appendChild(invitationCard);
-    
-    // Add event listeners
-    if (invitation.status === 'pending') {
-      invitationCard.querySelector('.invitation-action.accept').addEventListener('click', () => {
-        acceptInvitation(invitation.id);
-      });
-      
-      invitationCard.querySelector('.invitation-action.decline').addEventListener('click', () => {
-        declineInvitation(invitation.id);
-      });
-    }
-    
-    invitationCard.querySelector('.invitation-action.view').addEventListener('click', () => {
-      viewProject(invitation.projectId);
-    });
-    
-    invitationCard.querySelector('.invitation-action.view-profile').addEventListener('click', () => {
-      viewResearcherProfile(invitation.senderId);
-    });
-  });
-}
-
-// Render sent invitations
-function renderSentInvitations(filteredInvitations = null) {
-  const container = document.getElementById('sent-invitations');
-  const invitations = filteredInvitations || sentInvitations;
-  container.innerHTML = '';
-  
-  if (invitations.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-12">
-        <div class="text-6xl mb-4 text-gray-300">
-          <i class="fas fa-paper-plane"></i>
-        </div>
-        <h3 class="text-xl font-semibold text-gray-500">No Invitations Sent</h3>
-        <p class="text-gray-400 mt-2">You haven't sent any collaboration invitations yet</p>
-      </div>
-    `;
-    return;
-  }
-  
-  invitations.forEach(invitation => {
-    const invitationCard = document.createElement('div');
-    invitationCard.className = 'invitation-card';
-    invitationCard.innerHTML = `
-      <div class="invitation-header">
-        <h3 class="invitation-title">Invitation Sent</h3>
-        <div class="flex items-center gap-2">
-          <span class="invitation-date">${formatDate(invitation.sentDate)}</span>
-          <span class="invitation-status status-${invitation.status}">${capitalizeFirstLetter(invitation.status)}</span>
-        </div>
-      </div>
-      
-      <h3 class="invitation-project">Project: ${invitation.projectTitle}</h3>
-      <h4 class="text-sm text-gray-600 mb-2">Role: ${invitation.role}</h4>
-      
-      <div class="invitation-user">
-        <div class="invitation-user-avatar">
-          ${getInitials(invitation.recipientName)}
-        </div>
-        <div>
-          <div class="invitation-user-name">${invitation.recipientName}</div>
-          <div class="invitation-user-info">${invitation.recipientTitle}, ${invitation.recipientInstitution}</div>
-        </div>
-      </div>
-      
-      <div class="invitation-message">
-        "${invitation.message}"
-      </div>
-      
-      <div class="invitation-actions">
-        ${invitation.status === 'pending' ? `
-          <button class="invitation-action cancel" data-id="${invitation.id}">
-            <i class="fas fa-ban mr-2"></i> Cancel Invitation
-          </button>
-        ` : ''}
-        <button class="invitation-action view" data-id="${invitation.projectId}">
-          <i class="fas fa-eye mr-2"></i> View Project
-        </button>
-        <button class="invitation-action view-profile" data-id="${invitation.recipientId}">
-          <i class="fas fa-user mr-2"></i> View Researcher
-        </button>
-      </div>
-    `;
-    
-    container.appendChild(invitationCard);
-    
-    // Add event listeners
-    if (invitation.status === 'pending') {
-      invitationCard.querySelector('.invitation-action.cancel').addEventListener('click', () => {
-        showCancelInvitationModal(invitation.id);
-      });
-    }
-    
-    invitationCard.querySelector('.invitation-action.view').addEventListener('click', () => {
-      viewProject(invitation.projectId);
-    });
-    
-    invitationCard.querySelector('.invitation-action.view-profile').addEventListener('click', () => {
-      viewResearcherProfile(invitation.recipientId);
-    });
-  });
-}
-
-// Switch between tabs
 function switchTab(tabName) {
   // Update active tab
   document.querySelectorAll('.invitation-tab').forEach(tab => {
-    if (tab.getAttribute('data-tab') === tabName) {
+    tab.classList.remove('active');
+    if (tab.dataset.tab === tabName) {
       tab.classList.add('active');
-    } else {
-      tab.classList.remove('active');
+    }
+  });
+
+  // Show selected section, hide others
+  document.getElementById('invitations-received-section').classList.toggle('hidden', tabName !== 'received');
+  document.getElementById('invitations-sent-section').classList.toggle('hidden', tabName !== 'sent');
+}
+
+// --- API Calls ---
+
+async function fetchProjects() {
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error('Failed to fetch projects');
+    const data = await response.json();
+    return data.projects || [];
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    showToast('error', 'Error', 'Failed to load projects. Please try again later.');
+    return [];
+  }
+}
+
+async function updateProject(projectId, projectData) {
+  try {
+    const response = await fetch(`${API_URL}/${projectId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(projectData),
+    });
+    
+    if (!response.ok) throw new Error('Failed to update project');
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating project:', error);
+    showToast('error', 'Error', 'Failed to update project. Please try again later.');
+    return null;
+  }
+}
+
+// --- Load Invitations ---
+
+async function loadReceivedInvitations() {
+  const container = document.getElementById('received-invitations');
+  const emptyState = document.getElementById('no-received-invitations');
+  
+  container.innerHTML = `
+    <div class="loading-spinner">
+      <i class="fas fa-circle-notch fa-spin"></i>
+      <span>Loading invitations...</span>
+    </div>
+  `;
+  
+  const projects = await fetchProjects();
+  
+  // Find all received invitations from all projects
+  let receivedInvitations = [];
+  
+  projects.forEach(project => {
+    if (project.receivedInvitations && project.receivedInvitations.length > 0) {
+      receivedInvitations = [...receivedInvitations, ...project.receivedInvitations.map(inv => ({
+        ...inv,
+        projectData: {
+          id: project.id,
+          title: project.projectDetails?.projectTitle || 'Untitled Project'
+        }
+      }))];
     }
   });
   
-  // Show/hide corresponding sections
-  if (tabName === 'received') {
-    document.getElementById('invitations-received-section').classList.remove('hidden');
-    document.getElementById('invitations-sent-section').classList.add('hidden');
-  } else {
-    document.getElementById('invitations-received-section').classList.add('hidden');
-    document.getElementById('invitations-sent-section').classList.remove('hidden');
-  }
-}
-
-// Filter received invitations
-function filterReceivedInvitations() {
-  const status = document.getElementById('status-filter-received').value;
-  
-  if (status === 'all') {
-    renderReceivedInvitations();
+  if (receivedInvitations.length === 0) {
+    container.classList.add('hidden');
+    emptyState.classList.remove('hidden');
     return;
   }
   
-  const filteredInvitations = receivedInvitations.filter(invitation => invitation.status === status);
-  renderReceivedInvitations(filteredInvitations);
+  container.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+  
+  container.innerHTML = receivedInvitations.map(invitation => createReceivedInvitationCard(invitation)).join('');
+  
+  // Add event listeners to the newly created cards
+  attachReceivedInvitationEventListeners();
+  
+  // Apply current filter
+  filterReceivedInvitations();
 }
 
-// Filter sent invitations
-function filterSentInvitations() {
-  const status = document.getElementById('status-filter-sent').value;
+async function loadSentInvitations() {
+  const container = document.getElementById('sent-invitations');
+  const emptyState = document.getElementById('no-sent-invitations');
   
-  if (status === 'all') {
-    renderSentInvitations();
-    return;
-  }
-  
-  const filteredInvitations = sentInvitations.filter(invitation => invitation.status === status);
-  renderSentInvitations(filteredInvitations);
-}
-
-// Refresh invitations
-function refreshReceivedInvitations() {
-  showToast('info', 'Refreshing', 'Refreshing received invitations...');
-  
-  // In a real application, this would fetch from an API
-  // For demo, we'll just re-render the current invitations
-  setTimeout(() => {
-    renderReceivedInvitations();
-    showToast('success', 'Refreshed', 'Received invitations refreshed successfully!');
-  }, 1000);
-}
-
-function refreshSentInvitations() {
-  showToast('info', 'Refreshing', 'Refreshing sent invitations...');
-  
-  // In a real application, this would fetch from an API
-  // For demo, we'll just re-render the current invitations
-  setTimeout(() => {
-    renderSentInvitations();
-    showToast('success', 'Refreshed', 'Sent invitations refreshed successfully!');
-  }, 1000);
-}
-
-// Accept invitation
-function acceptInvitation(invitationId) {
-  const invitation = receivedInvitations.find(inv => inv.id === invitationId);
-  if (!invitation) return;
-  
-  // In a real application, this would call an API
-  invitation.status = 'accepted';
-  
-  renderReceivedInvitations();
-  showToast('success', 'Invitation Accepted', `You have accepted the invitation to join "${invitation.projectTitle}"`);
-}
-
-// Decline invitation
-function declineInvitation(invitationId) {
-  const invitation = receivedInvitations.find(inv => inv.id === invitationId);
-  if (!invitation) return;
-  
-  // In a real application, this would call an API
-  invitation.status = 'declined';
-  
-  renderReceivedInvitations();
-  showToast('info', 'Invitation Declined', `You have declined the invitation to join "${invitation.projectTitle}"`);
-}
-
-// Show cancel invitation modal
-function showCancelInvitationModal(invitationId) {
-  const invitation = sentInvitations.find(inv => inv.id === invitationId);
-  if (!invitation) return;
-  
-  currentInvitation = invitation;
-  
-  document.getElementById('cancel-invitation-details').innerHTML = `
-    <div>
-      <p><strong>Project:</strong> ${invitation.projectTitle}</p>
-      <p><strong>Recipient:</strong> ${invitation.recipientName}</p>
-      <p><strong>Role:</strong> ${invitation.role}</p>
-      <p><strong>Sent:</strong> ${formatDate(invitation.sentDate)}</p>
+  container.innerHTML = `
+    <div class="loading-spinner">
+      <i class="fas fa-circle-notch fa-spin"></i>
+      <span>Loading invitations...</span>
     </div>
   `;
   
-  document.getElementById('cancel-invitation-modal').classList.add('active');
-}
-
-// Cancel invitation
-function cancelInvitation() {
-  if (!currentInvitation) return;
+  const projects = await fetchProjects();
   
-  // In a real application, this would call an API
-  const index = sentInvitations.findIndex(inv => inv.id === currentInvitation.id);
-  if (index !== -1) {
-    sentInvitations.splice(index, 1);
-    showToast('success', 'Invitation Cancelled', `The invitation to ${currentInvitation.recipientName} has been cancelled.`);
-    renderSentInvitations();
-    closeCancelModal();
-  }
-}
-
-// View project details
-function viewProject(projectId) {
-  // In a real application, this would fetch project details from an API
-  // For demo, we'll use mock data
-  const mockProject = {
-    id: projectId,
-    title: "Gene Expression Analysis in Cancer Cells",
-    researchGoal: "Investigating the effects of novel drug compounds on gene expression patterns in various cancer cell lines using RNA sequencing and bioinformatics analysis.",
-    researchArea: "Cancer Biology",
-    startDate: "2025-01-15",
-    endDate: "2025-07-30",
-    fundingAvailable: true,
-    collaborationRequirements: "Looking for collaborators with experience in RNA sequencing and bioinformatics analysis.",
-    skillsExpertise: "RNA-seq, Cancer Biology, Bioinformatics",
-    experienceLevel: "intermediate",
-    positionsRequired: "Bioinformatician, Lab Technician, Research Assistant",
-    technicalRequirements: "Experience with R, Python, and RNA-seq data analysis",
-    collaborators: [
-      { id: "u1", name: "Jane Doe" },
-      { id: "u2", name: "Alex Smith" },
-      { id: "u3", name: "Maria Kim" }
-    ]
-  };
+  // Find all sent invitations across all projects
+  let sentInvitations = [];
   
-  document.getElementById('view-project-title').textContent = mockProject.title;
-  
-  const detailsContainer = document.getElementById('project-details');
-  detailsContainer.innerHTML = `
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <h3 class="font-semibold mb-2">Research Goal</h3>
-        <p class="mb-4">${mockProject.researchGoal}</p>
-        
-        <h3 class="font-semibold mb-2">Research Area</h3>
-        <p class="mb-4">${mockProject.researchArea}</p>
-        
-        <h3 class="font-semibold mb-2">Timeline</h3>
-        <p class="mb-4">
-          <span class="block"><i class="fas fa-calendar-day mr-2"></i> Start: ${formatDate(mockProject.startDate)}</span>
-          <span class="block"><i class="fas fa-calendar-check mr-2"></i> End: ${formatDate(mockProject.endDate)}</span>
-        </p>
-        
-        <h3 class="font-semibold mb-2">Funding Status</h3>
-        <p class="mb-4">
-          ${mockProject.fundingAvailable 
-            ? '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i> Funding Available</span>' 
-            : '<span class="text-red-600"><i class="fas fa-times-circle mr-2"></i> No Funding Available</span>'}
-        </p>
-      </div>
-      
-      <div>
-        <h3 class="font-semibold mb-2">Requirements for Collaboration</h3>
-        <p class="mb-4">${mockProject.collaborationRequirements}</p>
-        
-        <h3 class="font-semibold mb-2">Skills & Expertise</h3>
-        <div class="flex flex-wrap gap-2 mb-4">
-          ${mockProject.skillsExpertise.split(',').map(skill => 
-            `<div class="project-tag">${skill.trim()}</div>`
-          ).join('')}
-        </div>
-        
-        <h3 class="font-semibold mb-2">Experience Level</h3>
-        <p class="mb-4">
-          <span class="capitalize">${mockProject.experienceLevel}</span>
-        </p>
-        
-        <h3 class="font-semibold mb-2">Positions Required</h3>
-        <ul class="list-disc list-inside mb-4">
-          ${mockProject.positionsRequired.split(',').map(position => 
-            `<li>${position.trim()}</li>`
-          ).join('')}
-        </ul>
-        
-        <h3 class="font-semibold mb-2">Technical Requirements</h3>
-        <p>${mockProject.technicalRequirements}</p>
-      </div>
-    </div>
-  `;
-  
-  const collaboratorsContainer = document.getElementById('project-collaborators');
-  collaboratorsContainer.innerHTML = '';
-  
-  mockProject.collaborators.forEach(collaborator => {
-    const collaboratorElement = document.createElement('div');
-    collaboratorElement.className = 'flex items-center p-3 bg-gray-50 rounded-lg';
-    collaboratorElement.innerHTML = `
-      <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3 bg-research-primary text-white font-semibold">
-        ${getInitials(collaborator.name)}
-      </div>
-      <div>
-        <div class="font-medium">${collaborator.name}</div>
-      </div>
-    `;
-    collaboratorsContainer.appendChild(collaboratorElement);
+  projects.forEach(project => {
+    if (project.invitedCollaborators && project.invitedCollaborators.length > 0) {
+      sentInvitations = [...sentInvitations, ...project.invitedCollaborators.map(inv => ({
+        ...inv,
+        projectData: {
+          id: project.id,
+          title: project.projectDetails?.projectTitle || 'Untitled Project',
+          description: project.projectDetails?.description,
+          keyResearchArea: project.projectDetails?.keyResearchArea,
+          startDate: project.projectDetails?.startDate,
+          endDate: project.projectDetails?.endDate,
+          requirements: project.collaborationRequirements?.skillsAndExpertise || []
+        }
+      }))];
+    }
   });
   
-  document.getElementById('view-project-modal').classList.add('active');
+  if (sentInvitations.length === 0) {
+    container.classList.add('hidden');
+    emptyState.classList.remove('hidden');
+    return;
+  }
+  
+  container.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+  
+  container.innerHTML = sentInvitations.map(invitation => createSentInvitationCard(invitation)).join('');
+  
+  // Add event listeners to the newly created cards
+  attachSentInvitationEventListeners();
+  
+  // Apply current filter
+  filterSentInvitations();
 }
 
-// View researcher profile
-function viewResearcherProfile(researcherId) {
-  // In a real application, this would fetch researcher details from an API
-  // For demo, we'll use mock data
-  const mockResearcher = {
-    id: researcherId,
-    name: "Dr. Emily Chen",
-    title: "Assistant Professor of Bioinformatics",
-    institution: "Pacific University",
-    department: "Computational Biology",
-    email: "e.chen@pacific.edu",
-    phone: "+1 (555) 123-4567",
-    location: "San Francisco, CA",
-    bio: "Dr. Chen specializes in developing computational methods for analyzing high-throughput genomic data with applications in cancer research and personalized medicine.",
-    skills: ["RNA-seq", "Bioinformatics", "Python", "R", "Machine Learning", "Single-cell Analysis"],
-    publications: 28,
-    citations: 450,
-    projects: 8,
-    collaborations: 12
-  };
+// --- Create Invitation Cards ---
+
+function createReceivedInvitationCard(invitation) {
+  const statusClass = `status-${invitation.status || 'pending'}`;
+  const statusLabel = getStatusLabel(invitation.status || 'pending');
+  const date = formatDate(invitation.invitedDate);
   
-  const profileContainer = document.getElementById('researcher-profile');
-  profileContainer.innerHTML = `
-    <div class="flex items-center mb-6">
-      <div class="w-16 h-16 rounded-full flex items-center justify-center mr-4 bg-research-primary text-white text-xl font-semibold">
-        ${getInitials(mockResearcher.name)}
+  return `
+    <div class="invitation-card" data-invitation-id="${invitation.id}" data-status="${invitation.status || 'pending'}">
+      <div class="invitation-header">
+        <div class="invitation-title">${escapeHtml(invitation.projectTitle)}</div>
+        <div class="invitation-from">
+          From: <span class="researcher-link" data-researcher-id="${invitation.invitedBy.email}">${escapeHtml(invitation.invitedBy.name)}</span>
+        </div>
       </div>
-      <div>
-        <h3 class="text-xl font-semibold">${mockResearcher.name}</h3>
-        <p class="text-gray-600">${mockResearcher.title}</p>
-        <p class="text-gray-500 text-sm">${mockResearcher.institution}</p>
-      </div>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-      <div>
-        <h4 class="font-medium mb-2">Contact Information</h4>
-        <p class="mb-1"><i class="fas fa-envelope mr-2 text-gray-500"></i> ${mockResearcher.email}</p>
-        <p class="mb-1"><i class="fas fa-phone mr-2 text-gray-500"></i> ${mockResearcher.phone}</p>
-        <p><i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> ${mockResearcher.location}</p>
-      </div>
-      
-      <div>
-        <h4 class="font-medium mb-2">Department</h4>
-        <p class="mb-4">${mockResearcher.department}</p>
-        
-        <div class="flex space-x-4">
-          <div class="text-center">
-            <div class="text-xl font-semibold text-research-primary">${mockResearcher.publications}</div>
-            <div class="text-sm text-gray-500">Publications</div>
+      <div class="invitation-content">
+        <div class="invitation-details">
+          <div class="invitation-detail">
+            <div class="detail-label">Institution:</div>
+            <div class="detail-value">${escapeHtml(invitation.invitedBy.institution)}</div>
           </div>
-          <div class="text-center">
-            <div class="text-xl font-semibold text-research-primary">${mockResearcher.citations}</div>
-            <div class="text-sm text-gray-500">Citations</div>
+          <div class="invitation-detail">
+            <div class="detail-label">Position:</div>
+            <div class="detail-value">${escapeHtml(invitation.invitedBy.title)}</div>
           </div>
-          <div class="text-center">
-            <div class="text-xl font-semibold text-research-primary">${mockResearcher.projects}</div>
-            <div class="text-sm text-gray-500">Projects</div>
+          <div class="invitation-detail">
+            <div class="detail-label">Duration:</div>
+            <div class="detail-value">${escapeHtml(invitation.duration || 'Not specified')}</div>
+          </div>
+          <div class="invitation-detail">
+            <div class="detail-label">Status:</div>
+            <div class="detail-value">
+              <span class="status-badge ${statusClass}">${statusLabel}</span>
+            </div>
+          </div>
+        </div>
+        <div class="invitation-skills">
+          <div class="skills-label">Required Skills:</div>
+          <div class="skills-tags">
+            ${(invitation.requiredSkills || []).map(skill => 
+              `<span class="skill-tag">${escapeHtml(skill)}</span>`
+            ).join('')}
           </div>
         </div>
       </div>
-    </div>
-    
-    <div class="mb-6">
-      <h4 class="font-medium mb-2">Biography</h4>
-      <p class="text-gray-700">${mockResearcher.bio}</p>
-    </div>
-    
-    <div class="mb-6">
-      <h4 class="font-medium mb-2">Skills & Expertise</h4>
-      <div class="flex flex-wrap gap-2">
-        ${mockResearcher.skills.map(skill => 
-          `<div class="bg-research-neutral text-research-primary rounded-full px-3 py-1 text-sm">${skill}</div>`
-        ).join('')}
+      <div class="invitation-actions">
+        <div class="invitation-date">
+          <i class="far fa-clock mr-1"></i> ${date}
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-sm btn-outline view-project-btn" data-project-id="${invitation.projectId}">
+            <i class="fas fa-eye"></i> View Project
+          </button>
+          ${invitation.status === 'pending' ? `
+            <button class="btn btn-sm btn-primary respond-btn" data-invitation-id="${invitation.id}">
+              <i class="fas fa-reply"></i> Respond
+            </button>
+          ` : ''}
+        </div>
       </div>
     </div>
   `;
+}
+
+function createSentInvitationCard(invitation) {
+  const statusClass = `status-${invitation.status || 'invited'}`;
+  const statusLabel = getStatusLabel(invitation.status || 'invited');
+  const date = formatDate(invitation.invitedDate);
   
-  document.getElementById('view-researcher-modal').classList.add('active');
+  return `
+    <div class="invitation-card" data-invitation-id="${invitation.id}" data-status="${invitation.status || 'invited'}">
+      <div class="invitation-header">
+        <div class="invitation-title">${escapeHtml(invitation.projectData.title)}</div>
+        <div class="invitation-from">
+          To: <span class="researcher-link" data-researcher-id="${invitation.email}">${escapeHtml(invitation.name)}</span>
+        </div>
+      </div>
+      <div class="invitation-content">
+        <div class="invitation-details">
+          <div class="invitation-detail">
+            <div class="detail-label">Institution:</div>
+            <div class="detail-value">${escapeHtml(invitation.institution)}</div>
+          </div>
+          <div class="invitation-detail">
+            <div class="detail-label">Position:</div>
+            <div class="detail-value">${escapeHtml(invitation.title)}</div>
+          </div>
+          <div class="invitation-detail">
+            <div class="detail-label">Status:</div>
+            <div class="detail-value">
+              <span class="status-badge ${statusClass}">${statusLabel}</span>
+            </div>
+          </div>
+        </div>
+        <div class="invitation-skills">
+          <div class="skills-label">Researcher Skills:</div>
+          <div class="skills-tags">
+            ${(invitation.skills || []).slice(0, 5).map(skill => 
+              `<span class="skill-tag">${escapeHtml(skill)}</span>`
+            ).join('')}
+            ${invitation.skills && invitation.skills.length > 5 ? `<span class="skill-tag">+${invitation.skills.length - 5} more</span>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="invitation-actions">
+        <div class="invitation-date">
+          <i class="far fa-clock mr-1"></i> ${date}
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-sm btn-outline view-project-btn" data-project-id="${invitation.projectData.id}">
+            <i class="fas fa-eye"></i> Project
+          </button>
+          ${invitation.status === 'invited' ? `
+            <button class="btn btn-sm btn-danger cancel-invitation-btn" data-invitation-id="${invitation.id}" data-project-id="${invitation.projectData.id}">
+              <i class="fas fa-times"></i> Cancel
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
-// Message researcher
-function messageResearcher() {
-  // Redirect to messaging page
-  window.location.href = '/messaging';
+// --- Event Listeners ---
+
+function attachReceivedInvitationEventListeners() {
+  // View project buttons
+  document.querySelectorAll('#received-invitations .view-project-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const projectId = this.dataset.projectId;
+      viewProject(projectId);
+    });
+  });
+  
+  // Respond buttons
+  document.querySelectorAll('#received-invitations .respond-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const invitationId = this.dataset.invitationId;
+      openRespondModal(invitationId);
+    });
+  });
+  
+  // Researcher links
+  document.querySelectorAll('#received-invitations .researcher-link').forEach(link => {
+    link.addEventListener('click', function() {
+      const researcherId = this.dataset.researcherId;
+      viewResearcher(researcherId);
+    });
+  });
 }
 
-// Helper functions
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return date.toLocaleDateString(undefined, options);
+function attachSentInvitationEventListeners() {
+  // View project buttons
+  document.querySelectorAll('#sent-invitations .view-project-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const projectId = this.dataset.projectId;
+      viewProject(projectId);
+    });
+  });
+  
+  // Cancel invitation buttons
+  document.querySelectorAll('#sent-invitations .cancel-invitation-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const invitationId = this.dataset.invitationId;
+      const projectId = this.dataset.projectId;
+      openCancelModal(invitationId, projectId);
+    });
+  });
+  
+  // Researcher links
+  document.querySelectorAll('#sent-invitations .researcher-link').forEach(link => {
+    link.addEventListener('click', function() {
+      const researcherId = this.dataset.researcherId;
+      viewResearcher(researcherId);
+    });
+  });
 }
 
-function getInitials(name) {
-  return name
-    .split(' ')
-    .map(part => part.charAt(0))
-    .join('');
+// --- Filters ---
+
+function filterReceivedInvitations() {
+  const statusFilter = document.getElementById('status-filter-received').value;
+  const cards = document.querySelectorAll('#received-invitations .invitation-card');
+  
+  cards.forEach(card => {
+    const status = card.dataset.status;
+    if (statusFilter === 'all' || status === statusFilter) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
 }
 
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+function filterSentInvitations() {
+  const statusFilter = document.getElementById('status-filter-sent').value;
+  const cards = document.querySelectorAll('#sent-invitations .invitation-card');
+  
+  cards.forEach(card => {
+    const status = card.dataset.status;
+    if (statusFilter === 'all' || status === statusFilter) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
 }
 
-// Modal control functions
-function closeViewModal() {
+// --- Invitation Actions ---
+
+async function viewProject(projectId) {
+  const modalOverlay = document.getElementById('view-project-modal');
+  const projectDetails = document.getElementById('project-details');
+  const projectRequirements = document.getElementById('project-requirements');
+  const projectCollaborators = document.getElementById('project-collaborators');
+  
+  // Show loading state
+  projectDetails.innerHTML = `
+    <div class="loading-spinner">
+      <i class="fas fa-circle-notch fa-spin"></i>
+      <span>Loading project details...</span>
+    </div>
+  `;
+  
+  modalOverlay.classList.add('active');
+  
+  try {
+    const projects = await fetchProjects();
+    const project = projects.find(p => p.id === projectId);
+    
+    if (!project) {
+      throw new Error('Project not found');
+    }
+    
+    currentProject = project;
+    
+    // Update project title in modal
+    document.getElementById('view-project-title').textContent = project.projectDetails?.projectTitle || 'Project Details';
+    
+    // Fill project details
+    projectDetails.innerHTML = `
+      <div class="detail-group">
+        <div class="detail-group-label">Project Title</div>
+        <div class="detail-group-value">${escapeHtml(project.projectDetails?.projectTitle || 'Not specified')}</div>
+      </div>
+      <div class="detail-group">
+        <div class="detail-group-label">Description</div>
+        <div class="detail-group-value">${escapeHtml(project.projectDetails?.description || 'No description provided')}</div>
+      </div>
+      <div class="detail-group">
+        <div class="detail-group-label">Key Research Area</div>
+        <div class="detail-group-value">${escapeHtml(project.projectDetails?.keyResearchArea || 'Not specified')}</div>
+      </div>
+      <div class="detail-group">
+        <div class="detail-group-label">Timeline</div>
+        <div class="detail-group-value">
+          ${project.projectDetails?.startDate ? formatDateSimple(project.projectDetails.startDate) : 'TBD'} - 
+          ${project.projectDetails?.endDate ? formatDateSimple(project.projectDetails.endDate) : 'TBD'}
+        </div>
+      </div>
+      <div class="detail-group">
+        <div class="detail-group-label">Funding Available</div>
+        <div class="detail-group-value">${project.projectDetails?.fundingAvailable ? 'Yes' : 'No'}</div>
+      </div>
+    `;
+    
+    // Fill requirements
+    const skills = project.collaborationRequirements?.technicalRequirements || [];
+    const positions = project.collaborationRequirements?.positionsRequired || [];
+    const experience = project.collaborationRequirements?.experienceLevel || 'Not specified';
+    
+    projectRequirements.innerHTML = `
+      <div class="tags-container">
+        ${skills.map(skill => `<span class="tag">${escapeHtml(skill)}</span>`).join('')}
+      </div>
+      <div class="mt-4">
+        <div class="detail-group-label">Positions Needed</div>
+        <div class="tags-container">
+          ${positions.map(position => `<span class="tag">${escapeHtml(position)}</span>`).join('')}
+        </div>
+      </div>
+      <div class="mt-4">
+        <div class="detail-group-label">Experience Level</div>
+        <div class="detail-group-value">${escapeHtml(experience)}</div>
+      </div>
+    `;
+    
+    // Fill collaborators
+    const collaborators = project.invitedCollaborators || [];
+    
+    if (collaborators.length === 0) {
+      projectCollaborators.innerHTML = '<p>No collaborators added to this project yet.</p>';
+    } else {
+      projectCollaborators.innerHTML = collaborators.map(collab => `
+        <div class="collaborator-card">
+          <div class="collaborator-name">${escapeHtml(collab.name)}</div>
+          <div class="collaborator-title">${escapeHtml(collab.title)}</div>
+          <div class="collaborator-title">${escapeHtml(collab.institution)}</div>
+          <div class="collaborator-skills">
+            ${(collab.skills || []).slice(0, 3).map(skill => 
+              `<span class="collaborator-skill">${escapeHtml(skill)}</span>`
+            ).join('')}
+            ${collab.skills && collab.skills.length > 3 ? 
+              `<span class="collaborator-skill">+${collab.skills.length - 3}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+  } catch (error) {
+    console.error('Error loading project details:', error);
+    projectDetails.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>Failed to load project details. Please try again later.</p>
+      </div>
+    `;
+  }
+}
+
+function closeProjectModal() {
   document.getElementById('view-project-modal').classList.remove('active');
+}
+
+function viewResearcher(researcherId) {
+  const modalOverlay = document.getElementById('view-researcher-modal');
+  const researcherProfile = document.getElementById('researcher-profile');
+  
+  // Show loading state
+  researcherProfile.innerHTML = `
+    <div class="loading-spinner">
+      <i class="fas fa-circle-notch fa-spin"></i>
+      <span>Loading researcher profile...</span>
+    </div>
+  `;
+  
+  modalOverlay.classList.add('active');
+  
+  // Find researcher in projects data
+  fetchProjects().then(projects => {
+    let researcher = null;
+    
+    // Search in invited collaborators
+    for (const project of projects) {
+      if (project.invitedCollaborators) {
+        const found = project.invitedCollaborators.find(c => c.email === researcherId);
+        if (found) {
+          researcher = found;
+          break;
+        }
+      }
+    }
+    
+    // If not found, check in received invitations
+    if (!researcher) {
+      for (const project of projects) {
+        if (project.receivedInvitations) {
+          const found = project.receivedInvitations.find(inv => inv.invitedBy.email === researcherId);
+          if (found) {
+            researcher = found.invitedBy;
+            researcher.skills = found.requiredSkills || [];
+            break;
+          }
+        }
+      }
+    }
+    
+    if (researcher) {
+      // Update researcher name in modal title
+      document.getElementById('researcher-name-title').textContent = researcher.name;
+      
+      // Fill researcher profile
+      researcherProfile.innerHTML = `
+        <div class="researcher-info">
+          <div class="detail-group">
+            <div class="detail-group-label">Name</div>
+            <div class="detail-group-value">${escapeHtml(researcher.name)}</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-group-label">Title</div>
+            <div class="detail-group-value">${escapeHtml(researcher.title || 'Not specified')}</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-group-label">Institution</div>
+            <div class="detail-group-value">${escapeHtml(researcher.institution || 'Not specified')}</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-group-label">Email</div>
+            <div class="detail-group-value">${escapeHtml(researcher.email)}</div>
+          </div>
+          <div class="detail-group">
+            <div class="detail-group-label">Skills & Expertise</div>
+            <div class="tags-container">
+              ${(researcher.skills || []).map(skill => 
+                `<span class="tag">${escapeHtml(skill)}</span>`
+              ).join('')}
+              ${!researcher.skills || researcher.skills.length === 0 ? 
+                '<span class="text-gray-500">No skills listed</span>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      researcherProfile.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-user-slash"></i>
+          <p>Researcher profile not found.</p>
+        </div>
+      `;
+    }
+  }).catch(error => {
+    console.error('Error fetching researcher:', error);
+    researcherProfile.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>Failed to load researcher profile. Please try again later.</p>
+      </div>
+    `;
+  });
 }
 
 function closeResearcherModal() {
   document.getElementById('view-researcher-modal').classList.remove('active');
 }
 
+function messageResearcher() {
+  // This would redirect to messaging page or open a message compose modal
+  showToast('info', 'Coming Soon', 'Messaging functionality will be available soon.');
+  closeResearcherModal();
+}
+
+function openCancelModal(invitationId, projectId) {
+  const modalOverlay = document.getElementById('cancel-invitation-modal');
+  const cancelDetails = document.getElementById('cancel-invitation-details');
+  
+  fetchProjects().then(projects => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) throw new Error('Project not found');
+    
+    const invitation = project.invitedCollaborators.find(inv => inv.id === invitationId);
+    if (!invitation) throw new Error('Invitation not found');
+    
+    currentInvitation = invitation;
+    currentProject = project;
+    currentInvitationType = 'sent';
+    
+    cancelDetails.innerHTML = `
+      <p><strong>Project:</strong> ${escapeHtml(project.projectDetails?.projectTitle || 'Untitled Project')}</p>
+      <p><strong>Researcher:</strong> ${escapeHtml(invitation.name)}</p>
+      <p><strong>Institution:</strong> ${escapeHtml(invitation.institution)}</p>
+      <p><strong>Invited on:</strong> ${formatDate(invitation.invitedDate)}</p>
+    `;
+    
+    modalOverlay.classList.add('active');
+  }).catch(error => {
+    console.error('Error loading invitation details:', error);
+    showToast('error', 'Error', 'Failed to load invitation details.');
+  });
+}
+
 function closeCancelModal() {
   document.getElementById('cancel-invitation-modal').classList.remove('active');
-  currentInvitation = null;
 }
 
-// Toast notification function
-function showToast(type, title, message) {
-  const toastContainer = document.querySelector('.toast-container');
-  
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `
-    <div class="toast-icon">
-      <i class="fas ${getToastIcon(type)}"></i>
-    </div>
-    <div class="toast-content">
-      <h3 class="toast-title">${title}</h3>
-      <p class="toast-message">${message}</p>
-    </div>
-    <button class="toast-close">&times;</button>
-  `;
-  
-  toastContainer.appendChild(toast);
-  
-  // Activate toast with a slight delay for animation
-  setTimeout(() => {
-    toast.classList.add('active');
-  }, 10);
-  
-  // Set up event listener for close button
-  toast.querySelector('.toast-close').addEventListener('click', () => {
-    toast.classList.remove('active');
-    setTimeout(() => {
-      toast.remove();
-    }, 300); // Wait for animation to complete
-  });
-  
-  // Auto-remove toast after 5 seconds
-  setTimeout(() => {
-    if (toast.parentNode) { // Check if toast is still in the DOM
-      toast.classList.remove('active');
-      setTimeout(() => {
-        if (toast.parentNode) { // Check again before removing
-          toast.remove();
-        }
-      }, 300);
-    }
-  }, 5000);
-}
-
-// Get icon class for toast type
-function getToastIcon(type) {
-  switch (type) {
-    case 'success': return 'fa-check-circle';
-    case 'error': return 'fa-times-circle';
-    case 'warning': return 'fa-exclamation-triangle';
-    case 'info': return 'fa-info-circle';
-    default: return 'fa-info-circle';
+async function deleteInvitation() {
+  if (!currentInvitation || !currentProject) {
+    showToast('error', 'Error', 'No invitation selected to cancel.');
+    return;
   }
+  
+  try {
+    // Remove the invitation from the project
+    const updatedInvitations = currentProject.invitedCollaborators.filter(
+      inv => inv.id !== currentInvitation.id
+    );
+    
+    currentProject.invitedCollaborators = updatedInvitations;
+    
+    const result = await updateProject(currentProject.id, currentProject);
+    
+    if (result) {
+      showToast('success', 'Success', 'Invitation cancelled successfully.');
+      loadSentInvitations(); // Refresh the list
+      closeCancelModal();
+    } else {
+      throw new Error('Failed to update project');
+    }
+  } catch (error) {
+    console.error('Error cancelling invitation:', error);
+    showToast('error', 'Error', 'Failed to cancel invitation. Please try again.');
+  }
+}
+
+function openRespondModal(invitationId) {
+  const modalOverlay = document.getElementById('respond-invitation-modal');
+  const responseDetails = document.getElementById('respond-invitation-details');
+  document.getElementById('response-message').value = ''; // Clear previous message
+  
+  fetchProjects().then(projects => {
+    let foundInvitation = null;
+    let foundProject = null;
+    
+    // Find the invitation in received invitations
+    for (const project of projects) {
+      if (project.receivedInvitations) {
+        const invitation = project.receivedInvitations.find(inv => inv.id === invitationId);
+        if (invitation) {
+          foundInvitation = invitation;
+          foundProject = project;
+          break;
+        }
+      }
+    }
+    
+    if (!foundInvitation || !foundProject) {
+      throw new Error('Invitation not found');
+    }
+    
+    currentInvitation = foundInvitation;
+    currentProject = foundProject;
+    currentInvitationType = 'received';
+    
+    responseDetails.innerHTML = `
+      <p><strong>Project:</strong> ${escapeHtml(foundInvitation.projectTitle)}</p>
+      <p><strong>From:</strong> ${escapeHtml(foundInvitation.invitedBy.name)}</p>
+      <p><strong>Institution:</strong> ${escapeHtml(foundInvitation.invitedBy.institution)}</p>
+      <p><strong>Description:</strong> ${escapeHtml(foundInvitation.description || 'No description provided')}</p>
+      <p><strong>Duration:</strong> ${escapeHtml(foundInvitation.duration || 'Not specified')}</p>
+      ${foundInvitation.requiredSkills && foundInvitation.requiredSkills.length > 0 ? `
+        <p><strong>Required Skills:</strong></p>
+        <div class="tags-container">
+          ${foundInvitation.requiredSkills.map(skill => 
+            `<span class="tag">${escapeHtml(skill)}</span>`
+          ).join('')}
+        </div>
+      ` : ''}
+    `;
+    
+    modalOverlay.classList.add('active');
+  }).catch(error => {
+    console.error('Error loading invitation details:', error);
+    showToast('error', 'Error', 'Failed to load invitation details.');
+  });
+}
+
+function closeRespondModal() {
+  document.getElementById('respond-invitation-modal').classList.remove('active');
 }

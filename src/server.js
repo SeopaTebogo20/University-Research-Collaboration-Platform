@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios'); // You'll need to install axios
+const projectsRouter = require('./public/roles/routes/projects-api'); 
+const collaboratorsRouter = require('./public/roles/routes/collaborators-api'); 
 
 // Create the Express application
 const app = express();
@@ -49,6 +51,10 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours
 }));
+
+// Routes
+app.use('/api/projects', projectsRouter);
+app.use('/api/collaborators', collaboratorsRouter);
 
 // Custom middleware for logging
 app.use((req, res, next) => {

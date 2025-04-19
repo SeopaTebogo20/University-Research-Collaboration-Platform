@@ -1,0 +1,399 @@
+{
+  "collaborators": [
+    {
+      "id": "c1",
+      "name": "Dr. Emily Chen",
+      "title": "Assistant Professor of Bioinformatics",
+      "institution": "Pacific University",
+      "department": "Computational Biology",
+      "email": "e.chen@pacific.edu",
+      "phone": "+1 (555) 123-4567",
+      "location": "San Francisco, CA",
+      "bio": "Dr. Chen specializes in developing computational methods for analyzing high-throughput genomic data with applications in cancer research and personalized medicine.",
+      "skills": ["RNA-seq", "Bioinformatics", "Python", "R", "Machine Learning", "Single-cell Analysis"],
+      "publications": 28,
+      "citations": 450,
+      "collaborations": 12,
+      "isCollaborator": true,
+      "isSameField": true,
+      "isSameInstitution": false,
+      "isRecommended": true,
+      "education": [
+        {
+          "degree": "Ph.D. in Bioinformatics",
+          "institution": "Stanford University",
+          "year": "2018"
+        },
+        {
+          "degree": "M.S. in Computer Science",
+          "institution": "University of California, Berkeley",
+          "year": "2014"
+        },
+        {
+          "degree": "B.S. in Biology",
+          "institution": "MIT",
+          "year": "2012"
+        }
+      ],
+      "experience": [
+        {
+          "title": "Assistant Professor",
+          "organization": "Pacific University",
+          "period": "2018 - Present"
+        },
+        {
+          "title": "Postdoctoral Researcher",
+          "organization": "Stanford Medicine",
+          "period": "2016 - 2018"
+        }
+      ],
+      "projects": [
+        "Genomic Analysis of Drug Resistance in Cancer",
+        "Machine Learning for Predicting Treatment Responses",
+        "Systems Biology of Tumor Microenvironments"
+      ],
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "Bioinformatics",
+          "Data Analysis",
+          "Computational Biology",
+          "Statistical Modeling"
+        ],
+        "experienceLevel": "Advanced",
+        "positionsRequired": [
+          "Bioinformatician",
+          "Data Scientist",
+          "Research Assistant",
+          "Computational Biologist"
+        ],
+        "technicalRequirements": [
+          "R",
+          "Python",
+          "Single-cell Analysis tools",
+          "Machine Learning frameworks",
+          "SQL"
+        ]
+      }
+    },
+    {
+      "id": "c2",
+      "name": "Prof. Michael Rodriguez",
+      "title": "Associate Professor of Marine Biology",
+      "institution": "Coastal Science Institute",
+      "department": "Marine Ecosystems",
+      "email": "m.rodriguez@csi.edu",
+      "phone": "+1 (555) 987-6543",
+      "location": "Miami, FL",
+      "bio": "Prof. Rodriguez studies the impacts of climate change on coral reef ecosystems and develops strategies for marine conservation and restoration.",
+      "skills": ["Coral Reef Ecology", "Climate Science", "Field Research", "Ecological Modeling", "Conservation Biology"],
+      "publications": 45,
+      "citations": 780,
+      "collaborations": 20,
+      "isCollaborator": true,
+      "isSameField": false,
+      "isSameInstitution": false,
+      "isRecommended": true,
+      "education": [
+        {
+          "degree": "Ph.D. in Marine Biology",
+          "institution": "University of Miami",
+          "year": "2010"
+        },
+        {
+          "degree": "M.S. in Ecology",
+          "institution": "University of Florida",
+          "year": "2006"
+        },
+        {
+          "degree": "B.S. in Environmental Science",
+          "institution": "University of California, San Diego",
+          "year": "2004"
+        }
+      ],
+      "experience": [
+        {
+          "title": "Associate Professor",
+          "organization": "Coastal Science Institute",
+          "period": "2016 - Present"
+        },
+        {
+          "title": "Assistant Professor",
+          "organization": "University of Florida",
+          "period": "2010 - 2016"
+        },
+        {
+          "title": "Research Scientist",
+          "organization": "NOAA",
+          "period": "2008 - 2010"
+        }
+      ],
+      "projects": [
+        "Climate Change Effects on Coral Reef Biodiversity",
+        "Restoration Ecology in Marine Ecosystems",
+        "Sustainable Management of Coastal Resources"
+      ],
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "Marine Biology",
+          "Ecological Modeling",
+          "Field Research",
+          "Environmental Data Analysis"
+        ],
+        "experienceLevel": "Intermediate to Advanced",
+        "positionsRequired": [
+          "Marine Biologist",
+          "Environmental Scientist",
+          "Field Researcher",
+          "Conservation Specialist"
+        ],
+        "technicalRequirements": [
+          "GIS",
+          "R",
+          "Ecological Modeling Software",
+          "Remote Sensing Tools",
+          "Statistical Analysis"
+        ]
+      }
+    },
+    {
+      "id": "c3",
+      "name": "Dr. Sarah Kim",
+      "title": "Research Scientist",
+      "institution": "Medical Research Foundation",
+      "department": "AI in Healthcare",
+      "email": "s.kim@mrf.org",
+      "phone": "+1 (555) 345-6789",
+      "location": "Boston, MA",
+      "bio": "Dr. Kim develops deep learning algorithms for medical image analysis, focusing on early detection of diseases and improving diagnostic accuracy.",
+      "skills": ["Deep Learning", "Medical Imaging", "Neural Networks", "TensorFlow", "PyTorch", "Computer Vision"],
+      "publications": 32,
+      "citations": 530,
+      "collaborations": 15,
+      "isCollaborator": false,
+      "isSameField": true,
+      "isSameInstitution": true,
+      "isRecommended": true,
+      "education": [
+        {
+          "degree": "Ph.D. in Computer Science",
+          "institution": "Massachusetts Institute of Technology",
+          "year": "2017"
+        },
+        {
+          "degree": "M.S. in Biomedical Engineering",
+          "institution": "Johns Hopkins University",
+          "year": "2013"
+        },
+        {
+          "degree": "B.S. in Electrical Engineering",
+          "institution": "Carnegie Mellon University",
+          "year": "2011"
+        }
+      ],
+      "experience": [
+        {
+          "title": "Research Scientist",
+          "organization": "Medical Research Foundation",
+          "period": "2019 - Present"
+        },
+        {
+          "title": "AI Researcher",
+          "organization": "HealthTech Solutions",
+          "period": "2017 - 2019"
+        },
+        {
+          "title": "Data Science Intern",
+          "organization": "Google Health",
+          "period": "2016 - 2017"
+        }
+      ],
+      "projects": [
+        "Deep Learning for Early Cancer Detection",
+        "Automated Diagnosis of Neurological Disorders",
+        "AI-assisted Radiology Workflow Optimization"
+      ],
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "Deep Learning",
+          "Computer Vision",
+          "Medical Image Analysis",
+          "AI Development"
+        ],
+        "experienceLevel": "Advanced",
+        "positionsRequired": [
+          "AI Researcher",
+          "Machine Learning Engineer",
+          "Medical Imaging Specialist",
+          "Software Developer"
+        ],
+        "technicalRequirements": [
+          "PyTorch",
+          "TensorFlow",
+          "CUDA",
+          "Python",
+          "Medical Imaging Libraries"
+        ]
+      }
+    },
+    {
+      "id": "c4",
+      "name": "Dr. James Wilson",
+      "title": "Professor of Computer Science",
+      "institution": "Tech University",
+      "department": "Artificial Intelligence",
+      "email": "j.wilson@techu.edu",
+      "phone": "+1 (555) 234-5678",
+      "location": "Seattle, WA",
+      "bio": "Dr. Wilson researches advanced machine learning techniques with applications in natural language processing and multimodal learning systems.",
+      "skills": ["Machine Learning", "Natural Language Processing", "Deep Learning", "Reinforcement Learning", "Computer Vision"],
+      "publications": 78,
+      "citations": 1350,
+      "collaborations": 30,
+      "isCollaborator": false,
+      "isSameField": false,
+      "isSameInstitution": false,
+      "isRecommended": true,
+      "education": [
+        {
+          "degree": "Ph.D. in Computer Science",
+          "institution": "Carnegie Mellon University",
+          "year": "2005"
+        },
+        {
+          "degree": "M.S. in Artificial Intelligence",
+          "institution": "Stanford University",
+          "year": "2001"
+        },
+        {
+          "degree": "B.S. in Computer Science",
+          "institution": "University of Washington",
+          "year": "1999"
+        }
+      ],
+      "experience": [
+        {
+          "title": "Professor",
+          "organization": "Tech University",
+          "period": "2015 - Present"
+        },
+        {
+          "title": "Associate Professor",
+          "organization": "University of Washington",
+          "period": "2010 - 2015"
+        },
+        {
+          "title": "Senior Research Scientist",
+          "organization": "Microsoft Research",
+          "period": "2005 - 2010"
+        }
+      ],
+      "projects": [
+        "Neural Architectures for Multimodal Understanding",
+        "Ethical AI and Algorithmic Fairness",
+        "Large Language Models for Scientific Discovery"
+      ],
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "Natural Language Processing",
+          "Deep Learning",
+          "FrontEnd",
+          "BackEnd"
+        ],
+        "experienceLevel": "Expert",
+        "positionsRequired": [
+          "Machine Learning Engineer",
+          "NLP Researcher",
+          "Software Engineer",
+          "AI Ethics Specialist"
+        ],
+        "technicalRequirements": [
+          "Python",
+          "PyTorch",
+          "TensorFlow",
+          "Hugging Face",
+          "Cloud Computing"
+        ]
+      }
+    },
+    {
+      "id": "c5",
+      "name": "Dr. Lisa Martinez",
+      "title": "Associate Professor of Genetics",
+      "institution": "State University Medical Center",
+      "department": "Human Genetics",
+      "email": "l.martinez@sumc.edu",
+      "phone": "+1 (555) 876-5432",
+      "location": "Chicago, IL",
+      "bio": "Dr. Martinez studies genetic factors contributing to complex diseases, utilizing advanced genomic technologies and computational approaches to identify therapeutic targets.",
+      "skills": ["Genomics", "CRISPR", "Genetic Engineering", "Molecular Biology", "Next-generation Sequencing"],
+      "publications": 42,
+      "citations": 890,
+      "collaborations": 18,
+      "isCollaborator": true,
+      "isSameField": true,
+      "isSameInstitution": false,
+      "isRecommended": false,
+      "education": [
+        {
+          "degree": "Ph.D. in Genetics",
+          "institution": "Harvard University",
+          "year": "2011"
+        },
+        {
+          "degree": "M.D.",
+          "institution": "University of Chicago",
+          "year": "2007"
+        },
+        {
+          "degree": "B.S. in Biochemistry",
+          "institution": "Yale University",
+          "year": "2003"
+        }
+      ],
+      "experience": [
+        {
+          "title": "Associate Professor",
+          "organization": "State University Medical Center",
+          "period": "2017 - Present"
+        },
+        {
+          "title": "Assistant Professor",
+          "organization": "Northwestern University",
+          "period": "2011 - 2017"
+        },
+        {
+          "title": "Clinical Research Fellow",
+          "organization": "Massachusetts General Hospital",
+          "period": "2009 - 2011"
+        }
+      ],
+      "projects": [
+        "Genetic Basis of Autoimmune Disorders",
+        "CRISPR Applications in Genetic Disease Treatment",
+        "Personalized Genomic Medicine"
+      ],
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "Genomics",
+          "Molecular Biology",
+          "Genetic Analysis",
+          "Full Stack"
+        ],
+        "experienceLevel": "Intermediate",
+        "positionsRequired": [
+          "Geneticist",
+          "Bioinformatician",
+          "Biostatistician",
+          "Research Assistant"
+        ],
+        "technicalRequirements": [
+          "R",
+          "Python",
+          "PLINK",
+          "GATK",
+          "SQL"
+        ]
+      }
+    }
+  ]
+}
