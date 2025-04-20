@@ -42,7 +42,7 @@ This is a Node.js Express-based web application designed for universities to str
 - Aesthetic **Landing Page** with `Login` and `Signup` options
 - Role-based signup and login for:
   - **Researchers**
-  - **Reviewers**
+  - **Reviewer**
   - **Administrators**
 - Email and password-based **authentication**
 - Dashboard with role-specific features
