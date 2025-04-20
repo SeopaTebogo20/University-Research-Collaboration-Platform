@@ -7,6 +7,7 @@ const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios'); // You'll need to install axios
 const projectsRouter = require('./public/roles/routes/projects-api'); 
 const collaboratorsRouter = require('./public/roles/routes/collaborators-api'); 
+const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken
 
 // Create the Express application
 const app = express();
@@ -45,11 +46,17 @@ const redirectURl= process.env.NODE_ENV === 'production'
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Updated session configuration for better production support
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: process.env.NODE_ENV === 'production', maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production', 
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' 
+  }
 }));
 
 // Routes
@@ -85,10 +92,12 @@ app.get('/auth/google', (req, res) => {
     req.session.redirectAfterLogin = req.query.redirect;
   }
   
+  // Log the redirect URL for debugging
+  console.log(`[${new Date().toISOString()}] Redirecting to Google OAuth with URL: ${redirectURl}`);
+  
   res.redirect(authUrl.toString());
 });
 
-// Google Auth Callback with Wits University Email Validation
 // Add this helper function near the top of your file, after your middleware definitions
 function getDashboardUrlByRole(role) {
   // Normalize role to lowercase for case-insensitive comparison
@@ -101,18 +110,25 @@ function getDashboardUrlByRole(role) {
       return '/roles/reviewer/dashboard.html';
     case 'researcher':
       return '/roles/researcher/dashboard.html';
+    default:
+      return '/roles/researcher/dashboard.html';
   }
 }
 
 // Replace your existing Google Auth Callback with this updated version
 app.get('/auth/google/callback', async (req, res) => {
+  console.log(`[${new Date().toISOString()}] Google callback received with code: ${req.query.code ? 'present' : 'missing'}`);
+  
   const { code } = req.query;
   
   if (!code) {
+    console.log(`[${new Date().toISOString()}] No code provided in Google callback`);
     return res.redirect('/login?error=google_auth_failed');
   }
   
   try {
+    console.log(`[${new Date().toISOString()}] Starting token exchange with Google`);
+    
     // Exchange authorization code for tokens
     const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
       code,
@@ -121,6 +137,8 @@ app.get('/auth/google/callback', async (req, res) => {
       redirect_uri: redirectURl,
       grant_type: 'authorization_code'
     });
+    
+    console.log(`[${new Date().toISOString()}] Token exchange completed successfully`);
     
     // Get user info with the access token
     const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -155,16 +173,34 @@ app.get('/auth/google/callback', async (req, res) => {
     if (!existingUser) {
       console.log(`[${new Date().toISOString()}] New Google user, redirecting to complete profile: ${email}`);
       
-      // Store Google profile data in session for use in signup
-      req.session.googleProfile = {
+      // Create Google profile object
+      const googleProfile = {
         email,
         name,
         picture,
         googleId
       };
       
-      // Redirect to Google-specific signup form
-      return res.redirect('/signupGoogle');
+      // Use JWT token approach instead of relying solely on session
+      const token = jwt.sign(googleProfile, process.env.SESSION_SECRET, { expiresIn: '15m' });
+      
+      // Store in session as well for redundancy
+      req.session.googleProfile = googleProfile;
+      
+      // Ensure session is saved before redirect
+      req.session.save((err) => {
+        if (err) {
+          console.error(`[${new Date().toISOString()}] Error saving session: ${err.message}`);
+          // Fall back to token approach
+          return res.redirect(`/signupGoogle?token=${token}`);
+        }
+        
+        console.log(`[${new Date().toISOString()}] Google profile stored in session, redirecting to signupGoogle`);
+        // Include token as backup
+        return res.redirect(`/signupGoogle?token=${token}`);
+      });
+      
+      return;
     }
     
     // Existing user: proceed with normal login flow
@@ -212,21 +248,50 @@ app.get('/auth/google/callback', async (req, res) => {
     const redirectTo = req.session.redirectAfterLogin || dashboardUrl;
     delete req.session.redirectAfterLogin;
     
-    console.log(`[${new Date().toISOString()}] Redirecting user to: ${redirectTo} based on role: ${userRole}`);
-    return res.redirect(redirectTo);
+    // Ensure session is saved before redirect
+    req.session.save((err) => {
+      if (err) {
+        console.error(`[${new Date().toISOString()}] Error saving session after login: ${err.message}`);
+      }
+      
+      console.log(`[${new Date().toISOString()}] Redirecting user to: ${redirectTo} based on role: ${userRole}`);
+      return res.redirect(redirectTo);
+    });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Google auth error: ${error.message}`);
+    console.error(`[${new Date().toISOString()}] Error stack: ${error.stack}`);
     return res.redirect('/login?error=google_auth_error');
   }
 });
 
-// Serve the Google signup page
+// Updated signupGoogle route to handle both session and token approaches
 app.get('/signupGoogle', (req, res) => {
-  // Check if we have Google profile data in the session
+  console.log(`[${new Date().toISOString()}] SignupGoogle page requested`);
+  
+  // If token exists in query, use it as a backup
+  if (req.query.token) {
+    try {
+      console.log(`[${new Date().toISOString()}] Found token in URL, attempting to verify`);
+      const googleProfile = jwt.verify(req.query.token, process.env.SESSION_SECRET);
+      
+      // Restore the profile to session if it's missing
+      if (!req.session.googleProfile) {
+        req.session.googleProfile = googleProfile;
+        console.log(`[${new Date().toISOString()}] Restored Google profile from token to session`);
+      }
+    } catch (err) {
+      console.error(`[${new Date().toISOString()}] Invalid or expired token: ${err.message}`);
+      return res.redirect('/login?error=invalid_token');
+    }
+  }
+  
+  // Check if profile exists in session
   if (!req.session.googleProfile) {
+    console.error(`[${new Date().toISOString()}] Google profile not found in session`);
     return res.redirect('/login?error=missing_google_profile');
   }
   
+  console.log(`[${new Date().toISOString()}] Serving signupGoogle.html for: ${req.session.googleProfile.email}`);
   res.sendFile(path.join(__dirname, 'public', 'signupGoogle.html'));
 });
 
@@ -353,10 +418,20 @@ app.post('/api/signup-google', async (req, res) => {
     // Clear Google profile from session as it's no longer needed
     delete req.session.googleProfile;
     
-    return res.status(201).json({ 
-      message: 'Account created successfully!', 
-      user: newUser.user,
-      redirectUrl: '/dashboard'
+    // Ensure session is saved before returning response
+    req.session.save((err) => {
+      if (err) {
+        console.error(`[${new Date().toISOString()}] Error saving session after Google signup: ${err.message}`);
+      }
+      
+      // Get the appropriate dashboard URL based on role
+      const dashboardUrl = getDashboardUrlByRole(userRole);
+      
+      return res.status(201).json({ 
+        message: 'Account created successfully!', 
+        user: newUser.user,
+        redirectUrl: dashboardUrl // Use role-specific dashboard
+      });
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Google signup error: ${error.message}`);
@@ -415,11 +490,24 @@ app.post('/api/login', async (req, res) => {
     req.session.access_token = data.session.access_token;
     req.session.refresh_token = data.session.refresh_token;
     
-    return res.status(200).json({ 
-      message: 'Login successful', 
-      user: data.user,
-      session: data.session,
-      redirectUrl: '/dashboard' // Add redirect URL to response
+    // Get the user's role from their metadata
+    const userRole = data.user?.user_metadata?.role || 'researcher';
+    
+    // Get the appropriate dashboard URL based on role
+    const dashboardUrl = getDashboardUrlByRole(userRole);
+    
+    // Ensure session is saved before sending response
+    req.session.save((err) => {
+      if (err) {
+        console.error(`[${new Date().toISOString()}] Error saving session after login: ${err.message}`);
+      }
+      
+      return res.status(200).json({ 
+        message: 'Login successful', 
+        user: data.user,
+        session: data.session,
+        redirectUrl: dashboardUrl // Use role-specific dashboard
+      });
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Login error: ${error.message}`);
@@ -553,7 +641,9 @@ app.post('/api/signup', async (req, res) => {
     console.log(`[${new Date().toISOString()}] User metadata prepared`);
     
     // Get the base URL for the redirect
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? 'https://' + req.get('host')
+      : `${req.protocol}://${req.get('host')}`;
     
     // Use the regular signup method which automatically sends verification email
     const { data, error } = await supabase.auth.signUp({
@@ -598,6 +688,7 @@ app.post('/api/signup', async (req, res) => {
     return res.status(500).json({ message: `Server error: ${error.message}` });
   }
 });
+
 // Endpoint to resend email verification
 app.post('/api/resend-verification', async (req, res) => {
   const { email } = req.body;
@@ -609,7 +700,9 @@ app.post('/api/resend-verification', async (req, res) => {
   try {
     console.log(`[${new Date().toISOString()}] Resending verification email to: ${email}`);
     
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? 'https://' + req.get('host')
+      : `${req.protocol}://${req.get('host')}`;
     
     // Use Supabase's built-in resend email verification function
     const { error } = await supabase.auth.resend({
@@ -636,7 +729,6 @@ app.post('/api/resend-verification', async (req, res) => {
     return res.status(500).json({ message: 'Error sending verification email' });
   }
 });
-
 // Logout endpoint
 app.post('/api/logout', async (req, res) => {
   try {
