@@ -5,14 +5,14 @@
         "researcherName": "Dr. James Wilson",
         "projectTitle": "Machine Drawing",
         "description": "Win is a win but only one can win",
-        "keyResearchArea": "Newton laws oof motion",
+        "keyResearchArea": "Newton laws of motion",
         "startDate": "2025-04-20",
         "endDate": "2025-04-30",
         "fundingAvailable": true
       },
       "collaborationRequirements": {
         "skillsAndExpertise": [
-          "FrondEnd",
+          "FrontEnd",
           "BackEnd",
           "Full Stack",
           ""
@@ -41,7 +41,7 @@
           "institution": "Pacific University",
           "email": "e.chen@pacific.edu",
           "status": "invited",
-          "invitedDate": "2025-04-19T08:37:38.346Z",
+          "invitedDate": "2025-04-21T15:25:58.004Z",
           "skills": [
             "RNA-seq",
             "Bioinformatics",
@@ -50,135 +50,49 @@
             "Machine Learning",
             "Single-cell Analysis"
           ]
-        },
-        {
-          "id": "c2",
-          "name": "Prof. Michael Rodriguez",
-          "title": "Associate Professor of Marine Biology",
-          "institution": "Coastal Science Institute",
-          "email": "m.rodriguez@csi.edu",
-          "status": "invited",
-          "invitedDate": "2025-04-19T08:38:12.383Z",
-          "skills": [
-            "Coral Reef Ecology",
-            "Climate Science",
-            "Field Research",
-            "Ecological Modeling",
-            "Conservation Biology"
-          ]
-        },
-        {
-          "id": "c3",
-          "name": "Dr. Sarah Kim",
-          "title": "Research Scientist",
-          "institution": "Medical Research Foundation",
-          "email": "s.kim@mrf.org",
-          "status": "invited",
-          "invitedDate": "2025-04-19T08:38:17.166Z",
-          "skills": [
-            "Deep Learning",
-            "Medical Imaging",
-            "Neural Networks",
-            "TensorFlow",
-            "PyTorch",
-            "Computer Vision"
-          ]
-        },
-        {
-          "id": "c5",
-          "name": "Dr. Lisa Martinez",
-          "title": "Associate Professor of Genetics",
-          "institution": "State University Medical Center",
-          "email": "l.martinez@sumc.edu",
-          "status": "invited",
-          "invitedDate": "2025-04-19T08:40:09.440Z",
-          "skills": [
-            "Genomics",
-            "CRISPR",
-            "Genetic Engineering",
-            "Molecular Biology",
-            "Next-generation Sequencing"
-          ]
-        },
-        {
-          "id": "c4",
-          "name": "Dr. James Wilson",
-          "title": "Professor of Computer Science",
-          "institution": "Tech University",
-          "email": "j.wilson@techu.edu",
-          "status": "invited",
-          "invitedDate": "2025-04-19T08:51:12.123Z",
-          "skills": [
-            "Machine Learning",
-            "Natural Language Processing",
-            "Deep Learning",
-            "Reinforcement Learning",
-            "Computer Vision"
-          ]
         }
-      ],
-      "receivedInvitations": [
+      ]
+    },
+    {
+      "projectDetails": {
+        "researcherName": "tryt",
+        "projectTitle": "gtr    ",
+        "description": "            rerf",
+        "keyResearchArea": "ertg",
+        "startDate": "2025-02-22",
+        "endDate": "2025-04-22",
+        "fundingAvailable": true
+      },
+      "collaborationRequirements": {
+        "skillsAndExpertise": [
+          "dtgh"
+        ],
+        "experienceLevel": "Entry",
+        "positionsRequired": [
+          "yyyyyyujy"
+        ],
+        "technicalRequirements": [
+          "kkkkkyi"
+        ]
+      },
+      "id": "PRJ002",
+      "invitedCollaborators": [
         {
-          "id": "INV001",
-          "projectId": "EXT123",
-          "projectTitle": "Neural Networks for Climate Prediction",
-          "invitedBy": {
-            "name": "Dr. Alex Johnson",
-            "title": "Director of Climate Research",
-            "institution": "Global Climate Institute",
-            "email": "a.johnson@gci.org"
-          },
-          "invitedDate": "2025-04-17T14:22:43.120Z",
-          "status": "pending",
-          "description": "Collaboration on applying neural networks to improve climate prediction models",
-          "requiredSkills": [
+          "id": "c1",
+          "name": "Dr. Emily Chen",
+          "title": "Assistant Professor of Bioinformatics",
+          "institution": "Pacific University",
+          "email": "e.chen@pacific.edu",
+          "status": "invited",
+          "invitedDate": "2025-04-21T15:24:30.574Z",
+          "skills": [
+            "RNA-seq",
+            "Bioinformatics",
+            "Python",
+            "R",
             "Machine Learning",
-            "Climate Modeling",
-            "Data Analysis"
-          ],
-          "duration": "6 months"
-        },
-        {
-          "id": "INV002",
-          "projectId": "EXT456",
-          "projectTitle": "Quantum Computing Applications in Drug Discovery",
-          "invitedBy": {
-            "name": "Dr. Sophia Patel",
-            "title": "Lead Researcher, Quantum Computing Division",
-            "institution": "Pharmaceutical Innovations Inc.",
-            "email": "s.patel@pharminnovate.com"
-          },
-          "invitedDate": "2025-04-18T09:15:32.876Z",
-          "status": "pending",
-          "description": "Exploring quantum computing algorithms to accelerate drug discovery processes",
-          "requiredSkills": [
-            "Quantum Computing",
-            "Molecular Modeling",
-            "Drug Discovery",
-            "Algorithm Development"
-          ],
-          "duration": "12 months"
-        },
-        {
-          "id": "INV003",
-          "projectId": "EXT789",
-          "projectTitle": "Autonomous Systems for Agricultural Monitoring",
-          "invitedBy": {
-            "name": "Prof. Thomas Garcia",
-            "title": "Chair of Agricultural Technology",
-            "institution": "Agricultural Research Center",
-            "email": "t.garcia@arc.edu"
-          },
-          "invitedDate": "2025-04-19T11:05:27.390Z",
-          "status": "pending",
-          "description": "Developing autonomous drones and sensors for monitoring crop health and environmental conditions",
-          "requiredSkills": [
-            "Robotics",
-            "Computer Vision",
-            "IoT",
-            "Environmental Sensing"
-          ],
-          "duration": "9 months"
+            "Single-cell Analysis"
+          ]
         }
       ]
     }
