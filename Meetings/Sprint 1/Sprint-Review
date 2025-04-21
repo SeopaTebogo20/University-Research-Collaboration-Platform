@@ -1,0 +1,21 @@
+Sprint Review
+
+Date: 14 April 2025
+Time: 14:00
+Meeting Type: Sprint Review
+Attendees: Development Team & Client
+
+1. Purpose of the Meeting
+To Review and get feedback on how we performed on the first sprint.
+
+In this meeting the client was checking if we had done evrything well and was marking the first sprint.
+We made a number of mistakes, namely: 
+  Scrum Methodology: We had missing meetings (Backlog refinment, Sprint retrospective) and for some metting that we had,
+  we didn't have proof.
+
+  Continuous Integration: we didn't have a Stand Alone Build, issue tracker, and releases.
+  Project Polish: We had some unhandled errors, like contact number and email not being verified.
+
+2. Feedback
+The client emphasized that we must check the rubric and we must create a Discord server to hold our meetings. We were to also make sure
+to fix the errrors we had before moving forward.
