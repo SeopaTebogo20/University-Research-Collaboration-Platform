@@ -51,7 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Updated session configuration for better production support
 app.use(session({
   secret: process.env.SESSION_SECRET,
-  resave: false,
+  resave: true,
   saveUninitialized: true,
   cookie: { 
     secure: process.env.NODE_ENV === 'production', 
