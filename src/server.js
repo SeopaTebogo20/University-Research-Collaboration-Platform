@@ -49,14 +49,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Updated session configuration for better production support
+// Updated session configuration for Azure
 app.use(session({
   secret: process.env.SESSION_SECRET,
-  resave: false,
+  resave: true, // Change to true to ensure session is saved
   saveUninitialized: true,
   cookie: { 
     secure: process.env.NODE_ENV === 'production', 
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' 
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    httpOnly: true
   }
 }));
 
@@ -266,7 +268,7 @@ app.get('/auth/google/callback', async (req, res) => {
   }
 });
 
-// Updated signupGoogle route to handle both session and token approaches
+// Updated signupGoogle route
 app.get('/signupGoogle', (req, res) => {
   console.log(`[${new Date().toISOString()}] SignupGoogle page requested`);
   
@@ -276,11 +278,20 @@ app.get('/signupGoogle', (req, res) => {
       console.log(`[${new Date().toISOString()}] Found token in URL, attempting to verify`);
       const googleProfile = jwt.verify(req.query.token, process.env.SESSION_SECRET);
       
-      // Restore the profile to session if it's missing
-      if (!req.session.googleProfile) {
-        req.session.googleProfile = googleProfile;
-        console.log(`[${new Date().toISOString()}] Restored Google profile from token to session`);
-      }
+      // Store the profile in session
+      req.session.googleProfile = googleProfile;
+      console.log(`[${new Date().toISOString()}] Set Google profile from token to session`, googleProfile);
+      
+      // Force save the session
+      req.session.save((err) => {
+        if (err) {
+          console.error(`[${new Date().toISOString()}] Error saving session: ${err.message}`);
+        }
+        
+        console.log(`[${new Date().toISOString()}] Serving signupGoogle.html for: ${googleProfile.email}`);
+        res.sendFile(path.join(__dirname, 'public', 'signupGoogle.html'));
+      });
+      return;
     } catch (err) {
       console.error(`[${new Date().toISOString()}] Invalid or expired token: ${err.message}`);
       return res.redirect('/login?error=invalid_token');
@@ -432,13 +443,33 @@ app.post('/api/signup-google', async (req, res) => {
   }
 });
 
-// Endpoint to get Google profile data from session
+// Updated endpoint to get Google profile data from session
 app.get('/api/auth/google-profile', (req, res) => {
+  // First check session
   if (req.session.googleProfile) {
     return res.status(200).json({ 
       profile: req.session.googleProfile 
     });
   }
+  
+  // If not in session, check for token in query
+  if (req.query.token) {
+    try {
+      const googleProfile = jwt.verify(req.query.token, process.env.SESSION_SECRET);
+      
+      // Store in session for future requests
+      req.session.googleProfile = googleProfile;
+      req.session.save();
+      
+      return res.status(200).json({ 
+        profile: googleProfile 
+      });
+    } catch (err) {
+      console.error(`[${new Date().toISOString()}] Invalid token in profile request: ${err.message}`);
+      return res.status(401).json({ message: 'Invalid token' });
+    }
+  }
+  
   return res.status(404).json({ message: 'Google profile not found in session' });
 });
 

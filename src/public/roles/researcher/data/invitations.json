@@ -19,26 +19,6 @@
         }
       ],
       "id": "si12"
-    },
-    {
-      "projectId": "PRJ005",
-      "projectTitle": "Machine Class For methods of work with time and money and yet some yes",
-      "invitedCollaborator": {
-        "id": "c1",
-        "name": "Dr. Emily Chen",
-        "email": "e.chen@pacific.edu",
-        "institution": "Pacific University"
-      },
-      "invitedDate": "2025-04-22T11:08:28.775Z",
-      "status": "invited",
-      "messages": [
-        {
-          "text": "Hi Dr. Emily Chen,\n\nI would like to invite you to collaborate on my research project \"Machine Class For methods of work with time and money and yet some yes\". Your expertise in RNA-seq, Bioinformatics, Python would be valuable for this work.\n\nLooking forward to your response.",
-          "sender": "researcher",
-          "timestamp": "2025-04-22T11:08:28.775Z"
-        }
-      ],
-      "id": "si13"
     }
   ],
   "receivedInvitations": [
@@ -53,7 +33,7 @@
         "email": "r.chang@oci.org"
       },
       "invitedDate": "2025-04-20T08:43:19.502Z",
-      "status": "pending",
+      "status": "accepted",
       "description": "Developing novel biodegradable polymers that can replace conventional plastics in marine environments",
       "requiredSkills": [
         "Polymer Chemistry",
@@ -62,7 +42,13 @@
         "Biodegradation Testing"
       ],
       "duration": "15 months",
-      "messages": []
+      "messages": [
+        {
+          "text": "SENT",
+          "sender": "you",
+          "timestamp": "2025-04-24T12:22:05.720Z"
+        }
+      ]
     },
     {
       "id": "INV005",

@@ -613,6 +613,23 @@
             "Reinforcement Learning",
             "Computer Vision"
           ]
+        },
+        {
+          "id": "c3",
+          "name": "Dr. Sarah Kim",
+          "title": "Research Scientist",
+          "institution": "Medical Research Foundation",
+          "email": "s.kim@mrf.org",
+          "status": "invited",
+          "invitedDate": "2025-04-24T12:21:17.765Z",
+          "skills": [
+            "Deep Learning",
+            "Medical Imaging",
+            "Neural Networks",
+            "TensorFlow",
+            "PyTorch",
+            "Computer Vision"
+          ]
         }
       ]
     }
