@@ -486,7 +486,7 @@ function closeProfileModal() {
     profileModal.style.display = 'none';
 }
 
-// Invite collaborator directly from the collaborator list
+// For the inviteCollaborator function, add API integration:
 async function inviteCollaborator(collaboratorId) {
     try {
         // First fetch the collaborator details
@@ -501,30 +501,18 @@ async function inviteCollaborator(collaboratorId) {
         // Get the project title from the modal
         const projectTitle = document.getElementById('invite-project-title').textContent;
         
-        // Create invitation data with appropriate skills
+        // Create skills list for message
         const skillsList = Array.isArray(collaborator.skills) ? 
             collaborator.skills.slice(0, 3).join(', ') : 
             'your field';
         
-        const invitationData = {
-            projectId: inviteProjectId,
-            collaboratorId: collaboratorId,
-            collaboratorName: collaborator.name,
-            collaboratorEmail: collaborator.email,
-            position: collaborator.title || 'Collaborator', // Use title as default position
-            message: `Hi ${collaborator.name},
+        const message = `Hi ${collaborator.name},
 
 I would like to invite you to collaborate on my research project "${projectTitle}". Your expertise in ${skillsList} would be valuable for this work.
 
-Looking forward to your response.`
-        };
+Looking forward to your response.`;
         
-        console.log('Sending invitation:', invitationData);
-        
-        // Simulate API call for sending invitation
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Create a collaborator info object to store in the project
+        // Create invitation data for project storage
         const collaboratorInfo = {
             id: collaborator.id,
             name: collaborator.name,
@@ -553,6 +541,28 @@ Looking forward to your response.`
             // Update the project in the API
             await updateProjectInAPI(project);
             
+            // Create invitation data for invitations API
+            const sentInvitationData = {
+                projectId: inviteProjectId,
+                projectTitle: projectTitle,
+                invitedCollaborator: {
+                    id: collaborator.id,
+                    name: collaborator.name,
+                    email: collaborator.email,
+                    institution: collaborator.institution || ''
+                },
+                invitedDate: new Date().toISOString(),
+                status: 'invited',
+                messages: [{
+                    text: message,
+                    sender: 'researcher', // assuming the user is the researcher
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            
+            // Send to invitations API
+            await saveInvitationToAPI(sentInvitationData, 'sent');
+            
             showToast(`Invitation sent to ${collaborator.name} successfully!`, 'success');
         } else {
             showToast(`${collaborator.name} has already been invited to this project.`, 'info');
@@ -562,6 +572,121 @@ Looking forward to your response.`
         showToast('Error sending invitation. Please try again.', 'error');
     }
 }
+
+
+// Add new function to send invitations to the API
+async function saveInvitationToAPI(invitationData, type) {
+    try {
+        const endpoint = type === 'sent' ? 'sent' : 'received';
+        const response = await fetch(`http://localhost:3000/api/invitations/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(invitationData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to save ${type} invitation`);
+        }
+        
+        const savedInvitation = await response.json();
+        console.log(`${type} invitation saved:`, savedInvitation);
+        return savedInvitation;
+    } catch (error) {
+        console.error(`Error saving ${type} invitation:`, error);
+        throw error;
+    }
+}
+
+
+// Add function to fetch invitations for a project
+async function fetchInvitationsForProject(projectId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/invitations/project/${projectId}`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch invitations for project');
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching invitations for project:', error);
+        throw error;
+    }
+}
+
+// Add a function to update invitation status
+async function updateInvitationStatus(invitationId, type, status) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/invitations/${type}/${invitationId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to update invitation status`);
+        }
+        
+        const updatedInvitation = await response.json();
+        return updatedInvitation;
+    } catch (error) {
+        console.error('Error updating invitation status:', error);
+        throw error;
+    }
+}
+
+// Add a function to send a message to an invitation
+async function sendMessageToInvitation(invitationId, type, text, sender) {
+    try {
+        const message = {
+            text,
+            sender,
+            timestamp: new Date().toISOString()
+        };
+        
+        const response = await fetch(`http://localhost:3000/api/invitations/${type}/${invitationId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(message)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to send message to invitation`);
+        }
+        
+        const savedMessage = await response.json();
+        return savedMessage;
+    } catch (error) {
+        console.error('Error sending message to invitation:', error);
+        throw error;
+    }
+}
+
+// Additional function to view invitation details - this could be integrated into the UI
+// to allow users to view and respond to invitations
+async function viewInvitationDetails(invitationId, type) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/invitations/${type}/${invitationId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch invitation details`);
+        }
+        
+        const invitation = await response.json();
+        return invitation;
+    } catch (error) {
+        console.error('Error fetching invitation details:', error);
+        throw error;
+    }
+}
+
 
 // Add a function to update project in the API
 async function updateProjectInAPI(project) {
@@ -782,7 +907,7 @@ async function handleFormSubmit(e) {
     }
 }
 
-// Handle invite collaborator form submission (manual invite)
+// Update handleInviteSubmit function for manual invites
 async function handleInviteSubmit(e) {
     e.preventDefault();
     
@@ -801,19 +926,6 @@ async function handleInviteSubmit(e) {
         if (!project) {
             throw new Error('Project not found');
         }
-        
-        // Manual invitation data
-        const manualInviteData = {
-            projectId: inviteProjectId,
-            email,
-            position,
-            message
-        };
-        
-        console.log('Sending manual invitation:', manualInviteData);
-        
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 800));
         
         // Create a collaborator info object for manual invites
         const collaboratorInfo = {
@@ -842,6 +954,28 @@ async function handleInviteSubmit(e) {
             
             // Update the project in the API
             await updateProjectInAPI(project);
+            
+            // Create invitation data for invitations API
+            const sentInvitationData = {
+                projectId: inviteProjectId,
+                projectTitle: project.projectDetails.projectTitle,
+                invitedCollaborator: {
+                    id: collaboratorInfo.id,
+                    name: collaboratorInfo.name,
+                    email: email,
+                    position: position
+                },
+                invitedDate: new Date().toISOString(),
+                status: 'invited',
+                messages: [{
+                    text: message,
+                    sender: 'researcher', // assuming the user is the researcher
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            
+            // Send to invitations API
+            await saveInvitationToAPI(sentInvitationData, 'sent');
             
             closeInviteModal();
             showToast(`Invitation sent to ${email} successfully!`, 'success');
@@ -958,6 +1092,345 @@ function getFormData() {
 function resetForm() {
     projectForm.reset();
     document.getElementById('project-id').value = '';
+}
+
+// New function to view and manage project invitations
+async function viewProjectInvitations(projectId) {
+    try {
+        // Create modal for viewing invitations
+        let invitationsModal = document.getElementById('invitations-modal');
+        
+        if (!invitationsModal) {
+            invitationsModal = document.createElement('div');
+            invitationsModal.id = 'invitations-modal';
+            invitationsModal.className = 'modal';
+            
+            // Create modal content
+            invitationsModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Project Invitations</h2>
+                        <span class="close" onclick="document.getElementById('invitations-modal').style.display='none'">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="tab-navigation">
+                            <button class="tab-btn active" data-tab="sent-invitations">Sent Invitations</button>
+                            <button class="tab-btn" data-tab="received-invitations">Received Invitations</button>
+                        </div>
+                        <div id="sent-invitations" class="tab-content">
+                            <div id="sent-invitations-list"></div>
+                        </div>
+                        <div id="received-invitations" class="tab-content hidden">
+                            <div id="received-invitations-list"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(invitationsModal);
+            
+            // Add event listeners for tab navigation
+            invitationsModal.querySelectorAll('.tab-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    invitationsModal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                    invitationsModal.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+                    
+                    button.classList.add('active');
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.remove('hidden');
+                });
+            });
+        }
+        
+        // Show modal
+        invitationsModal.style.display = 'block';
+        
+        // Show loading state
+        document.getElementById('sent-invitations-list').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading sent invitations...</div>';
+        document.getElementById('received-invitations-list').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading received invitations...</div>';
+        
+        // Fetch invitations for this project
+        const invitations = await fetchInvitationsForProject(projectId);
+        
+        // Display sent invitations
+        displaySentInvitations(invitations.sentInvitations);
+        
+        // Display received invitations
+        displayReceivedInvitations(invitations.receivedInvitations);
+    } catch (error) {
+        console.error('Error viewing project invitations:', error);
+        showToast('Error loading invitations. Please try again.', 'error');
+    }
+}
+
+// Function to display sent invitations
+function displaySentInvitations(sentInvitations) {
+    const sentInvitationsList = document.getElementById('sent-invitations-list');
+    
+    if (!sentInvitations || sentInvitations.length === 0) {
+        sentInvitationsList.innerHTML = `
+            <div class="no-invitations">
+                <i class="fas fa-envelope-open"></i>
+                <p>No sent invitations for this project.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    sentInvitationsList.innerHTML = sentInvitations.map(invitation => {
+        // Format messages
+        const messagesList = invitation.messages && invitation.messages.length > 0 ?
+            invitation.messages.map(message => `
+                <div class="message ${message.sender === 'researcher' ? 'sent' : 'received'}">
+                    <div class="message-content">
+                        <p>${message.text}</p>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">${formatDate(message.timestamp)}</span>
+                        <span class="message-sender">${message.sender}</span>
+                    </div>
+                </div>
+            `).join('') : 
+            '<p class="no-messages">No messages yet.</p>';
+        
+        return `
+            <div class="invitation-card" data-id="${invitation.id}">
+                <div class="invitation-header">
+                    <h3>Invitation to ${invitation.invitedCollaborator.name || invitation.invitedCollaborator.email}</h3>
+                    <span class="status-badge ${invitation.status}">${invitation.status}</span>
+                </div>
+                <div class="invitation-details">
+                    <p><strong>Project:</strong> ${invitation.projectTitle}</p>
+                    <p><strong>Sent Date:</strong> ${formatDate(invitation.invitedDate)}</p>
+                    <p><strong>Recipient:</strong> ${invitation.invitedCollaborator.email} (${invitation.invitedCollaborator.institution || 'No institution specified'})</p>
+                </div>
+                <div class="invitation-messages">
+                    <h4>Messages</h4>
+                    <div class="messages-container">
+                        ${messagesList}
+                    </div>
+                </div>
+                <div class="invitation-actions">
+                    <button class="btn secondary send-message-btn" onclick="openSendMessageDialog('${invitation.id}', 'sent')">
+                        <i class="fas fa-reply"></i> Send Message
+                    </button>
+                    <button class="btn danger cancel-invitation-btn" onclick="cancelInvitation('${invitation.id}')">
+                        <i class="fas fa-times"></i> Cancel Invitation
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Function to display received invitations
+function displayReceivedInvitations(receivedInvitations) {
+    const receivedInvitationsList = document.getElementById('received-invitations-list');
+    
+    if (!receivedInvitations || receivedInvitations.length === 0) {
+        receivedInvitationsList.innerHTML = `
+            <div class="no-invitations">
+                <i class="fas fa-envelope-open"></i>
+                <p>No received invitations for this project.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    receivedInvitationsList.innerHTML = receivedInvitations.map(invitation => {
+        // Format messages
+        const messagesList = invitation.messages && invitation.messages.length > 0 ?
+            invitation.messages.map(message => `
+                <div class="message ${message.sender === 'researcher' ? 'received' : 'sent'}">
+                    <div class="message-content">
+                        <p>${message.text}</p>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">${formatDate(message.timestamp)}</span>
+                        <span class="message-sender">${message.sender}</span>
+                    </div>
+                </div>
+            `).join('') : 
+            '<p class="no-messages">No messages yet.</p>';
+        
+        // Button state based on status
+        let statusButtons = '';
+        if (invitation.status === 'pending') {
+            statusButtons = `
+                <button class="btn success accept-btn" onclick="respondToInvitation('${invitation.id}', 'accepted')">
+                    <i class="fas fa-check"></i> Accept
+                </button>
+                <button class="btn danger decline-btn" onclick="respondToInvitation('${invitation.id}', 'declined')">
+                    <i class="fas fa-times"></i> Decline
+                </button>
+            `;
+        } else {
+            statusButtons = `
+                <div class="status-indicator ${invitation.status}">
+                    ${invitation.status === 'accepted' ? 
+                        '<i class="fas fa-check-circle"></i> Accepted' : 
+                        '<i class="fas fa-times-circle"></i> Declined'}
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="invitation-card" data-id="${invitation.id}">
+                <div class="invitation-header">
+                    <h3>Invitation from ${invitation.invitedBy.name || invitation.invitedBy.email}</h3>
+                    <span class="status-badge ${invitation.status}">${invitation.status}</span>
+                </div>
+                <div class="invitation-details">
+                    <p><strong>Project:</strong> ${invitation.projectTitle}</p>
+                    <p><strong>Received Date:</strong> ${formatDate(invitation.invitedDate)}</p>
+                    <p><strong>From:</strong> ${invitation.invitedBy.email} (${invitation.invitedBy.institution || 'No institution specified'})</p>
+                </div>
+                <div class="invitation-messages">
+                    <h4>Messages</h4>
+                    <div class="messages-container">
+                        ${messagesList}
+                    </div>
+                </div>
+                <div class="invitation-actions">
+                    <button class="btn secondary send-message-btn" onclick="openSendMessageDialog('${invitation.id}', 'received')">
+                        <i class="fas fa-reply"></i> Send Message
+                    </button>
+                    ${statusButtons}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Function to open a dialog for sending a message to an invitation
+function openSendMessageDialog(invitationId, type) {
+    // Create the send message dialog if it doesn't exist
+    let messageDialog = document.getElementById('send-message-dialog');
+    
+    if (!messageDialog) {
+        messageDialog = document.createElement('div');
+        messageDialog.id = 'send-message-dialog';
+        messageDialog.className = 'modal';
+        
+        messageDialog.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Send Message</h2>
+                    <span class="close" onclick="document.getElementById('send-message-dialog').style.display='none'">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="send-message-form">
+                        <input type="hidden" id="message-invitation-id">
+                        <input type="hidden" id="message-invitation-type">
+                        
+                        <div class="form-group">
+                            <label for="message-text">Message:</label>
+                            <textarea id="message-text" class="form-control" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn secondary" onclick="document.getElementById('send-message-dialog').style.display='none'">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn primary">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(messageDialog);
+        
+        // Add event listener for the form
+        document.getElementById('send-message-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const invitationId = document.getElementById('message-invitation-id').value;
+            const invitationType = document.getElementById('message-invitation-type').value;
+            const messageText = document.getElementById('message-text').value;
+            
+            try {
+                await sendMessageToInvitation(
+                    invitationId,
+                    invitationType,
+                    messageText,
+                    'researcher' // Assuming the user is always the researcher
+                );
+                
+                messageDialog.style.display = 'none';
+                
+                // Refresh the invitations display
+                const projectId = document.querySelector('.invitation-card[data-id="' + invitationId + '"]')
+                    .closest('.project-card').getAttribute('data-id');
+                    
+                if (projectId) {
+                    viewProjectInvitations(projectId);
+                }
+                
+                showToast('Message sent successfully!', 'success');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showToast('Error sending message. Please try again.', 'error');
+            }
+        });
+    }
+    
+    // Set values and show dialog
+    document.getElementById('message-invitation-id').value = invitationId;
+    document.getElementById('message-invitation-type').value = type;
+    document.getElementById('message-text').value = '';
+    
+    messageDialog.style.display = 'block';
+}
+
+// Function to cancel an invitation
+async function cancelInvitation(invitationId) {
+    if (!confirm('Are you sure you want to cancel this invitation?')) {
+        return;
+    }
+    
+    try {
+        await updateInvitationStatus(invitationId, 'sent', 'cancelled');
+        
+        // Get project ID to refresh invitations view
+        const projectId = document.querySelector('.invitation-card[data-id="' + invitationId + '"]')
+            .closest('.project-card').getAttribute('data-id');
+            
+        if (projectId) {
+            await viewProjectInvitations(projectId);
+            
+            // Also update project data to reflect cancellation
+            fetchProjects();
+        }
+        
+        showToast('Invitation cancelled successfully!', 'success');
+    } catch (error) {
+        console.error('Error cancelling invitation:', error);
+        showToast('Error cancelling invitation. Please try again.', 'error');
+    }
+}
+
+// Function to respond to a received invitation
+async function respondToInvitation(invitationId, status) {
+    try {
+        await updateInvitationStatus(invitationId, 'received', status);
+        
+        // Get project ID to refresh invitations view
+        const projectId = document.querySelector('.invitation-card[data-id="' + invitationId + '"]')
+            .closest('.project-card').getAttribute('data-id');
+            
+        if (projectId) {
+            await viewProjectInvitations(projectId);
+        }
+        
+        const statusText = status === 'accepted' ? 'accepted' : 'declined';
+        showToast(`Invitation ${statusText} successfully!`, 'success');
+    } catch (error) {
+        console.error('Error responding to invitation:', error);
+        showToast('Error responding to invitation. Please try again.', 'error');
+    }
 }
 
 // Search projects based on input
