@@ -29,7 +29,7 @@ https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
  3. npm install express-session
  4. node src/server.js
 
-# University Research and Collaboration Platform
+# University Research and Collaboration Platform.
 
 ## Overview
 
