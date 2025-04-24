@@ -1,8 +1,9 @@
 // jest.config.js
 module.exports = {
   // The root directory that Jest should scan for tests and modules
+  verbose: true,
   rootDir: './',
-  
+  preset: 'ts-jest',
   // The test environment that will be used for testing
   testEnvironment: 'jsdom',
   
@@ -21,7 +22,13 @@ module.exports = {
   globals: {
     fetch: true
   },
-  
+
+    // Add custom reporter to better format UAT output
+    reporters: [
+      "default",
+      "./test/custom-reporter.js"
+    ],
+
   // Setup files before tests are run
   setupFilesAfterEnv: ['./test/setup.js'],
 };

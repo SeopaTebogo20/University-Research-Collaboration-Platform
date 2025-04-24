@@ -1,0 +1,198 @@
+{
+  "sentInvitations": [
+    {
+      "projectId": "PRJ004",
+      "projectTitle": "SD3",
+      "invitedCollaborator": {
+        "id": "c2",
+        "name": "Prof. Michael Rodriguez",
+        "email": "m.rodriguez@csi.edu",
+        "institution": "Coastal Science Institute"
+      },
+      "invitedDate": "2025-04-22T11:06:32.763Z",
+      "status": "invited",
+      "messages": [
+        {
+          "text": "Hi Prof. Michael Rodriguez,\n\nI would like to invite you to collaborate on my research project \"SD3\". Your expertise in Coral Reef Ecology, Climate Science, Field Research would be valuable for this work.\n\nLooking forward to your response.",
+          "sender": "researcher",
+          "timestamp": "2025-04-22T11:06:32.764Z"
+        }
+      ],
+      "id": "si12"
+    },
+    {
+      "projectId": "PRJ005",
+      "projectTitle": "Machine Class For methods of work with time and money and yet some yes",
+      "invitedCollaborator": {
+        "id": "c1",
+        "name": "Dr. Emily Chen",
+        "email": "e.chen@pacific.edu",
+        "institution": "Pacific University"
+      },
+      "invitedDate": "2025-04-22T11:08:28.775Z",
+      "status": "invited",
+      "messages": [
+        {
+          "text": "Hi Dr. Emily Chen,\n\nI would like to invite you to collaborate on my research project \"Machine Class For methods of work with time and money and yet some yes\". Your expertise in RNA-seq, Bioinformatics, Python would be valuable for this work.\n\nLooking forward to your response.",
+          "sender": "researcher",
+          "timestamp": "2025-04-22T11:08:28.775Z"
+        }
+      ],
+      "id": "si13"
+    }
+  ],
+  "receivedInvitations": [
+    {
+      "id": "INV004",
+      "projectId": "EXT235",
+      "projectTitle": "Biodegradable Polymers for Marine Applications",
+      "invitedBy": {
+        "name": "Dr. Rebecca Chang",
+        "title": "Head of Materials Science Division",
+        "institution": "Ocean Conservation Institute",
+        "email": "r.chang@oci.org"
+      },
+      "invitedDate": "2025-04-20T08:43:19.502Z",
+      "status": "pending",
+      "description": "Developing novel biodegradable polymers that can replace conventional plastics in marine environments",
+      "requiredSkills": [
+        "Polymer Chemistry",
+        "Materials Science",
+        "Environmental Assessment",
+        "Biodegradation Testing"
+      ],
+      "duration": "15 months",
+      "messages": []
+    },
+    {
+      "id": "INV005",
+      "projectId": "EXT367",
+      "projectTitle": "Blockchain Solutions for Academic Publishing",
+      "invitedBy": {
+        "name": "Prof. David Kim",
+        "title": "Director of Digital Innovation",
+        "institution": "National Science Academy",
+        "email": "d.kim@nsa.edu"
+      },
+      "invitedDate": "2025-04-20T15:22:08.114Z",
+      "status": "accepted",
+      "description": "Creating a blockchain-based platform for transparent peer review and academic publishing processes",
+      "requiredSkills": [
+        "Blockchain Technology",
+        "Smart Contracts",
+        "Academic Publishing",
+        "Software Architecture"
+      ],
+      "duration": "8 months",
+      "messages": [
+        {
+          "text": "This project aligns perfectly with my interests in digital academic infrastructure. I'm excited to join!",
+          "sender": "you",
+          "timestamp": "2025-04-21T09:17:32.221Z"
+        },
+        {
+          "text": "Wonderful! We'll schedule a kickoff meeting next week. Looking forward to your contributions.",
+          "sender": "inviter",
+          "timestamp": "2025-04-21T10:33:45.667Z"
+        }
+      ]
+    },
+    {
+      "id": "INV006",
+      "projectId": "EXT498",
+      "projectTitle": "AI-Powered Early Warning Systems for Natural Disasters",
+      "invitedBy": {
+        "name": "Dr. James Wilson",
+        "title": "Chief Scientist",
+        "institution": "Global Disaster Response Network",
+        "email": "j.wilson@gdrn.org"
+      },
+      "invitedDate": "2025-04-21T07:36:54.327Z",
+      "status": "pending",
+      "description": "Leveraging artificial intelligence to improve early detection and warning systems for earthquakes, tsunamis, and severe weather events",
+      "requiredSkills": [
+        "Machine Learning",
+        "Geophysical Modeling",
+        "Early Warning Systems",
+        "Data Integration",
+        "Sensor Networks"
+      ],
+      "duration": "24 months",
+      "messages": [
+        {
+          "text": "Your project sounds fascinating. Could you provide more details about the specific AI techniques you're planning to implement?",
+          "sender": "you",
+          "timestamp": "2025-04-21T16:42:11.893Z"
+        },
+        {
+          "text": "We're looking at deep learning models trained on seismic data and atmospheric patterns, combined with IoT sensor networks. Happy to discuss more if you're interested in joining us.",
+          "sender": "inviter",
+          "timestamp": "2025-04-21T18:05:27.442Z"
+        }
+      ]
+    },
+    {
+      "id": "INV007",
+      "projectId": "EXT512",
+      "projectTitle": "Precision Medicine Approaches for Neurological Disorders",
+      "invitedBy": {
+        "name": "Dr. Sarah Nguyen",
+        "title": "Research Director",
+        "institution": "Neuroscience Research Foundation",
+        "email": "s.nguyen@neuro.org"
+      },
+      "invitedDate": "2025-04-21T13:19:22.776Z",
+      "status": "declined",
+      "description": "Developing personalized treatment protocols for complex neurological disorders using genomic profiling and advanced imaging techniques",
+      "requiredSkills": [
+        "Genomics",
+        "Neurology",
+        "Medical Imaging Analysis",
+        "Precision Medicine",
+        "Bioinformatics"
+      ],
+      "duration": "36 months",
+      "messages": [
+        {
+          "text": "While I'm honored by the invitation, I don't have sufficient expertise in neurological disorders to contribute meaningfully to this project. I suggest reaching out to Dr. Maya Patel, who specializes in this field.",
+          "sender": "you",
+          "timestamp": "2025-04-22T10:08:17.332Z"
+        },
+        {
+          "text": "Thank you for your candid response and for suggesting an alternative collaborator. We appreciate your consideration.",
+          "sender": "inviter",
+          "timestamp": "2025-04-22T11:15:42.908Z"
+        }
+      ]
+    },
+    {
+      "id": "INV008",
+      "projectId": "EXT629",
+      "projectTitle": "Sustainable Urban Microgrids",
+      "invitedBy": {
+        "name": "Prof. Elena Rodriguez",
+        "title": "Chair of Sustainable Energy Systems",
+        "institution": "Urban Planning Institute",
+        "email": "e.rodriguez@upi.edu"
+      },
+      "invitedDate": "2025-04-22T09:45:13.552Z",
+      "status": "pending",
+      "description": "Designing and implementing renewable energy microgrids for urban communities with a focus on resilience and sustainability",
+      "requiredSkills": [
+        "Renewable Energy",
+        "Power Systems Engineering",
+        "Smart Grid Technology",
+        "Urban Planning",
+        "Energy Storage Solutions"
+      ],
+      "duration": "18 months",
+      "messages": [
+        {
+          "text": "This is an intriguing project that aligns with my research interests. Could you share more about the specific communities you're targeting and any pilot implementations?",
+          "sender": "you",
+          "timestamp": "2025-04-22T10:22:37.189Z"
+        }
+      ]
+    }
+  ]
+}

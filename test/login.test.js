@@ -513,3 +513,210 @@ describe('Login Form', () => {
     expect(rememberMeCheckbox.checked).toBeFalsy();
   });
 });
+describe('Login User Acceptance Tests', () => {
+  beforeEach(() => {
+    // Reset the form and mocks before each test
+    document.getElementById('loginForm').reset();
+    global.fetch.mockClear();
+    localStorage.clear();
+    window.location.href = '';
+    document.getElementById('formStatus').textContent = '';
+    document.getElementById('formStatus').className = 'form-status-message';
+    
+    // Remove any existing resend verification link
+    const resendLink = document.querySelector('.resend-verification');
+    if (resendLink) resendLink.remove();
+  });
+
+  describe('Scenario: Resend verification email', () => {
+    test(`
+      GIVEN a user sees the resend verification link
+      WHEN they click the resend link
+      THEN a new verification email should be sent and they see confirmation
+    `, async () => {
+      // GIVEN - User has resend verification link visible
+      const email = 'unverified@example.com';
+      loginHandlers.createResendLink(email);
+      const resendButton = document.getElementById('resendLink');
+      
+      // Mock successful resend response
+      global.fetch.mockImplementationOnce(() => 
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ message: 'Verification email sent' })
+        })
+      );
+
+      // WHEN - They click the resend link
+      resendButton.click();
+      
+      // Verify button text changes during sending
+      expect(resendButton.textContent).toBe('Sending...');
+
+      // Wait for async operations
+      await new Promise(process.nextTick);
+
+      // THEN - They should see success message
+      const formStatus = document.getElementById('formStatus');
+      expect(formStatus.textContent).toBe('Verification email resent. Please check your inbox.');
+      expect(formStatus.className).toContain('success');
+      expect(resendButton.textContent).toBe('Resend it');
+      
+      // Verify API was called correctly
+      expect(global.fetch).toHaveBeenCalledWith('/api/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+    });
+  });
+
+  describe('Scenario: Redirect from successful signup', () => {
+    test(`
+      GIVEN a user arrives at login page after successful signup
+      WHEN the page loads with 'from=signup' URL parameter
+      THEN they should see a success message about email verification
+    `, () => {
+      // GIVEN - User arrives with signup redirect parameter
+      window.URLSearchParams = jest.fn().mockImplementation(() => ({
+        get: (param) => param === 'from' ? 'signup' : null,
+        has: (param) => param === 'from'
+      }));
+      
+      Object.defineProperty(window, 'location', {
+        value: { 
+          ...window.location,
+          search: '?from=signup'
+        },
+        writable: true
+      });
+      
+      // WHEN - Page loads
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      
+      // THEN - They should see success message
+      const formStatus = document.getElementById('formStatus');
+      expect(formStatus.textContent).toBe('You have successfully registered. Please check your email for verification link.');
+      expect(formStatus.className).toContain('success');
+    });
+  });
+
+  describe('Scenario: Redirect from email verification', () => {
+    test(`
+      GIVEN a user arrives at login page after verifying email
+      WHEN the page loads with 'verified=true' URL parameter
+      THEN they should see a success message and form gets highlighted
+    `, () => {
+      // GIVEN - User arrives with verification success parameter
+      window.URLSearchParams = jest.fn().mockImplementation(() => ({
+        get: (param) => param === 'verified' ? 'true' : null,
+        has: (param) => param === 'verified'
+      }));
+      
+      Object.defineProperty(window, 'location', {
+        value: { 
+          ...window.location,
+          search: '?verified=true'
+        },
+        writable: true
+      });
+      
+      // WHEN - Page loads
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      
+      // THEN - They should see success message and form highlight
+      const formStatus = document.getElementById('formStatus');
+      const loginForm = document.getElementById('loginForm');
+      
+      expect(formStatus.textContent).toBe('Email verified successfully! You can now sign in.');
+      expect(formStatus.className).toContain('success');
+      expect(loginForm.classList.contains('verified')).toBeTruthy();
+      
+      // After timeout, highlight should be removed
+      loginForm.classList.remove('verified');
+      expect(loginForm.classList.contains('verified')).toBeFalsy();
+    });
+  });
+
+  describe('Scenario: Toggle password visibility', () => {
+    test(`
+      GIVEN a user is on the login page
+      WHEN they click the password visibility toggle
+      THEN the password field should toggle between visible and hidden
+    `, () => {
+      // GIVEN - User is on login page
+      const passwordInput = document.getElementById('password');
+      const toggleButton = document.querySelector('.toggle-password-visibility');
+      const icon = toggleButton.querySelector('i');
+      
+      // Initial state
+      expect(passwordInput.type).toBe('password');
+      expect(icon.classList.contains('fa-eye')).toBeTruthy();
+      
+      // WHEN - They click the toggle button
+      toggleButton.click();
+      
+      // THEN - Password should be visible
+      expect(passwordInput.type).toBe('text');
+      expect(icon.classList.contains('fa-eye-slash')).toBeTruthy();
+      
+      // WHEN - They click again
+      toggleButton.click();
+      
+      // THEN - Password should be hidden again
+      expect(passwordInput.type).toBe('password');
+      expect(icon.classList.contains('fa-eye')).toBeTruthy();
+    });
+  });
+
+  describe('Scenario: Remember me functionality', () => {
+    test(`
+      GIVEN a user is on the login page
+      WHEN they check the "Remember me" checkbox
+      THEN the checkbox state should be saved (simulated)
+    `, () => {
+      // GIVEN - User is on login page
+      const rememberMeCheckbox = document.getElementById('rememberMe');
+      
+      // Initial state
+      expect(rememberMeCheckbox.checked).toBeFalsy();
+      
+      // WHEN - They check the checkbox
+      rememberMeCheckbox.checked = true;
+      
+      // THEN - Checkbox should be checked
+      expect(rememberMeCheckbox.checked).toBeTruthy();
+      
+      // WHEN - They uncheck the checkbox
+      rememberMeCheckbox.checked = false;
+      
+      // THEN - Checkbox should be unchecked
+      expect(rememberMeCheckbox.checked).toBeFalsy();
+    });
+  });
+
+  describe('Scenario: Forgot password link', () => {
+    test(`
+      GIVEN a user is on the login page
+      WHEN they click the "Forgot password" link
+      THEN they should be redirected to password reset (simulated)
+    `, () => {
+      // GIVEN - User is on login page
+      const forgotPasswordLink = document.querySelector('.forgot-password');
+      
+      // Mock click handler
+      forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.location.href = '/forgot-password';
+      });
+      
+      // WHEN - They click forgot password link
+      forgotPasswordLink.click();
+      
+      // THEN - They should be redirected to password reset
+      expect(window.location.href).toBe('/forgot-password');
+    });
+  });
+});

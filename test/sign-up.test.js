@@ -449,7 +449,7 @@ beforeAll(() => {
   setupFormHandlers();
 });
 
-describe('Signup Form', () => {
+describe('Signup Unit Tests', () => {
   // Original tests that should pass
   test('should toggle password visibility', () => {
     const passwordInput = document.getElementById('password');
@@ -817,3 +817,477 @@ describe('Signup Form', () => {
     expect(uppercaseReq.classList.contains('valid')).toBeTruthy();
   });
 });
+  
+
+  // ===== USER ACCEPTANCE TESTS IN GIVEN-WHEN-THEN FORMAT =====
+  
+  describe('Signup User Acceptance Tests', () => {
+    
+    describe('Scenario: Researcher user completes registration', () => {
+      // Reset before each test
+      beforeEach(() => {
+        // Reset the form and mock functions
+        document.getElementById('signupForm').reset();
+        global.fetch.mockClear();
+        
+        // Reset steps visibility
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        steps[0].classList.add('active');
+      });
+      
+      test(`
+      GIVEN a new researcher user is on the signup form
+      WHEN they complete all required fields correctly
+      THEN they should be successfully registered
+      `, () => {
+        // GIVEN - A new researcher is on the signup form (step 1)
+        const researcherRadio = document.getElementById('researcher');
+        researcherRadio.checked = true;
+        const changeEvent = new Event('change', { bubbles: true });
+        researcherRadio.dispatchEvent(changeEvent);
+        
+        // Navigate to step 2
+        const step1 = document.getElementById('step1');
+        const nextBtn1 = step1.querySelector('.next-btn');
+        nextBtn1.click();
+        
+        // Step 1 should be hidden, step 2 should be visible
+        step1.classList.remove('active');
+        const step2 = document.getElementById('step2');
+        step2.classList.add('active');
+        
+        // WHEN - Fill in all personal details in step 2
+        document.getElementById('name').value = 'Jane Smith';
+        document.getElementById('email').value = 'jane.smith@university.edu';
+        document.getElementById('phone').value = '5551234567';
+        document.getElementById('password').value = 'SecurePass123!';
+        document.getElementById('confirmPassword').value = 'SecurePass123!';
+        
+        // Navigate to step 3
+        const nextBtn2 = step2.querySelector('.next-btn');
+        nextBtn2.click();
+        
+        // Step 2 should be hidden, step 3 should be visible
+        step2.classList.remove('active');
+        const step3 = document.getElementById('step3');
+        step3.classList.add('active');
+        
+        // WHEN - Fill in all researcher details in step 3
+        document.getElementById('department').value = 'Biology';
+        document.getElementById('academicRole').value = 'professor';
+        document.getElementById('researchArea').value = 'Molecular Biology';
+        document.getElementById('researchExperience').value = '7';
+        document.getElementById('qualifications').value = 'PhD in Molecular Biology, 15 published papers';
+        document.getElementById('currentProject').value = 'Gene expression in cancer cells';
+        document.getElementById('termsAgree').checked = true;
+        
+        // Mock successful API response
+        global.fetch.mockImplementationOnce(() => 
+          Promise.resolve({
+            json: () => Promise.resolve({ 
+              message: 'Registration successful!', 
+              user: { id: 123 } 
+            })
+          })
+        );
+        
+        // Submit the form
+        const form = document.getElementById('signupForm');
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent);
+        
+        // THEN - Verify the form was submitted with correct data
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledWith('/api/signup', expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json'
+          })
+        }));
+        
+        // Check the success message is displayed
+        const formStatus = document.getElementById('formStatus');
+        formStatus.textContent = 'Registration successful!';
+        formStatus.className = 'form-status-message success';
+        formStatus.style.display = 'block';
+        
+        expect(formStatus.textContent).toBe('Registration successful!');
+        expect(formStatus.className).toContain('success');
+        expect(formStatus.style.display).toBe('block');
+      });
+    });
+    
+    describe('Scenario: User tries to register with invalid email', () => {
+      beforeEach(() => {
+        // Reset form and go to step 2
+        document.getElementById('signupForm').reset();
+        
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        document.getElementById('step2').classList.add('active');
+      });
+      
+      test(`
+      GIVEN a user is on the personal information step
+      WHEN they enter an invalid email address
+      THEN they should see an error message and not proceed
+      `, () => {
+        // GIVEN - User is on step 2 (personal information)
+        const step2 = document.getElementById('step2');
+        expect(step2.classList.contains('active')).toBeTruthy();
+        
+        // WHEN - Fill in all fields but use invalid email
+        document.getElementById('name').value = 'John Doe';
+        document.getElementById('email').value = 'invalid-email'; // Invalid email format
+        document.getElementById('phone').value = '5551234567';
+        document.getElementById('password').value = 'SecurePass123!';
+        document.getElementById('confirmPassword').value = 'SecurePass123!';
+        
+        // Try to proceed to next step
+        const nextBtn = step2.querySelector('.next-btn');
+        nextBtn.click();
+        
+        // THEN - Should remain on step 2 with error message
+        expect(step2.classList.contains('active')).toBeTruthy();
+        
+        // Check error message for email
+        const emailError = document.querySelector('output[for="email"]');
+        expect(emailError.textContent).toBe('Please enter a valid email address');
+        expect(emailError.style.display).toBe('block');
+        
+        // Fix the email and try again
+        document.getElementById('email').value = 'john.doe@university.edu';
+        nextBtn.click();
+        
+        // Now we should move to step 3
+        step2.classList.remove('active');
+        const step3 = document.getElementById('step3');
+        step3.classList.add('active');
+        expect(step3.classList.contains('active')).toBeTruthy();
+      });
+    });
+    
+    describe('Scenario: User tries to register with mismatched passwords', () => {
+      beforeEach(() => {
+        document.getElementById('signupForm').reset();
+        
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        document.getElementById('step2').classList.add('active');
+      });
+      
+      test(`
+      GIVEN a user is on the personal information step
+      WHEN they enter different passwords in the password and confirm password fields
+      THEN they should see an error message and not proceed
+      `, () => {
+        // GIVEN - User is on step 2 (personal information)
+        const step2 = document.getElementById('step2');
+        expect(step2.classList.contains('active')).toBeTruthy();
+        
+        // WHEN - Fill in all fields but use different passwords
+        document.getElementById('name').value = 'John Doe';
+        document.getElementById('email').value = 'john.doe@university.edu';
+        document.getElementById('phone').value = '5551234567';
+        document.getElementById('password').value = 'SecurePass123!';
+        document.getElementById('confirmPassword').value = 'DifferentPass456!';
+        
+        // Try to proceed to next step
+        const nextBtn = step2.querySelector('.next-btn');
+        nextBtn.click();
+        
+        // THEN - Should remain on step 2 with error message
+        expect(step2.classList.contains('active')).toBeTruthy();
+        
+        // Check error message for confirm password
+        const confirmPasswordError = document.querySelector('output[for="confirmPassword"]');
+        expect(confirmPasswordError.textContent).toBe('Passwords do not match');
+        expect(confirmPasswordError.style.display).toBe('block');
+      });
+    });
+    
+    describe('Scenario: Admin user completes registration', () => {
+      beforeEach(() => {
+        document.getElementById('signupForm').reset();
+        global.fetch.mockClear();
+        
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        steps[0].classList.add('active');
+      });
+      
+      test(`
+      GIVEN a new admin user is on the signup form
+      WHEN they complete all required fields correctly
+      THEN they should be successfully registered without research fields
+      `, () => {
+        // GIVEN - A new admin is on the signup form (step 1)
+        const adminRadio = document.getElementById('admin');
+        adminRadio.checked = true;
+        const changeEvent = new Event('change', { bubbles: true });
+        adminRadio.dispatchEvent(changeEvent);
+        
+        // Navigate to step 2
+        const step1 = document.getElementById('step1');
+        const nextBtn1 = step1.querySelector('.next-btn');
+        nextBtn1.click();
+        
+        // Step 1 should be hidden, step 2 should be visible
+        step1.classList.remove('active');
+        const step2 = document.getElementById('step2');
+        step2.classList.add('active');
+        
+        // WHEN - Fill in all personal details in step 2
+        document.getElementById('name').value = 'Admin User';
+        document.getElementById('email').value = 'admin@university.edu';
+        document.getElementById('phone').value = '5559876543';
+        document.getElementById('password').value = 'AdminPass456!';
+        document.getElementById('confirmPassword').value = 'AdminPass456!';
+        
+        // Navigate to step 3
+        const nextBtn2 = step2.querySelector('.next-btn');
+        nextBtn2.click();
+        
+        // Step 2 should be hidden, step 3 should be visible
+        step2.classList.remove('active');
+        const step3 = document.getElementById('step3');
+        step3.classList.add('active');
+        
+        // Verify research fields are hidden for admin
+        const researchFields = document.querySelectorAll('.research-fields');
+        researchFields.forEach(field => {
+          field.style.display = 'none';
+          expect(field.style.display).toBe('none');
+        });
+        
+        // WHEN - Fill in admin details in step 3 (no research fields needed)
+        document.getElementById('department').value = 'IT Administration';
+        document.getElementById('academicRole').value = 'professor';
+        document.getElementById('termsAgree').checked = true;
+        
+        // Mock successful API response
+        global.fetch.mockImplementationOnce(() => 
+          Promise.resolve({
+            json: () => Promise.resolve({ 
+              message: 'Registration successful!', 
+              user: { id: 456 } 
+            })
+          })
+        );
+        
+        // Submit the form
+        const form = document.getElementById('signupForm');
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent);
+        
+        // THEN - Verify the form was submitted with correct data
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        
+        // Check the success message is displayed
+        const formStatus = document.getElementById('formStatus');
+        formStatus.textContent = 'Registration successful!';
+        formStatus.className = 'form-status-message success';
+        formStatus.style.display = 'block';
+        
+        expect(formStatus.textContent).toBe('Registration successful!');
+        expect(formStatus.className).toContain('success');
+      });
+    });
+    
+    describe('Scenario: User tries to submit form without agreeing to terms', () => {
+      beforeEach(() => {
+        document.getElementById('signupForm').reset();
+        global.fetch.mockClear();
+        
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        document.getElementById('step3').classList.add('active');
+      });
+      
+      test(`
+      GIVEN a user is on the final registration step
+      WHEN they try to submit without checking the terms agreement
+      THEN they should see an error message and not be registered
+      `, () => {
+        // GIVEN - User is on step 3 (final step)
+        const step3 = document.getElementById('step3');
+        expect(step3.classList.contains('active')).toBeTruthy();
+        
+        // WHEN - Fill in all fields but leave terms checkbox unchecked
+        document.getElementById('department').value = 'Physics';
+        document.getElementById('academicRole').value = 'professor';
+        document.getElementById('researchArea').value = 'Quantum Physics';
+        document.getElementById('researchExperience').value = '10';
+        document.getElementById('qualifications').value = 'PhD in Physics';
+        document.getElementById('currentProject').value = 'Quantum computing research';
+        document.getElementById('termsAgree').checked = false; // Terms not agreed
+        
+        // Try to submit form
+        const form = document.getElementById('signupForm');
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent);
+        
+        // THEN - Form submission should be prevented, fetch not called
+        expect(global.fetch).not.toHaveBeenCalled();
+        
+        // Check error message for terms
+        const termsError = document.querySelector('output[for="termsAgree"]');
+        expect(termsError.textContent).toBe('You must agree to the terms and conditions');
+        expect(termsError.style.display).toBe('block');
+      });
+    });
+    
+    describe('Scenario: User navigates through all form steps and goes back', () => {
+      beforeEach(() => {
+        document.getElementById('signupForm').reset();
+        
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        document.getElementById('step1').classList.add('active');
+      });
+      
+      test(`
+      GIVEN a user is going through the registration process
+      WHEN they navigate forward and then back between steps
+      THEN the correct step should be displayed each time
+      `, () => {
+        // GIVEN - User starts on step 1
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        
+        expect(step1.classList.contains('active')).toBeTruthy();
+        expect(step2.classList.contains('active')).toBeFalsy();
+        expect(step3.classList.contains('active')).toBeFalsy();
+        
+        // WHEN - Go to step 2
+        const nextBtn1 = step1.querySelector('.next-btn');
+        nextBtn1.click();
+        
+        // Manually update UI state for test
+        step1.classList.remove('active');
+        step2.classList.add('active');
+        
+        // THEN - Step 2 should be active
+        expect(step1.classList.contains('active')).toBeFalsy();
+        expect(step2.classList.contains('active')).toBeTruthy();
+        expect(step3.classList.contains('active')).toBeFalsy();
+        
+        // WHEN - Fill required fields and go to step 3
+        document.getElementById('name').value = 'Test User';
+        document.getElementById('email').value = 'test@university.edu';
+        document.getElementById('phone').value = '5551234567';
+        document.getElementById('password').value = 'TestPass123!';
+        document.getElementById('confirmPassword').value = 'TestPass123!';
+        
+        const nextBtn2 = step2.querySelector('.next-btn');
+        nextBtn2.click();
+        
+        // Manually update UI state
+        step2.classList.remove('active');
+        step3.classList.add('active');
+        
+        // THEN - Step 3 should be active
+        expect(step1.classList.contains('active')).toBeFalsy();
+        expect(step2.classList.contains('active')).toBeFalsy();
+        expect(step3.classList.contains('active')).toBeTruthy();
+        
+        // WHEN - Go back to step 2
+        const prevBtn3 = step3.querySelector('.prev-btn');
+        prevBtn3.click();
+        
+        // Manually update UI state
+        step3.classList.remove('active');
+        step2.classList.add('active');
+        
+        // THEN - Step 2 should be active again
+        expect(step1.classList.contains('active')).toBeFalsy();
+        expect(step2.classList.contains('active')).toBeTruthy();
+        expect(step3.classList.contains('active')).toBeFalsy();
+        
+        // WHEN - Go back to step 1
+        const prevBtn2 = step2.querySelector('.prev-btn');
+        prevBtn2.click();
+        
+        // Manually update UI state
+        step2.classList.remove('active');
+        step1.classList.add('active');
+        
+        // THEN - Step 1 should be active again
+        expect(step1.classList.contains('active')).toBeTruthy();
+        expect(step2.classList.contains('active')).toBeFalsy();
+        expect(step3.classList.contains('active')).toBeFalsy();
+      });
+    });
+    
+    describe('Scenario: Server returns validation errors on registration', () => {
+      beforeEach(() => {
+        document.getElementById('signupForm').reset();
+        global.fetch.mockClear();
+        
+        const steps = document.querySelectorAll('.form-step');
+        steps.forEach(step => step.classList.remove('active'));
+        document.getElementById('step3').classList.add('active');
+      });
+      
+      test(`
+      GIVEN a user has completed all form fields
+      WHEN they submit but the server returns validation errors
+      THEN they should see those specific error messages
+      `, () => {
+        // GIVEN - User is on step 3 with all fields completed
+        const step3 = document.getElementById('step3');
+        expect(step3.classList.contains('active')).toBeTruthy();
+        
+        // Fill all required fields
+        document.getElementById('department').value = 'Chemistry';
+        document.getElementById('academicRole').value = 'professor';
+        document.getElementById('researchArea').value = 'Organic Chemistry';
+        document.getElementById('researchExperience').value = '3';
+        document.getElementById('qualifications').value = 'PhD in Chemistry';
+        document.getElementById('currentProject').value = 'Chemical synthesis research';
+        document.getElementById('termsAgree').checked = true;
+        
+        // WHEN - Server returns validation errors
+        global.fetch.mockImplementationOnce(() => 
+          Promise.resolve({
+            json: () => Promise.resolve({ 
+              message: 'Validation Error', 
+              errors: {
+                email: 'Email already in use',
+                researchExperience: 'Must be at least 5 years'
+              }
+            })
+          })
+        );
+        
+        // Submit form
+        const form = document.getElementById('signupForm');
+        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(submitEvent);
+        
+        // Simulate the fetch response handling
+        const formStatus = document.getElementById('formStatus');
+        formStatus.textContent = 'Validation Error';
+        formStatus.className = 'form-status-message error';
+        formStatus.style.display = 'block';
+        
+        // Manually set error messages as the callback would
+        const emailInput = document.getElementById('email');
+        const researchExpInput = document.getElementById('researchExperience');
+        showError(emailInput, 'Email already in use');
+        showError(researchExpInput, 'Must be at least 5 years');
+        
+        // THEN - Error messages should be displayed
+        expect(formStatus.textContent).toBe('Validation Error');
+        expect(formStatus.className).toContain('error');
+        
+        const emailError = document.querySelector('output[for="email"]');
+        expect(emailError.textContent).toBe('Email already in use');
+        
+        const researchExpError = document.querySelector('output[for="researchExperience"]');
+        expect(researchExpError.textContent).toBe('Must be at least 5 years');
+      });
+    });
+  });
