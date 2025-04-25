@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return '/roles/reviewer/dashboard.html';
             case 'researcher':
                 return '/roles/researcher/dashboard.html';
+            default:
+                return '/roles/researcher/dashboard.html';
         }
     }
     
@@ -115,6 +117,86 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
+    // Helper functions for validation - based on signup.js
+    function showError(input, message) {
+        const errorOutput = form.querySelector(`output[for="${input.id}"]`);
+        if (errorOutput) {
+            errorOutput.textContent = message;
+            errorOutput.style.display = 'block';
+        } else {
+            // Create error element if it doesn't exist
+            const errorElement = document.createElement('output');
+            errorElement.setAttribute('for', input.id);
+            errorElement.className = 'error-message';
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            input.parentNode.insertBefore(errorElement, input.nextSibling);
+        }
+        input.classList.add('error');
+    }
+    
+    function clearError(input) {
+        const errorOutput = form.querySelector(`output[for="${input.id}"]`);
+        if (errorOutput) {
+            errorOutput.textContent = '';
+            errorOutput.style.display = 'none';
+        }
+        input.classList.remove('error');
+    }
+    
+    function validateSouthAfricanPhone(phone) {
+        // Empty is not valid but will be caught by required attribute
+        if (!phone) return { valid: true, message: '' };
+        
+        // Check for +27 format
+        if (phone.startsWith('+27')) {
+            // +27 should be followed by 9 digits
+            if (phone.length !== 12) {
+                return { valid: false, message: 'Phone number must be +27 followed by 9 digits' };
+            }
+            
+            // Check if the digit after +27 is 6, 7 or 8
+            const thirdDigit = phone.charAt(3);
+            if (!['6', '7', '8'].includes(thirdDigit)) {
+                return { valid: false, message: 'After +27, number must start with 6, 7, or 8' };
+            }
+            
+            return { valid: true, message: '' };
+        } 
+        // Check for 0 format (must be 10 digits starting with 06, 07, or 08)
+        else if (phone.startsWith('0')) {
+            if (phone.length !== 10) {
+                return { valid: false, message: 'Phone number must be 10 digits' };
+            }
+            
+            // Check if starts with 06, 07 or 08
+            const secondDigit = phone.charAt(1);
+            if (!['6', '7', '8'].includes(secondDigit)) {
+                return { valid: false, message: 'Number must start with 06, 07, or 08' };
+            }
+            
+            return { valid: true, message: '' };
+        } 
+        else {
+            return { valid: false, message: 'Must start with +27 or 0' };
+        }
+    }
+    
+    function validateWitsEmail(input, email) {
+        if (!email) return true; // Empty will be caught by required attribute
+        
+        // Must match pattern: digits@students.wits.ac.za
+        const witsEmailRegex = /^(\d+)@students\.wits\.ac\.za$/;
+        
+        if (!witsEmailRegex.test(email)) {
+            showError(input, 'Email must be in format: studentnumber@students.wits.ac.za');
+            return false;
+        } else {
+            clearError(input);
+            return true;
+        }
+    }
+    
     // Handle step navigation
     function showStep(stepIndex) {
         steps.forEach((step, index) => {
@@ -130,6 +212,48 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Next button click
     if (nextBtn) {
         nextBtn.addEventListener('click', function() {
+            // Get current step
+            const currentStepEl = document.querySelector('.form-step.active');
+            
+            // Basic validation for current step
+            const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+            
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    isValid = false;
+                    showError(input, 'This field is required');
+                } else {
+                    // Additional validation for specific field types
+                    if (input.id === 'email' && !input.readOnly) {
+                        if (!validateWitsEmail(input, input.value.trim())) {
+                            isValid = false;
+                        }
+                    } else if (input.type === 'tel' || input.id.includes('phone') || input.id.includes('contact')) {
+                        const phoneValid = validateSouthAfricanPhone(input.value.trim());
+                        if (!phoneValid.valid) {
+                            showError(input, phoneValid.message);
+                            isValid = false;
+                        }
+                    } else if (input.id.includes('name')) {
+                        // Name validation - only letters, spaces, hyphens, and apostrophes
+                        const value = input.value.trim();
+                        if (/[^a-zA-Z\s\-']/.test(value)) {
+                            showError(input, 'Only letters, spaces, hyphens and apostrophes are allowed');
+                            isValid = false;
+                        } else {
+                            clearError(input);
+                        }
+                    } else {
+                        clearError(input);
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                return;
+            }
+            
             const roleFields = document.querySelectorAll(`[data-role]`);
             const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
             
@@ -155,6 +279,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
             
             showStep(currentStep + 1);
+            window.scrollTo(0, 0); // Scroll to top
         });
     }
     
@@ -162,6 +287,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (prevBtn) {
         prevBtn.addEventListener('click', function() {
             showStep(currentStep - 1);
+            window.scrollTo(0, 0); // Scroll to top
         });
     }
     
@@ -175,19 +301,29 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Basic validation
             let isValid = true;
-            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
-            const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+            
+            const activeStep = document.querySelector('.form-step.active');
+            const requiredFields = activeStep.querySelectorAll('input[required], select[required], textarea[required]');
             
             requiredFields.forEach(field => {
                 // Only validate fields that are currently displayed
                 const fieldGroup = field.closest('.form-group');
                 if (!fieldGroup || getComputedStyle(fieldGroup).display !== 'none') {
                     if (!field.value.trim()) {
-                        const errorOutput = form.querySelector(`output[for="${field.id}"]`);
-                        if (errorOutput) {
-                            errorOutput.textContent = `${field.name || field.id} is required`;
-                        }
+                        showError(field, `${field.name || field.id} is required`);
                         isValid = false;
+                    } else if (field.type === 'tel' || field.id.includes('phone') || field.id.includes('contact')) {
+                        const phoneValid = validateSouthAfricanPhone(field.value.trim());
+                        if (!phoneValid.valid) {
+                            showError(field, phoneValid.message);
+                            isValid = false;
+                        }
+                    } else if (field.id.includes('name')) {
+                        // Name validation
+                        if (/[^a-zA-Z\s\-']/.test(field.value)) {
+                            showError(field, 'Only letters, spaces, hyphens and apostrophes are allowed');
+                            isValid = false;
+                        }
                     }
                 }
             });
@@ -195,10 +331,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Check terms agreement
             const termsCheck = document.getElementById('termsAgree');
             if (termsCheck && !termsCheck.checked) {
-                const errorOutput = form.querySelector('output[for="termsAgree"]');
-                if (errorOutput) {
-                    errorOutput.textContent = 'You must agree to the terms and conditions';
-                }
+                showError(termsCheck, 'You must agree to the terms and conditions');
                 isValid = false;
             }
             
@@ -210,13 +343,46 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Show loading status
             formStatus.innerHTML = `<div class="info">Processing your information...</div>`;
             
-            // Gather form data
+            // Gather form data from all steps
             const formData = new FormData(form);
             const userData = {};
             
             for (const [key, value] of formData.entries()) {
                 userData[key] = value;
             }
+            
+            // Additional fields from Google profile
+            if (googleProfile) {
+                if (!userData.email && googleProfile.email) {
+                    userData.email = googleProfile.email;
+                }
+                if (!userData.name && googleProfile.name) {
+                    userData.name = googleProfile.name;
+                }
+                if (googleProfile.picture) {
+                    userData.picture = googleProfile.picture;
+                }
+                if (googleProfile.given_name) {
+                    userData.firstName = googleProfile.given_name;
+                }
+                if (googleProfile.family_name) {
+                    userData.lastName = googleProfile.family_name;
+                }
+                
+                // Include Google ID for linking account
+                userData.googleId = googleProfile.sub || googleProfile.id;
+            }
+            
+            // Include selected role or default to researcher
+            const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+            if (selectedRole) {
+                userData.role = selectedRole;
+            } else {
+                userData.role = 'researcher';
+            }
+            
+            // Log form data for debugging
+            console.log("Form data being sent:", userData);
             
             try {
                 // Construct URL with token if available
@@ -242,9 +408,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                         // Handle validation errors
                         if (result.errors) {
                             Object.entries(result.errors).forEach(([field, message]) => {
-                                const errorOutput = form.querySelector(`output[for="${field}"]`);
-                                if (errorOutput) {
-                                    errorOutput.textContent = message;
+                                const fieldElement = document.getElementById(field);
+                                if (fieldElement) {
+                                    showError(fieldElement, message);
+                                    
+                                    // If field is in a hidden step, show that step
+                                    const fieldStep = fieldElement.closest('.form-step');
+                                    if (fieldStep && !fieldStep.classList.contains('active')) {
+                                        document.querySelector('.form-step.active').classList.remove('active');
+                                        fieldStep.classList.add('active');
+                                    }
                                 }
                             });
                         }
@@ -268,6 +441,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Save authentication data - Store user in a consistent way to match auth.js
                 if (result.user) {
                     localStorage.setItem('supabaseUser', JSON.stringify(result.user));
+                    
+                    // Also store session or token if provided
+                    if (result.session) {
+                        localStorage.setItem('supabaseSession', JSON.stringify(result.session));
+                    }
+                    if (result.token) {
+                        localStorage.setItem('authToken', result.token);
+                    }
                 }
                 
                 // Get the user's role to redirect to the appropriate dashboard
