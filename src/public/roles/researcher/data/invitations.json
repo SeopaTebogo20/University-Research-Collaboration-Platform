@@ -1,24 +1,64 @@
 {
   "sentInvitations": [
     {
-      "projectId": "PRJ004",
-      "projectTitle": "SD3",
+      "projectId": "PRJ005",
+      "projectTitle": "SS",
       "invitedCollaborator": {
-        "id": "c2",
-        "name": "Prof. Michael Rodriguez",
-        "email": "m.rodriguez@csi.edu",
-        "institution": "Coastal Science Institute"
+        "id": "c1",
+        "name": "Dr. Emily Chen",
+        "email": "e.chen@pacific.edu",
+        "institution": "Pacific University"
       },
-      "invitedDate": "2025-04-22T11:06:32.763Z",
+      "invitedDate": "2025-04-25T07:14:00.010Z",
       "status": "invited",
       "messages": [
         {
-          "text": "Hi Prof. Michael Rodriguez,\n\nI would like to invite you to collaborate on my research project \"SD3\". Your expertise in Coral Reef Ecology, Climate Science, Field Research would be valuable for this work.\n\nLooking forward to your response.",
+          "text": "Hi Dr. Emily Chen,\n\nI would like to invite you to collaborate on my research project \"SS\". Your expertise in RNA-seq, Bioinformatics, Python would be valuable for this work.\n\nLooking forward to your response.",
           "sender": "researcher",
-          "timestamp": "2025-04-22T11:06:32.764Z"
+          "timestamp": "2025-04-25T07:14:00.010Z"
         }
       ],
-      "id": "si12"
+      "id": "si13"
+    },
+    {
+      "projectId": "PRJ005",
+      "projectTitle": "SS",
+      "invitedCollaborator": {
+        "id": "c4",
+        "name": "Dr. James Wilson",
+        "email": "j.wilson@techu.edu",
+        "institution": "Tech University"
+      },
+      "invitedDate": "2025-04-25T07:14:18.470Z",
+      "status": "invited",
+      "messages": [
+        {
+          "text": "Hi Dr. James Wilson,\n\nI would like to invite you to collaborate on my research project \"SS\". Your expertise in Machine Learning, Natural Language Processing, Deep Learning would be valuable for this work.\n\nLooking forward to your response.",
+          "sender": "researcher",
+          "timestamp": "2025-04-25T07:14:18.470Z"
+        }
+      ],
+      "id": "si14"
+    },
+    {
+      "projectId": "PRJ005",
+      "projectTitle": "SS",
+      "invitedCollaborator": {
+        "id": "c5",
+        "name": "Dr. Lisa Martinez",
+        "email": "l.martinez@sumc.edu",
+        "institution": "State University Medical Center"
+      },
+      "invitedDate": "2025-04-25T07:14:30.592Z",
+      "status": "invited",
+      "messages": [
+        {
+          "text": "Hi Dr. Lisa Martinez,\n\nI would like to invite you to collaborate on my research project \"SS\". Your expertise in Genomics, CRISPR, Genetic Engineering would be valuable for this work.\n\nLooking forward to your response.",
+          "sender": "researcher",
+          "timestamp": "2025-04-25T07:14:30.592Z"
+        }
+      ],
+      "id": "si15"
     }
   ],
   "receivedInvitations": [
@@ -94,7 +134,7 @@
         "email": "j.wilson@gdrn.org"
       },
       "invitedDate": "2025-04-21T07:36:54.327Z",
-      "status": "pending",
+      "status": "accepted",
       "description": "Leveraging artificial intelligence to improve early detection and warning systems for earthquakes, tsunamis, and severe weather events",
       "requiredSkills": [
         "Machine Learning",
@@ -114,6 +154,11 @@
           "text": "We're looking at deep learning models trained on seismic data and atmospheric patterns, combined with IoT sensor networks. Happy to discuss more if you're interested in joining us.",
           "sender": "inviter",
           "timestamp": "2025-04-21T18:05:27.442Z"
+        },
+        {
+          "text": "REGSFD",
+          "sender": "you",
+          "timestamp": "2025-04-25T07:16:46.891Z"
         }
       ]
     },

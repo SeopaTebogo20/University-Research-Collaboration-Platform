@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for auth.js</title>
+    <title>Code coverage report for src/public/roles/researcher/js/auth.js</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="prettify.css" />
-    <link rel="stylesheet" href="base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
+    <link rel="stylesheet" href="../../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(sort-arrow-sprite.png);
+            background-image: url(../../../../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="index.html">All files</a> auth.js</h1>
+        <h1><a href="../../../../../index.html">All files</a> / <a href="index.html">src/public/roles/researcher/js</a> auth.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -434,204 +434,204 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&nbsp;
 // Auth utilities for CollabNexus
 <span class="cstat-no" title="statement not covered" >document.addEventListener('DOMContentLoaded', <span class="fstat-no" title="function not covered" >fu</span>nction() {</span>
-  // Initialize with global authManager if available
-  const auth = <span class="cstat-no" title="statement not covered" >window.authManager || {</span>
-      // Check if user is logged in
-      isLoggedIn: <span class="fstat-no" title="function not covered" >fu</span>nction() {
-<span class="cstat-no" title="statement not covered" >          return localStorage.getItem('supabaseUser') !== null;</span>
-      },
-      
-      // Get current user
-      getCurrentUser: <span class="fstat-no" title="function not covered" >fu</span>nction() {
-          const userData = <span class="cstat-no" title="statement not covered" >localStorage.getItem('supabaseUser');</span>
-<span class="cstat-no" title="statement not covered" >          return userData ? JSON.parse(userData) : null;</span>
-      },
-      
-      // Get user's role
-      getUserRole: <span class="fstat-no" title="function not covered" >fu</span>nction() {
-          const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
-<span class="cstat-no" title="statement not covered" >          return user?.user_metadata?.role || null;</span>
-      },
-      
-      // Handle logout
-      logout: <span class="fstat-no" title="function not covered" >as</span>ync function() {
-<span class="cstat-no" title="statement not covered" >          try {</span>
-              const response = <span class="cstat-no" title="statement not covered" >await fetch('/api/logout', {</span>
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  }
-              });
-              
-<span class="cstat-no" title="statement not covered" >              localStorage.removeItem('supabaseUser');</span>
-<span class="cstat-no" title="statement not covered" >              console.log('User logged out successfully');</span>
-              
-              // Show logout success message
-<span class="cstat-no" title="statement not covered" >              if (window.toast) {</span>
-<span class="cstat-no" title="statement not covered" >                  window.toast.success('You have been signed out successfully');</span>
-              }
-              
-              // Redirect to home page if on a protected page
-              const currentPage = <span class="cstat-no" title="statement not covered" >window.location.pathname;</span>
-              const protectedPages = <span class="cstat-no" title="statement not covered" >['/dashboard', '/projects', '/profile'];</span>
-              
-<span class="cstat-no" title="statement not covered" >              if (protectedPages.some(<span class="fstat-no" title="function not covered" >pa</span>ge =&gt; <span class="cstat-no" title="statement not covered" >currentPage.includes(page))</span>) {</span>
-<span class="cstat-no" title="statement not covered" >                  window.location.href = '/';</span>
-              } else {
-                  // Just reload the current page
-<span class="cstat-no" title="statement not covered" >                  window.location.reload();</span>
-              }
-          } catch (error) {
-<span class="cstat-no" title="statement not covered" >              console.error('Logout error:', error);</span>
-<span class="cstat-no" title="statement not covered" >              if (window.toast) {</span>
-<span class="cstat-no" title="statement not covered" >                  window.toast.error('An error occurred during logout');</span>
-              }
-          }
-      }
-  };
+    // Initialize with global authManager if available
+    const auth = <span class="cstat-no" title="statement not covered" >window.authManager || {</span>
+        // Check if user is logged in
+        isLoggedIn: <span class="fstat-no" title="function not covered" >fu</span>nction() {
+<span class="cstat-no" title="statement not covered" >            return localStorage.getItem('supabaseUser') !== null;</span>
+        },
+        
+        // Get current user
+        getCurrentUser: <span class="fstat-no" title="function not covered" >fu</span>nction() {
+            const userData = <span class="cstat-no" title="statement not covered" >localStorage.getItem('supabaseUser');</span>
+<span class="cstat-no" title="statement not covered" >            return userData ? JSON.parse(userData) : null;</span>
+        },
+        
+        // Get user's role
+        getUserRole: <span class="fstat-no" title="function not covered" >fu</span>nction() {
+            const user = <span class="cstat-no" title="statement not covered" >this.getCurrentUser();</span>
+<span class="cstat-no" title="statement not covered" >            return user?.user_metadata?.role || null;</span>
+        },
+        
+        // Handle logout
+        logout: <span class="fstat-no" title="function not covered" >as</span>ync function() {
+<span class="cstat-no" title="statement not covered" >            try {</span>
+                const response = <span class="cstat-no" title="statement not covered" >await fetch('/api/logout', {</span>
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+<span class="cstat-no" title="statement not covered" >                localStorage.removeItem('supabaseUser');</span>
+<span class="cstat-no" title="statement not covered" >                console.log('User logged out successfully');</span>
+                
+                // Show logout success message
+<span class="cstat-no" title="statement not covered" >                if (window.toast) {</span>
+<span class="cstat-no" title="statement not covered" >                    window.toast.success('You have been signed out successfully');</span>
+                }
+                
+                // Redirect to home page if on a protected page
+                const currentPage = <span class="cstat-no" title="statement not covered" >window.location.pathname;</span>
+                const protectedPages = <span class="cstat-no" title="statement not covered" >['/dashboard', '/projects', '/profile'];</span>
+                
+<span class="cstat-no" title="statement not covered" >                if (protectedPages.some(<span class="fstat-no" title="function not covered" >pa</span>ge =&gt; <span class="cstat-no" title="statement not covered" >currentPage.includes(page))</span>) {</span>
+<span class="cstat-no" title="statement not covered" >                    window.location.href = '/';</span>
+                } else {
+                    // Just reload the current page
+<span class="cstat-no" title="statement not covered" >                    window.location.reload();</span>
+                }
+            } catch (error) {
+<span class="cstat-no" title="statement not covered" >                console.error('Logout error:', error);</span>
+<span class="cstat-no" title="statement not covered" >                if (window.toast) {</span>
+<span class="cstat-no" title="statement not covered" >                    window.toast.error('An error occurred during logout');</span>
+                }
+            }
+        }
+    };
+    
+    // Update UI based on login status
+    function <span class="fstat-no" title="function not covered" >updateLoginUI(</span>) {
+        const authButtons = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.auth-buttons, .mobile-auth-buttons');</span>
+        
+<span class="cstat-no" title="statement not covered" >        if (auth.isLoggedIn()) {</span>
+            const userData = <span class="cstat-no" title="statement not covered" >auth.getCurrentUser();</span>
+            const name = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.name || 'User';</span>
+            const role = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.role || '';</span>
+            const roleDisplay = <span class="cstat-no" title="statement not covered" >role ? ` (${role.charAt(0).toUpperCase() + role.slice(1)})` : '';</span>
+            
+<span class="cstat-no" title="statement not covered" >            console.log(`User logged in: ${name}, Role: ${role}`);</span>
+            
+<span class="cstat-no" title="statement not covered" >            authButtons.forEach(<span class="fstat-no" title="function not covered" >co</span>ntainer =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                container.innerHTML = `</span>
+                    &lt;div class="user-profile"&gt;
+                        &lt;span class="user-greeting"&gt;Welcome, ${name}${roleDisplay}&lt;/span&gt;
+                        &lt;button class="btn btn-outline logout-btn"&gt;Sign Out&lt;/button&gt;
+                    &lt;/div&gt;
+                `;
+            });
+            
+            // Add logout functionality
+<span class="cstat-no" title="statement not covered" >            document.querySelectorAll('.logout-btn').forEach(<span class="fstat-no" title="function not covered" >bt</span>n =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                btn.addEventListener('click', auth.logout);</span>
+            });
+            
+            // Check for role-specific UI updates
+<span class="cstat-no" title="statement not covered" >            updateRoleSpecificUI(role);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            authButtons.forEach(<span class="fstat-no" title="function not covered" >co</span>ntainer =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                container.innerHTML = `</span>
+                    &lt;button class="btn btn-outline" onclick="location.href='/login'"&gt;Sign In&lt;/button&gt;
+                    &lt;button class="btn btn-primary" onclick="location.href='/signup'"&gt;Register&lt;/button&gt;
+                `;
+            });
+        }
+    }
+    
+    // Update UI based on user role
+    function <span class="fstat-no" title="function not covered" >updateRoleSpecificUI(</span>role) {
+<span class="cstat-no" title="statement not covered" >        console.log(`Updating UI for user role: ${role}`);</span>
+        
+        // Hide/show elements based on user role
+        const researcherElements = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.researcher-only');</span>
+        const reviewerElements = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.reviewer-only');</span>
+        const adminElements = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.admin-only');</span>
+        
+<span class="cstat-no" title="statement not covered" >        researcherElements.forEach(<span class="fstat-no" title="function not covered" >el</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            el.style.display = role === 'researcher' ? '' : 'none';</span>
+        });
+        
+<span class="cstat-no" title="statement not covered" >        reviewerElements.forEach(<span class="fstat-no" title="function not covered" >el</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            el.style.display = role === 'reviewer' ? '' : 'none';</span>
+        });
+        
+<span class="cstat-no" title="statement not covered" >        adminElements.forEach(<span class="fstat-no" title="function not covered" >el</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >            el.style.display = role === 'admin' ? '' : 'none';</span>
+        });
+    }
+    
+    // Initialize UI
+<span class="cstat-no" title="statement not covered" >    updateLoginUI();</span>
+    
+    // Check for URL parameters (for example, after successful login)
+    const urlParams = <span class="cstat-no" title="statement not covered" >new URLSearchParams(window.location.search);</span>
+<span class="cstat-no" title="statement not covered" >    if (urlParams.has('registered') &amp;&amp; urlParams.get('registered') === 'success') {</span>
+<span class="cstat-no" title="statement not covered" >        if (window.toast) {</span>
+<span class="cstat-no" title="statement not covered" >            window.toast.success('Registration successful! You can now sign in.');</span>
+        }
+    }
+    
+    // Check if email verification was successful
+<span class="cstat-no" title="statement not covered" >    if (urlParams.has('verified') &amp;&amp; urlParams.get('verified') === 'true') {</span>
+<span class="cstat-no" title="statement not covered" >        if (window.toast) {</span>
+<span class="cstat-no" title="statement not covered" >            window.toast.success('Email verified successfully! You can now sign in.', 5000);</span>
+        }
+        
+        // Highlight the login form if on login page
+        const loginForm = <span class="cstat-no" title="statement not covered" >document.getElementById('loginForm');</span>
+<span class="cstat-no" title="statement not covered" >        if (loginForm) {</span>
+<span class="cstat-no" title="statement not covered" >            loginForm.classList.add('verified');</span>
+<span class="cstat-no" title="statement not covered" >            setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >                loginForm.classList.remove('verified');</span>
+            }, 2000);
+        }
+    }
+    
+    // Check if on login page and there was an auth error
+<span class="cstat-no" title="statement not covered" >    if (window.location.pathname.includes('/login') &amp;&amp; urlParams.has('error')) {</span>
+        const errorMessage = <span class="cstat-no" title="statement not covered" >urlParams.get('error');</span>
+<span class="cstat-no" title="statement not covered" >        if (window.toast) {</span>
+<span class="cstat-no" title="statement not covered" >            window.toast.error(decodeURIComponent(errorMessage));</span>
+        }
+    }
+    
+    // Check if dashboard and apply role-specific customization
+<span class="cstat-no" title="statement not covered" >    if (window.location.pathname.includes('/dashboard')) {</span>
+<span class="cstat-no" title="statement not covered" >        customizeDashboard();</span>
+    }
+    
+    // Customize dashboard based on user role
+    function <span class="fstat-no" title="function not covered" >customizeDashboard(</span>) {
+<span class="cstat-no" title="statement not covered" >        if (!auth.isLoggedIn()) <span class="cstat-no" title="statement not covered" >return;</span></span>
+        
+        const userData = <span class="cstat-no" title="statement not covered" >auth.getCurrentUser();</span>
+        const role = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.role;</span>
+        const name = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.name || 'User';</span>
+        const dashboardTitle = <span class="cstat-no" title="statement not covered" >document.querySelector('.dashboard-title');</span>
+        const welcomeMessage = <span class="cstat-no" title="statement not covered" >document.querySelector('.welcome-message');</span>
+        
+<span class="cstat-no" title="statement not covered" >        console.log(`Customizing dashboard for user: ${name}, role: ${role}`);</span>
+        
+<span class="cstat-no" title="statement not covered" >        if (dashboardTitle &amp;&amp; role) {</span>
+<span class="cstat-no" title="statement not covered" >            dashboardTitle.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Dashboard`;</span>
+        }
+        
+<span class="cstat-no" title="statement not covered" >        if (welcomeMessage &amp;&amp; userData) {</span>
+<span class="cstat-no" title="statement not covered" >            welcomeMessage.textContent = `Welcome back, ${name}!`;</span>
+        }
+    }
+    
+    // Make auth object globally available
+<span class="cstat-no" title="statement not covered" >    window.auth = auth;</span>
+  });
   
-  // Update UI based on login status
-  function <span class="fstat-no" title="function not covered" >updateLoginUI(</span>) {
-      const authButtons = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.auth-buttons, .mobile-auth-buttons');</span>
-      
-<span class="cstat-no" title="statement not covered" >      if (auth.isLoggedIn()) {</span>
-          const userData = <span class="cstat-no" title="statement not covered" >auth.getCurrentUser();</span>
-          const name = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.name || 'User';</span>
-          const role = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.role || '';</span>
-          const roleDisplay = <span class="cstat-no" title="statement not covered" >role ? ` (${role.charAt(0).toUpperCase() + role.slice(1)})` : '';</span>
-          
-<span class="cstat-no" title="statement not covered" >          console.log(`User logged in: ${name}, Role: ${role}`);</span>
-          
-<span class="cstat-no" title="statement not covered" >          authButtons.forEach(<span class="fstat-no" title="function not covered" >co</span>ntainer =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >              container.innerHTML = `</span>
-                  &lt;div class="user-profile"&gt;
-                      &lt;span class="user-greeting"&gt;Welcome, ${name}${roleDisplay}&lt;/span&gt;
-                      &lt;button class="btn btn-outline logout-btn"&gt;Sign Out&lt;/button&gt;
-                  &lt;/div&gt;
-              `;
-          });
-          
-          // Add logout functionality
-<span class="cstat-no" title="statement not covered" >          document.querySelectorAll('.logout-btn').forEach(<span class="fstat-no" title="function not covered" >bt</span>n =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >              btn.addEventListener('click', auth.logout);</span>
-          });
-          
-          // Check for role-specific UI updates
-<span class="cstat-no" title="statement not covered" >          updateRoleSpecificUI(role);</span>
-      } else {
-<span class="cstat-no" title="statement not covered" >          authButtons.forEach(<span class="fstat-no" title="function not covered" >co</span>ntainer =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >              container.innerHTML = `</span>
-                  &lt;button class="btn btn-outline" onclick="location.href='/login'"&gt;Sign In&lt;/button&gt;
-                  &lt;button class="btn btn-primary" onclick="location.href='/signup'"&gt;Register&lt;/button&gt;
-              `;
-          });
-      }
-  }
-  
-  // Update UI based on user role
-  function <span class="fstat-no" title="function not covered" >updateRoleSpecificUI(</span>role) {
-<span class="cstat-no" title="statement not covered" >      console.log(`Updating UI for user role: ${role}`);</span>
-      
-      // Hide/show elements based on user role
-      const researcherElements = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.researcher-only');</span>
-      const reviewerElements = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.reviewer-only');</span>
-      const adminElements = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('.admin-only');</span>
-      
-<span class="cstat-no" title="statement not covered" >      researcherElements.forEach(<span class="fstat-no" title="function not covered" >el</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >          el.style.display = role === 'researcher' ? '' : 'none';</span>
-      });
-      
-<span class="cstat-no" title="statement not covered" >      reviewerElements.forEach(<span class="fstat-no" title="function not covered" >el</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >          el.style.display = role === 'reviewer' ? '' : 'none';</span>
-      });
-      
-<span class="cstat-no" title="statement not covered" >      adminElements.forEach(<span class="fstat-no" title="function not covered" >el</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >          el.style.display = role === 'admin' ? '' : 'none';</span>
-      });
-  }
-  
-  // Initialize UI
-<span class="cstat-no" title="statement not covered" >  updateLoginUI();</span>
-  
-  // Check for URL parameters (for example, after successful login)
-  const urlParams = <span class="cstat-no" title="statement not covered" >new URLSearchParams(window.location.search);</span>
-<span class="cstat-no" title="statement not covered" >  if (urlParams.has('registered') &amp;&amp; urlParams.get('registered') === 'success') {</span>
-<span class="cstat-no" title="statement not covered" >      if (window.toast) {</span>
-<span class="cstat-no" title="statement not covered" >          window.toast.success('Registration successful! You can now sign in.');</span>
-      }
-  }
-  
-  // Check if email verification was successful
-<span class="cstat-no" title="statement not covered" >  if (urlParams.has('verified') &amp;&amp; urlParams.get('verified') === 'true') {</span>
-<span class="cstat-no" title="statement not covered" >      if (window.toast) {</span>
-<span class="cstat-no" title="statement not covered" >          window.toast.success('Email verified successfully! You can now sign in.', 5000);</span>
-      }
-      
-      // Highlight the login form if on login page
-      const loginForm = <span class="cstat-no" title="statement not covered" >document.getElementById('loginForm');</span>
-<span class="cstat-no" title="statement not covered" >      if (loginForm) {</span>
-<span class="cstat-no" title="statement not covered" >          loginForm.classList.add('verified');</span>
-<span class="cstat-no" title="statement not covered" >          setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >              loginForm.classList.remove('verified');</span>
-          }, 2000);
-      }
-  }
-  
-  // Check if on login page and there was an auth error
-<span class="cstat-no" title="statement not covered" >  if (window.location.pathname.includes('/login') &amp;&amp; urlParams.has('error')) {</span>
-      const errorMessage = <span class="cstat-no" title="statement not covered" >urlParams.get('error');</span>
-<span class="cstat-no" title="statement not covered" >      if (window.toast) {</span>
-<span class="cstat-no" title="statement not covered" >          window.toast.error(decodeURIComponent(errorMessage));</span>
-      }
-  }
-  
-  // Check if dashboard and apply role-specific customization
-<span class="cstat-no" title="statement not covered" >  if (window.location.pathname.includes('/dashboard')) {</span>
-<span class="cstat-no" title="statement not covered" >      customizeDashboard();</span>
-  }
-  
-  // Customize dashboard based on user role
-  function <span class="fstat-no" title="function not covered" >customizeDashboard(</span>) {
-<span class="cstat-no" title="statement not covered" >      if (!auth.isLoggedIn()) <span class="cstat-no" title="statement not covered" >return;</span></span>
-      
-      const userData = <span class="cstat-no" title="statement not covered" >auth.getCurrentUser();</span>
-      const role = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.role;</span>
-      const name = <span class="cstat-no" title="statement not covered" >userData.user_metadata?.name || 'User';</span>
-      const dashboardTitle = <span class="cstat-no" title="statement not covered" >document.querySelector('.dashboard-title');</span>
-      const welcomeMessage = <span class="cstat-no" title="statement not covered" >document.querySelector('.welcome-message');</span>
-      
-<span class="cstat-no" title="statement not covered" >      console.log(`Customizing dashboard for user: ${name}, role: ${role}`);</span>
-      
-<span class="cstat-no" title="statement not covered" >      if (dashboardTitle &amp;&amp; role) {</span>
-<span class="cstat-no" title="statement not covered" >          dashboardTitle.textContent = `${role.charAt(0).toUpperCase() + role.slice(1)} Dashboard`;</span>
-      }
-      
-<span class="cstat-no" title="statement not covered" >      if (welcomeMessage &amp;&amp; userData) {</span>
-<span class="cstat-no" title="statement not covered" >          welcomeMessage.textContent = `Welcome back, ${name}!`;</span>
-      }
-  }
-  
-  // Make auth object globally available
-<span class="cstat-no" title="statement not covered" >  window.auth = auth;</span>
-});
-&nbsp;
-&nbsp;</pre></td></tr></table></pre>
+  </pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-04-25T07:23:25.621Z
+                at 2025-04-25T08:27:52.303Z
             </div>
-        <script src="prettify.js"></script>
+        <script src="../../../../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="sorter.js"></script>
-        <script src="block-navigation.js"></script>
+        <script src="../../../../../sorter.js"></script>
+        <script src="../../../../../block-navigation.js"></script>
     </body>
 </html>
     

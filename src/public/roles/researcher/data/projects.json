@@ -535,32 +535,24 @@
     },
     {
       "projectDetails": {
-        "researcherName": "Dr. James Wilson",
-        "projectTitle": "Machine Class For methods of work with time and money and yet some yes",
-        "description": "bgf",
-        "keyResearchArea": "Genetics, Longevity Research",
+        "researcherName": "SS",
+        "projectTitle": "SS",
+        "description": "SS",
+        "keyResearchArea": "SS",
         "startDate": "2025-05-09",
         "endDate": "2025-05-10",
         "fundingAvailable": true
       },
       "collaborationRequirements": {
         "skillsAndExpertise": [
-          "FrondEnd",
-          "BackEnd",
-          "Full Stack"
+          "SS"
         ],
-        "experienceLevel": "Intermediate",
+        "experienceLevel": "Expert",
         "positionsRequired": [
-          "Geneticist",
-          "Bioinformatician",
-          "Biostatistician",
-          "Research Assistant"
+          "SS"
         ],
         "technicalRequirements": [
-          "CSS",
-          "JS",
-          "HTML",
-          "JAVA"
+          "SS"
         ]
       },
       "id": "PRJ005",
@@ -572,7 +564,7 @@
           "institution": "Pacific University",
           "email": "e.chen@pacific.edu",
           "status": "invited",
-          "invitedDate": "2025-04-22T11:08:28.767Z",
+          "invitedDate": "2025-04-25T07:13:59.999Z",
           "skills": [
             "RNA-seq",
             "Bioinformatics",
@@ -583,29 +575,13 @@
           ]
         },
         {
-          "id": "c5",
-          "name": "Dr. Lisa Martinez",
-          "title": "Associate Professor of Genetics",
-          "institution": "State University Medical Center",
-          "email": "l.martinez@sumc.edu",
-          "status": "invited",
-          "invitedDate": "2025-04-22T11:12:23.191Z",
-          "skills": [
-            "Genomics",
-            "CRISPR",
-            "Genetic Engineering",
-            "Molecular Biology",
-            "Next-generation Sequencing"
-          ]
-        },
-        {
           "id": "c4",
           "name": "Dr. James Wilson",
           "title": "Professor of Computer Science",
           "institution": "Tech University",
           "email": "j.wilson@techu.edu",
           "status": "invited",
-          "invitedDate": "2025-04-22T11:12:25.071Z",
+          "invitedDate": "2025-04-25T07:14:18.443Z",
           "skills": [
             "Machine Learning",
             "Natural Language Processing",
@@ -615,20 +591,19 @@
           ]
         },
         {
-          "id": "c3",
-          "name": "Dr. Sarah Kim",
-          "title": "Research Scientist",
-          "institution": "Medical Research Foundation",
-          "email": "s.kim@mrf.org",
+          "id": "c5",
+          "name": "Dr. Lisa Martinez",
+          "title": "Associate Professor of Genetics",
+          "institution": "State University Medical Center",
+          "email": "l.martinez@sumc.edu",
           "status": "invited",
-          "invitedDate": "2025-04-24T12:21:17.765Z",
+          "invitedDate": "2025-04-25T07:14:30.559Z",
           "skills": [
-            "Deep Learning",
-            "Medical Imaging",
-            "Neural Networks",
-            "TensorFlow",
-            "PyTorch",
-            "Computer Vision"
+            "Genomics",
+            "CRISPR",
+            "Genetic Engineering",
+            "Molecular Biology",
+            "Next-generation Sequencing"
           ]
         }
       ]
