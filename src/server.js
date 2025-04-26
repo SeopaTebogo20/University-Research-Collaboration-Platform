@@ -359,8 +359,6 @@ app.post('/api/signup-google', async (req, res) => {
     const userMetadata = {
       name: googleProfile.name,
       email: googleProfile.email,
-      googleId: googleProfile.googleId,
-      picture: googleProfile.picture,
       role,
       authProvider: 'google',
       studentNumber
@@ -456,6 +454,7 @@ app.post('/api/signup-google', async (req, res) => {
     return res.status(500).json({ message: `Server error: ${error.message}` });
   }
 });
+
 // Updated endpoint to get Google profile data from session
 app.get('/api/auth/google-profile', (req, res) => {
   // First check session
