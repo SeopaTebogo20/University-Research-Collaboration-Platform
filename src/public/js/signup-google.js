@@ -30,13 +30,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         switch (normalizedRole) {
             case 'admin':
-                return '/roles/admin/dashboard.html';
+                return './roles/admin/dashboard.html';
             case 'reviewer':
-                return '/roles/reviewer/dashboard.html';
+                return './roles/reviewer/dashboard.html';
             case 'researcher':
-                return '/roles/researcher/dashboard.html';
+                return './roles/researcher/dashboard.html';
             default:
-                return '/roles/researcher/dashboard.html';
+                return './roles/researcher/dashboard.html';
         }
     }
     
@@ -66,6 +66,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (googleProfile) {
                 // Display profile information to user
                 displayGoogleProfile(googleProfile);
+                
+                // Debug Google profile data
+                console.log("Google Profile Full Data:", googleProfile);
+                
                 return googleProfile;
             } else {
                 throw new Error('No profile data returned from server');
@@ -343,15 +347,25 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Show loading status
             formStatus.innerHTML = `<div class="info">Processing your information...</div>`;
             
-            // Gather form data from all steps
+            // Gather form data from all steps - only include database-compatible fields
             const formData = new FormData(form);
             const userData = {};
             
+            // Only include fields that exist in the database schema
+            const validDbFields = [
+                'name', 'email', 'phone', 'role', 
+                'department', 'academicRole', 'researchArea', 
+                'researchExperience', 'qualifications', 'currentProject'
+            ];
+            
             for (const [key, value] of formData.entries()) {
-                userData[key] = value;
+                // Only include valid database fields
+                if (validDbFields.includes(key)) {
+                    userData[key] = value;
+                }
             }
             
-            // Additional fields from Google profile
+            // Add required fields from Google profile if not already in form
             if (googleProfile) {
                 if (!userData.email && googleProfile.email) {
                     userData.email = googleProfile.email;
@@ -359,18 +373,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (!userData.name && googleProfile.name) {
                     userData.name = googleProfile.name;
                 }
-                if (googleProfile.picture) {
-                    userData.picture = googleProfile.picture;
-                }
-                if (googleProfile.given_name) {
-                    userData.firstName = googleProfile.given_name;
-                }
-                if (googleProfile.family_name) {
-                    userData.lastName = googleProfile.family_name;
-                }
                 
-                // Include Google ID for linking account
-                userData.googleId = googleProfile.sub || googleProfile.id;
+                // Don't include googleId or picture in userData as they're not in DB schema
+                // They're already in the session or token on the server side
             }
             
             // Include selected role or default to researcher
