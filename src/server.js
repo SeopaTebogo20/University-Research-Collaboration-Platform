@@ -309,6 +309,7 @@ app.get('/signupGoogle', (req, res) => {
 });
 
 // Add new endpoint to complete Google signup with additional profile information
+// Add new endpoint to complete Google signup with additional profile information
 app.post('/api/signup-google', async (req, res) => {
   try {
     // Check if Google profile exists in session
@@ -431,10 +432,23 @@ app.post('/api/signup-google', async (req, res) => {
     // Clear Google profile from session as it's no longer needed
     delete req.session.googleProfile;
     
+    // Determine the redirect URL based on the user's role
+    let redirectUrl;
+    switch (role) {
+      case 'admin':
+        redirectUrl = '/roles/admin/dashboard.html';
+        break;
+      case 'reviewer':
+        redirectUrl = '/roles/reviewer/dashboard.html';
+        break;
+      case 'researcher':
+        redirectUrl = '/roles/researcher/dashboard.html';
+    }
+    
     return res.status(201).json({ 
       message: 'Account created successfully!', 
       user: newUser.user,
-      redirectUrl: '/dashboard'
+      redirectUrl
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Google signup error: ${error.message}`);
@@ -442,7 +456,6 @@ app.post('/api/signup-google', async (req, res) => {
     return res.status(500).json({ message: `Server error: ${error.message}` });
   }
 });
-
 // Updated endpoint to get Google profile data from session
 app.get('/api/auth/google-profile', (req, res) => {
   // First check session
