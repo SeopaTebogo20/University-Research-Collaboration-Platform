@@ -323,6 +323,7 @@ app.post('/api/signup-google', async (req, res) => {
     const { 
       role,
       department,
+      phone,
       academicRole,
       researchArea,
       researchExperience,
@@ -349,9 +350,6 @@ app.post('/api/signup-google', async (req, res) => {
       return res.status(400).json({ message: 'Validation failed', errors });
     }
     
-    // Extract student number from email
-    const studentNumber = googleProfile.email.split('@')[0];
-    
     // Create a random password since Supabase requires one (user won't use it)
     const randomPassword = Math.random().toString(36).slice(-10);
     
@@ -359,7 +357,9 @@ app.post('/api/signup-google', async (req, res) => {
     const userMetadata = {
       name: googleProfile.name,
       email: googleProfile.email,
+      phone: phone || '',
       role
+
     };
     
     // Add common fields for all roles - accept empty strings
