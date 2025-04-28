@@ -201,6 +201,34 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
+    // Handle role change to update required fields
+    function updateRequiredFields() {
+        const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
+        const roleFields = document.querySelectorAll(`[data-role]`);
+        
+        roleFields.forEach(field => {
+            const roles = field.getAttribute('data-role').split(' ');
+            const inputs = field.querySelectorAll('input, select, textarea');
+            
+            if (roles.includes(selectedRole)) {
+                field.style.display = 'block';
+                inputs.forEach(input => input.setAttribute('required', ''));
+            } else {
+                field.style.display = 'none';
+                inputs.forEach(input => {
+                    input.removeAttribute('required');
+                    // Clear the value to avoid sending irrelevant data
+                    input.value = '';
+                });
+            }
+        });
+    }
+    
+    // Add event listeners to role inputs
+    roleInputs.forEach(input => {
+        input.addEventListener('change', updateRequiredFields);
+    });
+    
     // Handle step navigation
     function showStep(stepIndex) {
         steps.forEach((step, index) => {
@@ -211,6 +239,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Update button visibility
         if (prevBtn) prevBtn.style.display = currentStep === 0 ? 'none' : 'inline-block';
         if (nextBtn) nextBtn.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-block';
+        
+        // If we're on a step with role-specific fields, update them
+        if (document.querySelector('.form-step.active').querySelectorAll('[data-role]').length > 0) {
+            updateRequiredFields();
+        }
     }
     
     // Next button click
@@ -258,30 +291,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
             
-            const roleFields = document.querySelectorAll(`[data-role]`);
-            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
-            
-            // Show/hide fields based on selected role
-            roleFields.forEach(field => {
-                const roles = field.getAttribute('data-role').split(' ');
-                if (roles.includes(selectedRole)) {
-                    field.style.display = 'block';
-                    const inputs = field.querySelectorAll('input, select, textarea');
-                    inputs.forEach(input => {
-                        if (roles.includes(selectedRole)) {
-                            input.setAttribute('required', '');
-                        } else {
-                            input.removeAttribute('required');
-                        }
-                    });
-                } else {
-                    field.style.display = 'none';
-                    // Remove required attribute from hidden fields
-                    const inputs = field.querySelectorAll('input, select, textarea');
-                    inputs.forEach(input => input.removeAttribute('required'));
-                }
-            });
-            
             showStep(currentStep + 1);
             window.scrollTo(0, 0); // Scroll to top
         });
@@ -306,28 +315,44 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Basic validation
             let isValid = true;
             
+            // Get selected role
+            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
+            
+            // Get all visible required fields
             const activeStep = document.querySelector('.form-step.active');
-            const requiredFields = activeStep.querySelectorAll('input[required], select[required], textarea[required]');
+            const visibleGroups = Array.from(activeStep.querySelectorAll('.form-group'))
+                .filter(group => {
+                    // Get the data-role if it exists
+                    const dataRole = group.getAttribute('data-role');
+                    // If no data-role, always validate
+                    if (!dataRole) return true;
+                    // If has data-role, only validate if it matches selected role
+                    return dataRole.split(' ').includes(selectedRole);
+                });
+            
+            const requiredFields = [];
+            visibleGroups.forEach(group => {
+                // Only collect required fields from visible groups
+                group.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
+                    requiredFields.push(field);
+                });
+            });
             
             requiredFields.forEach(field => {
-                // Only validate fields that are currently displayed
-                const fieldGroup = field.closest('.form-group');
-                if (!fieldGroup || getComputedStyle(fieldGroup).display !== 'none') {
-                    if (!field.value.trim()) {
-                        showError(field, `${field.name || field.id} is required`);
+                if (!field.value.trim()) {
+                    showError(field, `${field.name || field.id} is required`);
+                    isValid = false;
+                } else if (field.type === 'tel' || field.id.includes('phone') || field.id.includes('contact')) {
+                    const phoneValid = validateSouthAfricanPhone(field.value.trim());
+                    if (!phoneValid.valid) {
+                        showError(field, phoneValid.message);
                         isValid = false;
-                    } else if (field.type === 'tel' || field.id.includes('phone') || field.id.includes('contact')) {
-                        const phoneValid = validateSouthAfricanPhone(field.value.trim());
-                        if (!phoneValid.valid) {
-                            showError(field, phoneValid.message);
-                            isValid = false;
-                        }
-                    } else if (field.id.includes('name')) {
-                        // Name validation
-                        if (/[^a-zA-Z\s\-']/.test(field.value)) {
-                            showError(field, 'Only letters, spaces, hyphens and apostrophes are allowed');
-                            isValid = false;
-                        }
+                    }
+                } else if (field.id.includes('name')) {
+                    // Name validation
+                    if (/[^a-zA-Z\s\-']/.test(field.value)) {
+                        showError(field, 'Only letters, spaces, hyphens and apostrophes are allowed');
+                        isValid = false;
                     }
                 }
             });
@@ -379,12 +404,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             
             // Include selected role or default to researcher
-            const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
-            if (selectedRole) {
-                userData.role = selectedRole;
-            } else {
-                userData.role = 'researcher';
-            }
+            userData.role = selectedRole;
             
             // Log form data for debugging
             console.log("Form data being sent:", userData);
@@ -490,6 +510,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Error during initialization:', error);
     }
     
-    // Initialize step visibility
+    // Initialize step visibility and update required fields
     showStep(0);
 });
