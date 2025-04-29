@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const formData = new FormData(form);
             const userData = {};
             
-            // Only include fields that exist in the database schema
+            // Only include fields that exist in the database schema - note phone is included but not collected
             const validDbFields = [
                 'name', 'email', 'phone', 'role', 
                 'department', 'academicRole', 'researchArea', 
@@ -405,6 +405,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Include selected role or default to researcher
             userData.role = selectedRole;
+            
+            // Note: phone field is intentionally not included here
+            // The server will set it to null
             
             // Log form data for debugging
             console.log("Form data being sent:", userData);
