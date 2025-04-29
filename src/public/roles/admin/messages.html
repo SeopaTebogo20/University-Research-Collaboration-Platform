@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - CollabNexus Research Hub</title>
+    <meta name="description" content="Messaging System for CollabNexus Research Hub">
+    <meta name="author" content="CollabNexus">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin-styles.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <header class="logo">
+            <a href="admin-dashboard.html" class="logo-link">
+                <i class="fas fa-book-open book-logo"></i>
+                CollabNexus
+            </a>
+        </header>
+        <ul class="nav-links">
+            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="userManagement.html"><i class="fas fa-users"></i> User Management</a></li>
+            <li><a href="messages.html" class="active"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </nav>
+      
+    <main class="messaging-dashboard">
+        <header class="dashboard-header">
+            <h1>Messaging Center</h1>
+            <p>Communicate with researchers and reviewers</p>
+        </header>
+
+        <section class="messaging-container">
+            <aside class="message-sidebar">
+                <header class="sidebar-header">
+                    <h2>Messages</h2>
+                    <button id="compose-btn" class="btn btn-primary"><i class="fas fa-pen"></i> Compose</button>
+                </header>
+                
+                <nav class="message-folders">
+                    <ul>
+                        <li class="active"><a href="#inbox"><i class="fas fa-inbox"></i> Inbox <span class="badge">3</span></a></li>
+                        <li><a href="#sent"><i class="fas fa-paper-plane"></i> Sent</a></li>
+                        <li><a href="#drafts"><i class="fas fa-save"></i> Drafts</a></li>
+                        <li><a href="#archived"><i class="fas fa-archive"></i> Archived</a></li>
+                    </ul>
+                </nav>
+                
+                <section class="message-list" id="message-list">
+                    <!-- Message list items will be loaded here -->
+                </section>
+            </aside>
+            
+            <section class="message-content">
+                <article id="empty-state" class="message-empty-state">
+                    <i class="fas fa-envelope-open fa-4x"></i>
+                    <h3>Select a message to view</h3>
+                    <p>Or compose a new message to get started</p>
+                </article>
+                
+                <article id="message-view" class="message-view hidden">
+                    <header class="message-header">
+                        <h2 id="message-subject"></h2>
+                        <section class="message-meta">
+                            <p><strong>From:</strong> <span id="message-from"></span></p>
+                            <p><strong>To:</strong> <span id="message-to"></span></p>
+                            <p><strong>Date:</strong> <span id="message-date"></span></p>
+                        </section>
+                    </header>
+                    
+                    <section class="message-body">
+                        <p id="message-body-text"></p>
+                    </section>
+                    
+                    <section id="message-attachments" class="message-attachments hidden">
+                        <h3>Attachments</h3>
+                        <ul id="attachment-list" class="attachment-list"></ul>
+                    </section>
+                    
+                    <footer class="message-actions">
+                        <button id="reply-btn" class="btn btn-primary"><i class="fas fa-reply"></i> Reply</button>
+                        <button id="forward-btn" class="btn btn-outline"><i class="fas fa-share"></i> Forward</button>
+                        <button id="archive-btn" class="btn btn-outline"><i class="fas fa-archive"></i> Archive</button>
+                    </footer>
+                </article>
+                
+                <form id="compose-form" class="compose-form hidden">
+                    <header class="compose-header">
+                        <h2>New Message</h2>
+                    </header>
+                    
+                    <section class="compose-body">
+                        <fieldset class="form-group">
+                            <label for="compose-to">To:</label>
+                            <select id="compose-to" class="styled-input" multiple required>
+                                <!-- Recipients will be loaded here -->
+                            </select>
+                            
+                            <label for="compose-subject">Subject:</label>
+                            <input type="text" id="compose-subject" class="styled-input" required>
+                            
+                            <label for="compose-message">Message:</label>
+                            <textarea id="compose-message" class="styled-input" rows="10" required></textarea>
+                            
+                            <label for="compose-attachment">Attach File or Reference Proposal:</label>
+                            <section class="attachment-section">
+                                <input type="file" id="compose-file-attachment" class="styled-input">
+                                <p>OR</p>
+                                <select id="compose-proposal-reference" class="styled-input">
+                                    <option value="">Select a proposal to reference</option>
+                                    <!-- Proposals will be loaded here -->
+                                </select>
+                            </section>
+                        </fieldset>
+                    </section>
+                    
+                    <footer class="compose-actions">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Send</button>
+                        <button type="button" id="save-draft-btn" class="btn btn-outline"><i class="fas fa-save"></i> Save Draft</button>
+                        <button type="button" id="cancel-compose-btn" class="btn btn-outline"><i class="fas fa-times"></i> Cancel</button>
+                    </footer>
+                </form>
+            </section>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <section class="container">
+            <section class="footer-content">
+                <article class="footer-column">
+                    <header class="footer-logo">
+                          <i class="fas fa-book-open book-logo"></i>
+                          CollabNexus
+                    </header>
+                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                </article>
+                <article class="footer-column">
+                    <h3>Solutions</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">For Researchers</a></li>
+                        <li><a href="#">For Universities</a></li>
+                        <li><a href="#">For Industry</a></li>
+                        <li><a href="#">For Funding Agencies</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Research Guides</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </article>
+            </section>
+            <section class="footer-bottom">
+                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
+            </section>
+        </section>
+    </footer>
+
+    <script src="js/messages.js"></script>
+</body>
+</html>
