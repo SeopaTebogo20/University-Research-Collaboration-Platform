@@ -325,7 +325,6 @@ app.post('/api/signup-google', async (req, res) => {
       department,
       academicRole,
       researchArea,
-      phone,
       researchExperience,
       qualifications,
       currentProject
@@ -360,8 +359,12 @@ app.post('/api/signup-google', async (req, res) => {
     const userMetadata = {
       name: googleProfile.name,
       email: googleProfile.email,
-      phone:'',
-      role
+      googleId: googleProfile.googleId,
+      picture: googleProfile.picture,
+      role,
+      authProvider: 'google',
+      studentNumber,
+      phone: null // Set phone to null for Google signups
     };
     
     // Add common fields for all roles - accept empty strings
