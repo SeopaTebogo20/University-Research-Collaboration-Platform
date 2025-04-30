@@ -4,156 +4,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - CollabNexus Research Hub</title>
-    <meta name="description" content="Admin Dashboard for CollabNexus Research Hub">
+    <meta name="description" content="Admin dashboard for CollabNexus Research Hub">
     <meta name="author" content="CollabNexus">
     
+    <meta property="og:title" content="Admin Dashboard - CollabNexus Research Hub">
+    <meta property="og:description" content="Admin dashboard for CollabNexus Research Hub">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/admin-styles.css">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
-        <header class="logo">
+        <a href="dashboard.html" class="logo">
             <i class="fas fa-book-open book-logo"></i>
             CollabNexus
-        </header>
+        </a>
         <ul class="nav-links">
-            <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="proposal.html"><i class="fas fa-file-alt"></i> Proposals</a></li>
             <li><a href="userManagement.html"><i class="fas fa-users"></i> User Management</a></li>
             <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
         </ul>
     </nav>
-      
+
     <main class="admin-dashboard">
         <header class="dashboard-header">
-            <h1>Submitted Proposals Dashboard</h1>
-            <p>Manage all research proposals and assign reviewers</p>
+            <h1>Admin Dashboard</h1>
+            <p>Welcome back, Administrator! Here's an overview of your research hub activity.</p>
         </header>
 
-        <section class="filter-section">
-            <form class="filter-form">
-                <fieldset>
-                    <legend>Filter Proposals</legend>
-                    <label for="status-filter">Status:</label>
-                    <select id="status-filter" class="styled-input">
-                        <option value="all">All</option>
-                        <option value="pending">Pending Review</option>
-                        <option value="in-review">In Review</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="revision">Needs Revision</option>
-                    </select>
-
-                    <label for="research-area-filter">Research Area:</label>
-                    <select id="research-area-filter" class="styled-input">
-                        <option value="all">All Areas</option>
-                        <option value="computer-science">Computer Science</option>
-                        <option value="biology">Biology</option>
-                        <option value="medicine">Medicine</option>
-                        <option value="physics">Physics</option>
-                        <option value="economics">Economics</option>
-                    </select>
-
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
-                </fieldset>
-            </form>
+        <section class="stats-overview">
+            <article class="stat-card">
+                <i class="fas fa-file-alt stat-icon"></i>
+                <h3>Active Proposals</h3>
+                <p class="stat-number">24</p>
+                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 15% from last month</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-users stat-icon"></i>
+                <h3>Registered Users</h3>
+                <p class="stat-number">143</p>
+                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 8% from last month</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <h3>Approved Proposals</h3>
+                <p class="stat-number">18</p>
+                <p class="stat-change neutral"><i class="fas fa-minus"></i> No change</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-comments stat-icon"></i>
+                <h3>New Messages</h3>
+                <p class="stat-number">7</p>
+                <p class="stat-change negative"><i class="fas fa-arrow-down"></i> 3% from last month</p>
+            </article>
         </section>
 
-        <section class="proposal-list-section">
-            <h2>Research Proposals</h2>
-            <table class="proposal-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Researcher</th>
-                        <th>Submitted Date</th>
-                        <th>Research Area</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="proposals-list">
-                    <!-- Proposals will be loaded here by JavaScript -->
-                </tbody>
-            </table>
+        <section class="dashboard-content">
+            <article class="dashboard-card recent-proposals">
+                <header class="card-header">
+                    <h2>Recent Proposals</h2>
+                    <a href="proposal.html" class="view-all">View All</a>
+                </header>
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Researcher</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Novel Approaches to Quantum Computing</td>
+                            <td>Dr. Sarah Chen</td>
+                            <td><span class="status-badge status-in-review">In Review</span></td>
+                            <td>April 28, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Climate Change Impact on Marine Ecosystems</td>
+                            <td>Prof. James Wilson</td>
+                            <td><span class="status-badge status-approved">Approved</span></td>
+                            <td>April 25, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Sustainable Agriculture Techniques</td>
+                            <td>Dr. Elena Rodriguez</td>
+                            <td><span class="status-badge status-revision">Needs Revision</span></td>
+                            <td>April 23, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>AI Applications in Medical Diagnostics</td>
+                            <td>Dr. Michael Johnson</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>April 21, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Renewable Energy Storage Solutions</td>
+                            <td>Prof. Anna Kim</td>
+                            <td><span class="status-badge status-approved">Approved</span></td>
+                            <td>April 19, 2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article class="dashboard-card recent-users">
+                <header class="card-header">
+                    <h2>Recent Users</h2>
+                    <a href="userManagement.html" class="view-all">View All</a>
+                </header>
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dr. Thomas Rivera</td>
+                            <td>Researcher</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>April 29, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Prof. Lydia Patel</td>
+                            <td>Reviewer</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>April 27, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Dr. Marcus Thompson</td>
+                            <td>Researcher</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>April 26, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Dr. Sofia Garcia</td>
+                            <td>Reviewer</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>April 24, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Prof. Robert Lee</td>
+                            <td>Researcher</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td>April 22, 2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article class="dashboard-card activity-log">
+                <header class="card-header">
+                    <h2>Recent Activity</h2>
+                    <button class="btn-outline refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </header>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <i class="fas fa-check-circle activity-icon approve"></i>
+                        <section class="activity-content">
+                            <p class="activity-text">Proposal "<strong>Quantum Computing Applications</strong>" was approved</p>
+                            <p class="activity-time">Today, 14:32</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-user-plus activity-icon user"></i>
+                        <section class="activity-content">
+                            <p class="activity-text"><strong>Dr. Thomas Rivera</strong> registered as a new researcher</p>
+                            <p class="activity-time">Today, 11:15</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-file-alt activity-icon proposal"></i>
+                        <section class="activity-content">
+                            <p class="activity-text">New proposal "<strong>Novel Approaches to Quantum Computing</strong>" submitted</p>
+                            <p class="activity-time">Today, 09:47</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-comment activity-icon message"></i>
+                        <section class="activity-content">
+                            <p class="activity-text"><strong>Prof. Anna Kim</strong> sent a message regarding her proposal</p>
+                            <p class="activity-time">Yesterday, 16:23</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-pen activity-icon edit"></i>
+                        <section class="activity-content">
+                            <p class="activity-text">Proposal "<strong>Sustainable Agriculture Techniques</strong>" was returned for revision</p>
+                            <p class="activity-time">Yesterday, 14:05</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-user-shield activity-icon role"></i>
+                        <section class="activity-content">
+                            <p class="activity-text"><strong>Prof. Lydia Patel</strong> was assigned as a reviewer</p>
+                            <p class="activity-time">Yesterday, 11:30</p>
+                        </section>
+                    </li>
+                </ul>
+            </article>
         </section>
     </main>
-
-    <!-- Modal for Proposal Details -->
-    <dialog id="proposal-modal" class="modal">
-        <article class="modal-content">
-            <header class="modal-header">
-                <h2 id="modal-proposal-title">Proposal Title</h2>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </header>
-            <section class="modal-body">
-                <article class="proposal-details">
-                    <h3>Proposal Details</h3>
-                    <p><strong>ID:</strong> <em id="modal-proposal-id"></em></p>
-                    <p><strong>Researcher:</strong> <em id="modal-proposal-researcher"></em></p>
-                    <p><strong>Submitted Date:</strong> <time id="modal-proposal-date"></time></p>
-                    <p><strong>Research Area:</strong> <em id="modal-proposal-area"></em></p>
-                    <p><strong>Status:</strong> <em id="modal-proposal-status"></em></p>
-                </article>
-                
-                <article class="proposal-abstract">
-                    <h3>Abstract</h3>
-                    <p id="modal-proposal-abstract"></p>
-                </article>
-                
-                <article class="key-concepts">
-                    <h3>Key Research Areas/Concepts</h3>
-                    <ul id="modal-proposal-concepts"></ul>
-                </article>
-                
-                <article class="assigned-reviewers">
-                    <h3>Assigned Reviewers</h3>
-                    <ul id="modal-assigned-reviewers">
-                        <!-- Assigned reviewers will be displayed here -->
-                    </ul>
-                </article>
-            </section>
-            <footer class="modal-footer">
-                <button id="assign-reviewers-btn" class="btn btn-primary"><i class="fas fa-user-plus"></i> Assign Reviewers</button>
-            </footer>
-        </article>
-    </dialog>
-
-    <!-- Modal for Assigning Reviewers -->
-    <dialog id="assign-reviewer-modal" class="modal">
-        <article class="modal-content">
-            <header class="modal-header">
-                <h2>Assign Reviewers</h2>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </header>
-            <section class="modal-body">
-                <p>Assign reviewers to <strong id="assign-proposal-title"></strong></p>
-                
-                <section class="reviewer-search">
-                    <label for="reviewer-search-input">Search Reviewers by Expertise:</label>
-                    <input type="text" id="reviewer-search-input" class="styled-input" placeholder="E.g., Machine Learning, Genomics">
-                    <button id="search-reviewers-btn" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
-                </section>
-                
-                <section class="reviewer-selection">
-                    <h3>Available Reviewers</h3>
-                    <p class="info-text">Select reviewers who match the research area expertise.</p>
-                    <ul id="available-reviewers" class="reviewer-list">
-                        <!-- Available reviewers will be loaded here -->
-                    </ul>
-                </section>
-            </section>
-            <footer class="modal-footer">
-                <button id="confirm-assign-btn" class="btn btn-primary"><i class="fas fa-check"></i> Confirm Assignment</button>
-                <button class="btn btn-outline close-modal"><i class="fas fa-times"></i> Cancel</button>
-            </footer>
-        </article>
-    </dialog>
     
-    <!-- Footer -->
     <footer class="footer">
         <section class="container">
             <section class="footer-content">
@@ -198,6 +258,6 @@
         </section>
     </footer>
 
-    <script src="js/dashboard.js"></script>
+    <script src="js/admin-dashboard.js"></script>
 </body>
 </html>
