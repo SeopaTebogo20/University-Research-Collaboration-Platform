@@ -1,9 +1,9 @@
-// Admin User Management JavaScript - Updated to use API and profiles table schema
+// Admin User Management JavaScript - Updated to match dashboard style
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const usersListElement = document.getElementById('users-list');
     const roleFilterElement = document.getElementById('role-filter');
-    const promotedFilterElement = document.getElementById('promoted-filter'); // Updated from status to promoted
+    const statusFilterElement = document.getElementById('status-filter');
     const searchInputElement = document.getElementById('search-input');
     const filterForm = document.querySelector('.filter-form');
     const searchForm = document.querySelector('.search-form');
@@ -16,38 +16,80 @@ document.addEventListener('DOMContentLoaded', function() {
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
 
+    // Mock User Data
+    const mockUsers = [
+        { 
+            id: 1, 
+            name: 'Dr. Sarah Johnson', 
+            email: 'sarah.johnson@university.edu', 
+            role: 'researcher', 
+            status: 'active', 
+            joinDate: '2024-09-15',
+            expertise: []
+        },
+        { 
+            id: 2, 
+            name: 'Prof. Michael Chen', 
+            email: 'mchen@research.org', 
+            role: 'reviewer', 
+            status: 'active', 
+            joinDate: '2024-08-23',
+            expertise: ['computer-science', 'medicine']
+        },
+        { 
+            id: 3, 
+            name: 'Dr. Emily Rodriguez', 
+            email: 'rodriguez@science.edu', 
+            role: 'researcher', 
+            status: 'active', 
+            joinDate: '2024-10-05',
+            expertise: []
+        },
+        { 
+            id: 4, 
+            name: 'Dr. James Wilson', 
+            email: 'jwilson@institute.org', 
+            role: 'reviewer', 
+            status: 'active', 
+            joinDate: '2024-09-10',
+            expertise: ['biology', 'medicine']
+        },
+        { 
+            id: 5, 
+            name: 'Admin User', 
+            email: 'admin@collabnexus.com', 
+            role: 'admin', 
+            status: 'active', 
+            joinDate: '2024-01-01',
+            expertise: []
+        },
+        { 
+            id: 6, 
+            name: 'Dr. Lisa Martinez', 
+            email: 'lmartinez@university.edu', 
+            role: 'researcher', 
+            status: 'pending', 
+            joinDate: '2024-10-18',
+            expertise: []
+        },
+        { 
+            id: 7, 
+            name: 'Prof. Robert Taylor', 
+            email: 'rtaylor@research.org', 
+            role: 'reviewer', 
+            status: 'inactive', 
+            joinDate: '2024-07-12',
+            expertise: ['physics', 'economics']
+        }
+    ];
+
     // Store the current filtered users
-    let currentUsers = [];
+    let currentUsers = [...mockUsers];
 
     // Initialize the page
-    async function init() {
-        try {
-            // Fetch users from API
-            await fetchUsers();
-            setupEventListeners();
-        } catch (error) {
-            console.error('Error initializing page:', error);
-            showToast('Error loading users. Please refresh the page.', 'error');
-        }
-    }
-
-    // Fetch users from API
-    async function fetchUsers() {
-        try {
-            const response = await fetch('http://localhost:3000/api/users');
-            
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
-            }
-            
-            const users = await response.json();
-            currentUsers = users;
-            renderUsersList(users);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            showToast('Failed to load users from server', 'error');
-            throw error;
-        }
+    function init() {
+        renderUsersList(currentUsers);
+        setupEventListeners();
     }
 
     // Render the users list in the table
@@ -57,46 +99,41 @@ document.addEventListener('DOMContentLoaded', function() {
         if (users.length === 0) {
             const noResultsRow = document.createElement('tr');
             noResultsRow.innerHTML = `
-                <td colspan="8" class="text-center">No users found matching your criteria</td>
+                <td colspan="7" class="text-center">No users found matching your criteria</td>
             `;
             usersListElement.appendChild(noResultsRow);
             return;
         }
         
-        users.forEach((user, index) => {
+        users.forEach(user => {
             const userRow = document.createElement('tr');
             userRow.dataset.userId = user.id;
             
-            // Use sequential number (index + 1) instead of database ID for display
-            const displayNumber = index + 1;
+            // Format the status with appropriate styling
+            const statusClass = user.status === 'active' ? 'status-active' : 
+                              user.status === 'pending' ? 'status-pending' : 'status-inactive';
             
-            // Format the promoted status with appropriate styling
-            const promotedClass = user.promoted_role ? 'status-active' : 'status-inactive';
-            const promotedStatus = user.promoted_role ? 'Promoted' : 'Regular';
-            
-            // Format timestamps
-            const createdDate = new Date(user.created_at);
-            const formattedCreatedDate = formatDate(createdDate);
+            // Capitalize the first letter of the role and status
+            const formattedRole = capitalizeFirstLetter(user.role);
+            const formattedStatus = capitalizeFirstLetter(user.status);
             
             userRow.innerHTML = `
-                <td>${displayNumber}</td>
+                <td>${user.id}</td>
                 <td>${user.name}</td>
                 <td>${user.email}</td>
-                <td>${user.role || 'N/A'}</td>
-                <td>${user.department || 'N/A'}</td>
-                <td>${user.academic_role || 'N/A'}</td>
-                <td><span class="status-badge ${promotedClass}">${promotedStatus}</span></td>
-                <td>${formattedCreatedDate}</td>
+                <td>${formattedRole}</td>
+                <td><span class="status-badge ${statusClass}">${formattedStatus}</span></td>
+                <td>${formatDate(user.joinDate)}</td>
                 <td class="table-actions">
                     <button class="btn btn-icon edit-user-btn" data-user-id="${user.id}" title="Edit User">
                         <i class="fas fa-edit"></i>
                     </button>
-                    ${!user.promoted_role ? 
-                    `<button class="btn btn-icon promote-user-btn" data-user-id="${user.id}" title="Promote User">
-                        <i class="fas fa-arrow-up"></i>
+                    ${user.status !== 'inactive' ? 
+                    `<button class="btn btn-icon deactivate-user-btn" data-user-id="${user.id}" title="Deactivate User">
+                        <i class="fas fa-user-slash"></i>
                     </button>` : 
-                    `<button class="btn btn-icon demote-user-btn" data-user-id="${user.id}" title="Remove Promotion">
-                        <i class="fas fa-arrow-down"></i>
+                    `<button class="btn btn-icon activate-user-btn" data-user-id="${user.id}" title="Activate User">
+                        <i class="fas fa-user-check"></i>
                     </button>`}
                 </td>
             `;
@@ -166,239 +203,156 @@ document.addEventListener('DOMContentLoaded', function() {
         // Edit user buttons
         document.querySelectorAll('.edit-user-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
+                const userId = parseInt(this.dataset.userId);
                 openEditUserModal(userId);
             });
         });
         
-        // Promote user buttons
-        document.querySelectorAll('.promote-user-btn').forEach(button => {
+        // Deactivate user buttons
+        document.querySelectorAll('.deactivate-user-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
-                promoteUser(userId);
+                const userId = parseInt(this.dataset.userId);
+                deactivateUser(userId);
             });
         });
         
-        // Demote user buttons
-        document.querySelectorAll('.demote-user-btn').forEach(button => {
+        // Activate user buttons
+        document.querySelectorAll('.activate-user-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
-                demoteUser(userId);
+                const userId = parseInt(this.dataset.userId);
+                activateUser(userId);
             });
         });
     }
     
     // Filter users based on selected criteria
-    async function filterUsers() {
+    function filterUsers() {
         const roleFilter = roleFilterElement.value;
-        const promotedFilter = promotedFilterElement.value;
+        const statusFilter = statusFilterElement.value;
         
-        try {
-            // Build query parameters
-            let queryParams = new URLSearchParams();
-            
-            if (roleFilter !== 'all') {
-                queryParams.append('role', roleFilter);
-            }
-            
-            if (promotedFilter !== 'all') {
-                const isPromoted = promotedFilter === 'promoted';
-                queryParams.append('promoted', isPromoted);
-            }
-            
-            // Make API request with filters
-            const queryString = queryParams.toString();
-            const url = `http://localhost:3000/api/users${queryString ? '?' + queryString : ''}`;
-            
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Filter request failed with status ${response.status}`);
-            }
-            
-            const filteredUsers = await response.json();
-            currentUsers = filteredUsers;
-            renderUsersList(currentUsers);
-            
-        } catch (error) {
-            console.error('Error filtering users:', error);
-            showToast('Error applying filters. Please try again.', 'error');
+        let filteredUsers = [...mockUsers];
+        
+        // Apply role filter if not 'all'
+        if (roleFilter !== 'all') {
+            filteredUsers = filteredUsers.filter(user => user.role === roleFilter);
         }
+        
+        // Apply status filter if not 'all'
+        if (statusFilter !== 'all') {
+            filteredUsers = filteredUsers.filter(user => user.status === statusFilter);
+        }
+        
+        currentUsers = filteredUsers;
+        renderUsersList(currentUsers);
     }
     
     // Search users by name or email
-    async function searchUsers() {
-        const searchTerm = searchInputElement.value.trim();
+    function searchUsers() {
+        const searchTerm = searchInputElement.value.trim().toLowerCase();
         
         if (searchTerm === '') {
-            await fetchUsers(); // Reset to all users
-            return;
+            currentUsers = [...mockUsers];
+        } else {
+            currentUsers = mockUsers.filter(user => 
+                user.name.toLowerCase().includes(searchTerm) || 
+                user.email.toLowerCase().includes(searchTerm)
+            );
         }
         
-        try {
-            const url = `http://localhost:3000/api/users?search=${encodeURIComponent(searchTerm)}`;
-            const response = await fetch(url);
-            
-            if (!response.ok) {
-                throw new Error(`Search request failed with status ${response.status}`);
-            }
-            
-            const searchResults = await response.json();
-            currentUsers = searchResults;
-            renderUsersList(currentUsers);
-            
-        } catch (error) {
-            console.error('Error searching users:', error);
-            showToast('Error performing search. Please try again.', 'error');
-        }
+        renderUsersList(currentUsers);
     }
     
     // Open the edit user modal with the user's data
-    async function openEditUserModal(userId) {
-        try {
-            // Get user details from the API
-            const response = await fetch(`http://localhost:3000/api/users/${userId}`);
-            
-            if (!response.ok) {
-                throw new Error(`Failed to fetch user details with status ${response.status}`);
-            }
-            
-            const user = await response.json();
-            
-            // Populate form fields based on profiles table schema
-            document.getElementById('edit-user-id').value = user.id;
-            document.getElementById('edit-user-name').value = user.name || '';
-            document.getElementById('edit-user-email').value = user.email || '';
-            document.getElementById('edit-user-role').value = user.role || '';
-            document.getElementById('edit-user-department').value = user.department || '';
-            document.getElementById('edit-user-academic-role').value = user.academic_role || '';
-            document.getElementById('edit-user-promoted').checked = user.promoted_role ? true : false;
-            document.getElementById('edit-user-research-area').value = user.research_area || '';
-            document.getElementById('edit-user-research-experience').value = user.research_experience || '';
-            document.getElementById('edit-user-qualifications').value = user.qualifications || '';
-            document.getElementById('edit-user-current-project').value = user.current_project || '';
-            document.getElementById('edit-user-phone').value = user.phone || '';
-            
-            // Open the modal
-            editUserModal.classList.add('active');
-            
-        } catch (error) {
-            console.error('Error opening edit modal:', error);
-            showToast('Failed to load user details', 'error');
-        }
+    function openEditUserModal(userId) {
+        const user = mockUsers.find(u => u.id === userId);
+        
+        if (!user) return;
+        
+        // Populate form fields
+        document.getElementById('edit-user-id').value = user.id;
+        document.getElementById('edit-user-name').value = user.name;
+        document.getElementById('edit-user-email').value = user.email;
+        document.getElementById('edit-user-role').value = user.role;
+        document.getElementById('edit-user-status').value = user.status;
+        
+        // Clear all expertise checkboxes first
+        document.querySelectorAll('#expertise-options input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Check the user's expertise areas
+        user.expertise.forEach(expertiseArea => {
+            const checkbox = document.querySelector(`#expertise-options input[value="${expertiseArea}"]`);
+            if (checkbox) checkbox.checked = true;
+        });
+        
+        // Show or hide expertise options based on role
+        const expertiseFieldset = document.querySelector('fieldset.form-group:nth-of-type(2)');
+        expertiseFieldset.style.display = user.role === 'reviewer' ? 'block' : 'none';
+        
+        // Add change event listener to role select to show/hide expertise options
+        document.getElementById('edit-user-role').addEventListener('change', function() {
+            expertiseFieldset.style.display = this.value === 'reviewer' ? 'block' : 'none';
+        });
+        
+        // Open the modal
+        editUserModal.classList.add('active');
     }
     
     // Save user changes
-    async function saveUserChanges() {
-        const userId = document.getElementById('edit-user-id').value;
+    function saveUserChanges() {
+        const userId = parseInt(document.getElementById('edit-user-id').value);
+        const user = mockUsers.find(u => u.id === userId);
         
-        // Prepare updated user data based on form values
-        const updatedUser = {
-            name: document.getElementById('edit-user-name').value,
-            email: document.getElementById('edit-user-email').value,
-            role: document.getElementById('edit-user-role').value,
-            department: document.getElementById('edit-user-department').value,
-            academic_role: document.getElementById('edit-user-academic-role').value,
-            promoted_role: document.getElementById('edit-user-promoted').checked,
-            research_area: document.getElementById('edit-user-research-area').value,
-            research_experience: parseInt(document.getElementById('edit-user-research-experience').value) || 0,
-            qualifications: document.getElementById('edit-user-qualifications').value,
-            current_project: document.getElementById('edit-user-current-project').value,
-            phone: document.getElementById('edit-user-phone').value
-        };
+        if (!user) return;
         
-        try {
-            // Send update request to API
-            const response = await fetch(`http://localhost:3000/api/users/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedUser)
+        // Update user data
+        user.name = document.getElementById('edit-user-name').value;
+        user.email = document.getElementById('edit-user-email').value;
+        user.role = document.getElementById('edit-user-role').value;
+        user.status = document.getElementById('edit-user-status').value;
+        
+        // Update expertise areas if user is a reviewer
+        if (user.role === 'reviewer') {
+            user.expertise = [];
+            document.querySelectorAll('#expertise-options input[type="checkbox"]:checked').forEach(checkbox => {
+                user.expertise.push(checkbox.value);
             });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Failed to update user: ${errorText}`);
-            }
-            
-            // Close the modal
-            editUserModal.classList.remove('active');
-            
-            // Refresh user list to show updated data
-            await fetchUsers();
-            
-            // Show success message
-            showToast('User updated successfully', 'success');
-            
-        } catch (error) {
-            console.error('Error updating user:', error);
-            showToast('Failed to update user. Please try again.', 'error');
+        } else {
+            user.expertise = [];
+        }
+        
+        // Close the modal and update the UI
+        editUserModal.classList.remove('active');
+        renderUsersList(currentUsers);
+        
+        // Show success message
+        showToast('User updated successfully', 'success');
+    }
+    
+    // Deactivate a user
+    function deactivateUser(userId) {
+        const user = mockUsers.find(u => u.id === userId);
+        
+        if (!user) return;
+        
+        // Confirm before deactivating
+        if (confirm(`Are you sure you want to deactivate ${user.name}?`)) {
+            user.status = 'inactive';
+            renderUsersList(currentUsers);
+            showToast(`${user.name} has been deactivated`, 'info');
         }
     }
     
-    // Promote a user
-    async function promoteUser(userId) {
-        try {
-            const user = currentUsers.find(u => u.id === userId);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            
-            if (confirm(`Are you sure you want to promote ${user.name || 'this user'}?`)) {
-                const response = await fetch(`http://localhost:3000/api/users/${userId}/promote`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to promote user with status ${response.status}`);
-                }
-                
-                // Refresh user list
-                await fetchUsers();
-                showToast(`User has been promoted`, 'success');
-            }
-        } catch (error) {
-            console.error('Error promoting user:', error);
-            showToast('Failed to promote user. Please try again.', 'error');
-        }
-    }
-    
-    // Demote a user
-    async function demoteUser(userId) {
-        try {
-            const user = currentUsers.find(u => u.id === userId);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            
-            if (confirm(`Are you sure you want to remove promotion for ${user.name || 'this user'}?`)) {
-                const response = await fetch(`http://localhost:3000/api/users/${userId}/demote`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to demote user with status ${response.status}`);
-                }
-                
-                // Refresh user list
-                await fetchUsers();
-                showToast(`Promotion has been removed`, 'info');
-            }
-        } catch (error) {
-            console.error('Error demoting user:', error);
-            showToast('Failed to remove promotion. Please try again.', 'error');
-        }
-    }
-    
-    // Close modal function
-    function closeModal(modal) {
-        modal.classList.remove('active');
+    // Activate a user
+    function activateUser(userId) {
+        const user = mockUsers.find(u => u.id === userId);
+        
+        if (!user) return;
+        
+        user.status = 'active';
+        renderUsersList(currentUsers);
+        showToast(`${user.name} has been activated`, 'success');
     }
     
     // Toast notification function
@@ -460,8 +414,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Utility Functions
     
     // Format date to a more readable format
-    function formatDate(dateObj) {
-        return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    
+    // Capitalize the first letter of a string
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
     }
     
     // Initialize the page
