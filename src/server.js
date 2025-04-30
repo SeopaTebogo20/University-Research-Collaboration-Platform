@@ -8,6 +8,8 @@ const axios = require('axios'); // You'll need to install axios
 const projectsRouter = require('./public/roles/routes/projects-api'); 
 const collaboratorsRouter = require('./public/roles/routes/collaborators-api'); 
 const invitationsRouter = require('./public/roles/routes/invitations-api'); 
+const proposalRouter = require('./public/roles/routes/proposals-api'); 
+const usersRouter = require('./public/roles/routes/users-api'); 
 const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken
 
 // Create the Express application
@@ -66,6 +68,8 @@ app.use(session({
 app.use('/api/projects', projectsRouter);
 app.use('/api/collaborators', collaboratorsRouter);
 app.use('/api/invitations', invitationsRouter);
+app.use('/api/proposal', proposalRouter);
+app.use('/api/users', usersRouter);
 
 // Custom middleware for logging
 app.use((req, res, next) => {
@@ -309,6 +313,7 @@ app.get('/signupGoogle', (req, res) => {
 });
 
 // Add new endpoint to complete Google signup with additional profile information
+// Add new endpoint to complete Google signup with additional profile information
 app.post('/api/signup-google', async (req, res) => {
   try {
     // Check if Google profile exists in session
@@ -362,7 +367,8 @@ app.post('/api/signup-google', async (req, res) => {
       picture: googleProfile.picture,
       role,
       authProvider: 'google',
-      studentNumber
+      studentNumber,
+      phone: null // Set phone to null for Google signups
     };
     
     // Add common fields for all roles - accept empty strings
@@ -431,10 +437,23 @@ app.post('/api/signup-google', async (req, res) => {
     // Clear Google profile from session as it's no longer needed
     delete req.session.googleProfile;
     
+    // Determine the redirect URL based on the user's role
+    let redirectUrl;
+    switch (role) {
+      case 'admin':
+        redirectUrl = '/roles/admin/dashboard.html';
+        break;
+      case 'reviewer':
+        redirectUrl = '/roles/reviewer/dashboard.html';
+        break;
+      case 'researcher':
+        redirectUrl = '/roles/researcher/dashboard.html';
+    }
+    
     return res.status(201).json({ 
       message: 'Account created successfully!', 
       user: newUser.user,
-      redirectUrl: '/dashboard'
+      redirectUrl
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Google signup error: ${error.message}`);

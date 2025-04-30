@@ -1,48 +1,63 @@
 const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
 const router = express.Router();
+const { createClient } = require('@supabase/supabase-js');
 
-// Path to projects data file
-const PROJECTS_FILE = path.join(__dirname, '../researcher/data/projects.json');
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// Helper function to read projects data
-async function readProjects() {
-  try {
-    const data = await fs.readFile(PROJECTS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading projects file:', error);
-    return { projects: [] };
+// Create client for admin operations (server-side only)
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
   }
-}
-
-// Helper function to write projects data
-async function writeProjects(data) {
-  try {
-    await fs.writeFile(PROJECTS_FILE, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error writing projects file:', error);
-    return false;
-  }
-}
+});
 
 // Generate a new project ID
-function generateProjectId(projects) {
-  const maxId = projects.reduce((max, project) => {
-    const num = parseInt(project.id.replace('PRJ', ''));
-    return num > max ? num : max;
-  }, 0);
-  return `PRJ${String(maxId + 1).padStart(3, '0')}`;
+async function generateProjectId() {
+  try {
+    // Get all projects
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+    
+    if (error) throw error;
+    
+    if (projects && projects.length > 0) {
+      // Extract the numeric part of the last ID (assuming format is PRJ001, PRJ002, etc.)
+      const lastId = projects[0].id;
+      const numericPart = parseInt(lastId.replace('PRJ', ''));
+      return `PRJ${String(numericPart + 1).padStart(3, '0')}`;
+    } else {
+      // If no projects exist yet, start with PRJ001
+      return 'PRJ001';
+    }
+  } catch (error) {
+    console.error('Error generating project ID:', error);
+    throw error;
+  }
 }
 
 // GET all projects
 router.get('/', async (req, res) => {
   try {
-    const data = await readProjects();
-    res.json(data.projects);
+    console.log(`[${new Date().toISOString()}] Fetching all projects`);
+    
+    // Get all projects from Supabase
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    res.json(projects);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching projects: ${error.message}`);
     res.status(500).json({ message: 'Error fetching projects', error: error.message });
   }
 });
@@ -50,8 +65,22 @@ router.get('/', async (req, res) => {
 // GET single project by ID
 router.get('/:id', async (req, res) => {
   try {
-    const data = await readProjects();
-    const project = data.projects.find(p => p.id === req.params.id);
+    console.log(`[${new Date().toISOString()}] Fetching project with ID: ${req.params.id}`);
+    
+    // Get project by ID from Supabase
+    const { data: project, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (error) {
+      // If the error is 'No rows found', return 404
+      if (error.message.includes('No rows found')) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+      throw error;
+    }
     
     if (!project) {
       return res.status(404).json({ message: 'Project not found' });
@@ -59,6 +88,7 @@ router.get('/:id', async (req, res) => {
     
     res.json(project);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching project: ${error.message}`);
     res.status(500).json({ message: 'Error fetching project', error: error.message });
   }
 });
@@ -66,51 +96,53 @@ router.get('/:id', async (req, res) => {
 // POST create new project
 router.post('/', async (req, res) => {
   try {
-    const data = await readProjects();
+    console.log(`[${new Date().toISOString()}] Creating new project`);
+    
+    // Extract project data from request body
     const newProject = req.body;
     
     // Validate required fields
-    if (!newProject.projectDetails || !newProject.projectDetails.projectTitle || 
-        !newProject.projectDetails.description || !newProject.projectDetails.keyResearchArea) {
+    if (!newProject.project_title || !newProject.description || !newProject.key_research_area) {
       return res.status(400).json({ message: 'Missing required project details' });
     }
     
-    // Generate ID if not provided
+    // Generate new project ID if not provided
     if (!newProject.id) {
-      newProject.id = generateProjectId(data.projects);
+      newProject.id = await generateProjectId();
     }
     
     // Set default values if not provided
-    if (!newProject.projectDetails.researcherName) {
-      newProject.projectDetails.researcherName = "Dr. Sarah Johnson";
+    if (!newProject.researcher_name) {
+      newProject.researcher_name = "Dr. Sarah Johnson";
     }
-    if (!newProject.projectDetails.startDate) {
-      newProject.projectDetails.startDate = new Date().toISOString().split('T')[0];
+    if (!newProject.start_date) {
+      newProject.start_date = new Date().toISOString().split('T')[0];
     }
-    if (!newProject.projectDetails.endDate) {
+    if (!newProject.end_date) {
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + 6);
-      newProject.projectDetails.endDate = endDate.toISOString().split('T')[0];
+      newProject.end_date = endDate.toISOString().split('T')[0];
     }
-    if (newProject.projectDetails.fundingAvailable === undefined) {
-      newProject.projectDetails.fundingAvailable = false;
+    if (newProject.funding_available === undefined) {
+      newProject.funding_available = false;
     }
-    
-    // Set default collaboration requirements if not provided
-    if (!newProject.collaborationRequirements) {
-      newProject.collaborationRequirements = {
-        skillsAndExpertise: [],
-        experienceLevel: 'Intermediate',
-        positionsRequired: [],
-        technicalRequirements: []
-      };
+    if (!newProject.experience_level) {
+      newProject.experience_level = 'Intermediate';
     }
     
-    data.projects.push(newProject);
-    await writeProjects(data);
+    // Insert project into Supabase
+    const { data: createdProject, error } = await supabase
+      .from('projects')
+      .insert([newProject])
+      .select()
+      .single();
     
-    res.status(201).json(newProject);
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Project created successfully with ID: ${createdProject.id}`);
+    res.status(201).json(createdProject);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error creating project: ${error.message}`);
     res.status(500).json({ message: 'Error creating project', error: error.message });
   }
 });
@@ -118,29 +150,41 @@ router.post('/', async (req, res) => {
 // PUT update existing project
 router.put('/:id', async (req, res) => {
   try {
-    const data = await readProjects();
-    const projectIndex = data.projects.findIndex(p => p.id === req.params.id);
+    console.log(`[${new Date().toISOString()}] Updating project with ID: ${req.params.id}`);
     
-    if (projectIndex === -1) {
-      return res.status(404).json({ message: 'Project not found' });
-    }
-    
+    // Extract project data from request body
     const updatedProject = req.body;
     
     // Validate required fields
-    if (!updatedProject.projectDetails || !updatedProject.projectDetails.projectTitle || 
-        !updatedProject.projectDetails.description || !updatedProject.projectDetails.keyResearchArea) {
+    if (!updatedProject.project_title || !updatedProject.description || !updatedProject.key_research_area) {
       return res.status(400).json({ message: 'Missing required project details' });
     }
     
-    // Preserve the ID
-    updatedProject.id = req.params.id;
+    // Check if project exists
+    const { data: existingProject, error: checkError } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('id', req.params.id)
+      .single();
     
-    data.projects[projectIndex] = updatedProject;
-    await writeProjects(data);
+    if (checkError || !existingProject) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
     
-    res.json(updatedProject);
+    // Update project in Supabase
+    const { data: updatedData, error } = await supabase
+      .from('projects')
+      .update(updatedProject)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Project updated successfully: ${req.params.id}`);
+    res.json(updatedData);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error updating project: ${error.message}`);
     res.status(500).json({ message: 'Error updating project', error: error.message });
   }
 });
@@ -148,19 +192,74 @@ router.put('/:id', async (req, res) => {
 // DELETE a project
 router.delete('/:id', async (req, res) => {
   try {
-    const data = await readProjects();
-    const projectIndex = data.projects.findIndex(p => p.id === req.params.id);
+    console.log(`[${new Date().toISOString()}] Deleting project with ID: ${req.params.id}`);
     
-    if (projectIndex === -1) {
+    // Check if project exists
+    const { data: existingProject, error: checkError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (checkError || !existingProject) {
       return res.status(404).json({ message: 'Project not found' });
     }
     
-    const deletedProject = data.projects.splice(projectIndex, 1);
-    await writeProjects(data);
+    // Delete project from Supabase
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', req.params.id);
     
-    res.json(deletedProject[0]);
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Project deleted successfully: ${req.params.id}`);
+    res.json(existingProject);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error deleting project: ${error.message}`);
     res.status(500).json({ message: 'Error deleting project', error: error.message });
+  }
+});
+
+// GET projects by researcher_name
+router.get('/researcher/:name', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Fetching projects for researcher: ${req.params.name}`);
+    
+    // Get projects by researcher name from Supabase
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('*')
+      .ilike('researcher_name', `%${req.params.name}%`)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    res.json(projects);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching researcher projects: ${error.message}`);
+    res.status(500).json({ message: 'Error fetching projects', error: error.message });
+  }
+});
+
+// GET projects by research area
+router.get('/research-area/:area', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Fetching projects for research area: ${req.params.area}`);
+    
+    // Get projects by research area from Supabase
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('*')
+      .ilike('key_research_area', `%${req.params.area}%`)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    res.json(projects);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching research area projects: ${error.message}`);
+    res.status(500).json({ message: 'Error fetching projects', error: error.message });
   }
 });
 
