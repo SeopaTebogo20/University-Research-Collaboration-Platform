@@ -4,40 +4,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - CollabNexus Research Hub</title>
-    <meta name="description" content="Sign in to CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
+    <meta name="description" content="Admin dashboard for CollabNexus Research Hub">
     <meta name="author" content="CollabNexus">
     
-    <meta property="og:title" content="Sign In - CollabNexus Research Hub">
-    <meta property="og:description" content="Sign in to CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
+    <meta property="og:title" content="Admin Dashboard - CollabNexus Research Hub">
+    <meta property="og:description" content="Admin dashboard for CollabNexus Research Hub">
     <meta property="og:type" content="website">
     
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="css/admin-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
-        <header class="logo">
-              <i class="fas fa-book-open book-logo"></i>
-              CollabNexus
-          </header>          
+        <a href="dashboard.html" class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+        </a>
+        <ul class="nav-links">
+            <li><a href="proposal.html"><i class="fas fa-file-alt"></i> Proposals</a></li>
+            <li><a href="userManagement.html"><i class="fas fa-users"></i> User Management</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        </ul>
     </nav>
-      
-    <main class="login-container">
-        <h2> Welcome Admin</h2>
 
+    <main class="admin-dashboard">
+        <header class="dashboard-header">
+            <h1>Admin Dashboard</h1>
+            <p>Welcome back, Administrator! Here's an overview of your research hub activity.</p>
+        </header>
+
+        <section class="stats-overview">
+            <article class="stat-card">
+                <i class="fas fa-file-alt stat-icon"></i>
+                <h3>Active Proposals</h3>
+                <p class="stat-number">24</p>
+                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 15% from last month</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-users stat-icon"></i>
+                <h3>Registered Users</h3>
+                <p class="stat-number">143</p>
+                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 8% from last month</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <h3>Approved Proposals</h3>
+                <p class="stat-number">18</p>
+                <p class="stat-change neutral"><i class="fas fa-minus"></i> No change</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-comments stat-icon"></i>
+                <h3>New Messages</h3>
+                <p class="stat-number">7</p>
+                <p class="stat-change negative"><i class="fas fa-arrow-down"></i> 3% from last month</p>
+            </article>
+        </section>
+
+        <section class="dashboard-content">
+            <article class="dashboard-card recent-proposals">
+                <header class="card-header">
+                    <h2>Recent Proposals</h2>
+                    <a href="proposal.html" class="view-all">View All</a>
+                </header>
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Researcher</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Novel Approaches to Quantum Computing</td>
+                            <td>Dr. Sarah Chen</td>
+                            <td><span class="status-badge status-in-review">In Review</span></td>
+                            <td>April 28, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Climate Change Impact on Marine Ecosystems</td>
+                            <td>Prof. James Wilson</td>
+                            <td><span class="status-badge status-approved">Approved</span></td>
+                            <td>April 25, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Sustainable Agriculture Techniques</td>
+                            <td>Dr. Elena Rodriguez</td>
+                            <td><span class="status-badge status-revision">Needs Revision</span></td>
+                            <td>April 23, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>AI Applications in Medical Diagnostics</td>
+                            <td>Dr. Michael Johnson</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>April 21, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Renewable Energy Storage Solutions</td>
+                            <td>Prof. Anna Kim</td>
+                            <td><span class="status-badge status-approved">Approved</span></td>
+                            <td>April 19, 2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article class="dashboard-card recent-users">
+                <header class="card-header">
+                    <h2>Recent Users</h2>
+                    <a href="userManagement.html" class="view-all">View All</a>
+                </header>
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dr. Thomas Rivera</td>
+                            <td>Researcher</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>April 29, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Prof. Lydia Patel</td>
+                            <td>Reviewer</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>April 27, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Dr. Marcus Thompson</td>
+                            <td>Researcher</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>April 26, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Dr. Sofia Garcia</td>
+                            <td>Reviewer</td>
+                            <td><span class="status-badge status-active">Active</span></td>
+                            <td>April 24, 2025</td>
+                        </tr>
+                        <tr>
+                            <td>Prof. Robert Lee</td>
+                            <td>Researcher</td>
+                            <td><span class="status-badge status-inactive">Inactive</span></td>
+                            <td>April 22, 2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article class="dashboard-card activity-log">
+                <header class="card-header">
+                    <h2>Recent Activity</h2>
+                    <button class="btn-outline refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </header>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <i class="fas fa-check-circle activity-icon approve"></i>
+                        <section class="activity-content">
+                            <p class="activity-text">Proposal "<strong>Quantum Computing Applications</strong>" was approved</p>
+                            <p class="activity-time">Today, 14:32</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-user-plus activity-icon user"></i>
+                        <section class="activity-content">
+                            <p class="activity-text"><strong>Dr. Thomas Rivera</strong> registered as a new researcher</p>
+                            <p class="activity-time">Today, 11:15</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-file-alt activity-icon proposal"></i>
+                        <section class="activity-content">
+                            <p class="activity-text">New proposal "<strong>Novel Approaches to Quantum Computing</strong>" submitted</p>
+                            <p class="activity-time">Today, 09:47</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-comment activity-icon message"></i>
+                        <section class="activity-content">
+                            <p class="activity-text"><strong>Prof. Anna Kim</strong> sent a message regarding her proposal</p>
+                            <p class="activity-time">Yesterday, 16:23</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-pen activity-icon edit"></i>
+                        <section class="activity-content">
+                            <p class="activity-text">Proposal "<strong>Sustainable Agriculture Techniques</strong>" was returned for revision</p>
+                            <p class="activity-time">Yesterday, 14:05</p>
+                        </section>
+                    </li>
+                    <li class="activity-item">
+                        <i class="fas fa-user-shield activity-icon role"></i>
+                        <section class="activity-content">
+                            <p class="activity-text"><strong>Prof. Lydia Patel</strong> was assigned as a reviewer</p>
+                            <p class="activity-time">Yesterday, 11:30</p>
+                        </section>
+                    </li>
+                </ul>
+            </article>
+        </section>
     </main>
     
-    <!-- Footer -->
     <footer class="footer">
         <section class="container">
             <section class="footer-content">
                 <article class="footer-column">
                     <header class="footer-logo">
-                          <i class="fas fa-book-open book-logo"></i>
-                          CollabNexus
+                        <i class="fas fa-book-open book-logo"></i>
+                        CollabNexus
                     </header>
                     <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
                 </article>
@@ -74,5 +257,7 @@
             </section>
         </section>
     </footer>
+
+    <script src="js/admin-dashboard.js"></script>
 </body>
 </html>
