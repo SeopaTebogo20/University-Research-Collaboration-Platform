@@ -1,4 +1,4 @@
-// Admin User Management JavaScript - Updated to match dashboard style
+// Admin User Management JavaScript - Using API data
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const usersListElement = document.getElementById('users-list');
@@ -16,80 +16,73 @@ document.addEventListener('DOMContentLoaded', function() {
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
 
-    // Mock User Data
-    const mockUsers = [
-        { 
-            id: 1, 
-            name: 'Dr. Sarah Johnson', 
-            email: 'sarah.johnson@university.edu', 
-            role: 'researcher', 
-            status: 'active', 
-            joinDate: '2024-09-15',
-            expertise: []
-        },
-        { 
-            id: 2, 
-            name: 'Prof. Michael Chen', 
-            email: 'mchen@research.org', 
-            role: 'reviewer', 
-            status: 'active', 
-            joinDate: '2024-08-23',
-            expertise: ['computer-science', 'medicine']
-        },
-        { 
-            id: 3, 
-            name: 'Dr. Emily Rodriguez', 
-            email: 'rodriguez@science.edu', 
-            role: 'researcher', 
-            status: 'active', 
-            joinDate: '2024-10-05',
-            expertise: []
-        },
-        { 
-            id: 4, 
-            name: 'Dr. James Wilson', 
-            email: 'jwilson@institute.org', 
-            role: 'reviewer', 
-            status: 'active', 
-            joinDate: '2024-09-10',
-            expertise: ['biology', 'medicine']
-        },
-        { 
-            id: 5, 
-            name: 'Admin User', 
-            email: 'admin@collabnexus.com', 
-            role: 'admin', 
-            status: 'active', 
-            joinDate: '2024-01-01',
-            expertise: []
-        },
-        { 
-            id: 6, 
-            name: 'Dr. Lisa Martinez', 
-            email: 'lmartinez@university.edu', 
-            role: 'researcher', 
-            status: 'pending', 
-            joinDate: '2024-10-18',
-            expertise: []
-        },
-        { 
-            id: 7, 
-            name: 'Prof. Robert Taylor', 
-            email: 'rtaylor@research.org', 
-            role: 'reviewer', 
-            status: 'inactive', 
-            joinDate: '2024-07-12',
-            expertise: ['physics', 'economics']
-        }
-    ];
+    // API Endpoints
+    const API_ENDPOINTS = {
+        USERS: 'http://localhost:3000/api/users',
+        LOGOUT: '/api/logout'
+    };
 
-    // Store the current filtered users
-    let currentUsers = [...mockUsers];
+    // Store the current users data
+    let allUsers = [];
+    let currentUsers = [];
 
     // Initialize the page
-    function init() {
-        renderUsersList(currentUsers);
-        setupEventListeners();
+    async function init() {
+        try {
+            await fetchUsers();
+            setupEventListeners();
+        } catch (error) {
+            console.error('Failed to initialize page:', error);
+            showToast('Failed to load user data. Please try again.', 'error');
+        }
+    }
+
+    // Fetch users from API
+    async function fetchUsers(filters = {}) {
+        try {
+            // Build query parameters for filtering
+            const queryParams = new URLSearchParams();
+            
+            if (filters.role && filters.role !== 'all') {
+                queryParams.append('role', filters.role);
+            }
+            
+            if (filters.promotedRole && filters.promotedRole !== 'all') {
+                queryParams.append('promoted-role', filters.promotedRole);
+            }
+            
+            if (filters.search) {
+                queryParams.append('search', filters.search);
+            }
+            
+            // Create URL with query parameters
+            const url = queryParams.toString() 
+                ? `${API_ENDPOINTS.USERS}?${queryParams.toString()}` 
+                : API_ENDPOINTS.USERS;
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            allUsers = data;
+            currentUsers = [...data];
+            renderUsersList(currentUsers);
+            
+            return data;
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            showToast('Error fetching user data. Please try again.', 'error');
+            throw error;
+        }
     }
 
     // Render the users list in the table
@@ -105,34 +98,40 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        users.forEach(user => {
+        // Generate sequential display IDs starting from 1
+        users.forEach((user, index) => {
             const userRow = document.createElement('tr');
-            userRow.dataset.userId = user.id;
+            const displayId = index + 1; // Sequential ID starting from 1
+            userRow.dataset.userId = user.id; // Keep original ID for API operations
             
-            // Format the status with appropriate styling
-            const statusClass = user.status === 'active' ? 'status-active' : 
-                              user.status === 'pending' ? 'status-pending' : 'status-inactive';
+            // Format the promoted-role (replacing status) with appropriate styling
+            const promotedRole = user['promoted-role'] || 'pending'; // Default to regular if not specified
+            const statusClass = promotedRole === 'active' ? 'status-active' : 
+                              promotedRole === 'pending' ? 'status-pending' : 'status-inactive';
             
-            // Capitalize the first letter of the role and status
-            const formattedRole = capitalizeFirstLetter(user.role);
-            const formattedStatus = capitalizeFirstLetter(user.status);
+            // Capitalize the first letter of the role and promoted-role
+            const formattedRole = capitalizeFirstLetter(user.role || '');
+            const formattedPromotedRole = capitalizeFirstLetter(promotedRole);
+            
+            // Format join date based on created_at field
+            const joinDate = user.created_at ? formatDate(user.created_at) : 'N/A';
             
             userRow.innerHTML = `
-                <td>${user.id}</td>
-                <td>${user.name}</td>
-                <td>${user.email}</td>
+                <td>${displayId}</td>
+                <td>${user.name || 'N/A'}</td>
+                <td>${user.email || 'N/A'}</td>
                 <td>${formattedRole}</td>
-                <td><span class="status-badge ${statusClass}">${formattedStatus}</span></td>
-                <td>${formatDate(user.joinDate)}</td>
+                <td><span class="status-badge ${statusClass}">${formattedPromotedRole}</span></td>
+                <td>${joinDate}</td>
                 <td class="table-actions">
                     <button class="btn btn-icon edit-user-btn" data-user-id="${user.id}" title="Edit User">
                         <i class="fas fa-edit"></i>
                     </button>
-                    ${user.status !== 'inactive' ? 
-                    `<button class="btn btn-icon deactivate-user-btn" data-user-id="${user.id}" title="Deactivate User">
+                    ${promotedRole !== 'inactive' ? 
+                    `<button class="btn btn-icon deactivate-user-btn" data-user-id="${user.id}" title="Demote User">
                         <i class="fas fa-user-slash"></i>
                     </button>` : 
-                    `<button class="btn btn-icon activate-user-btn" data-user-id="${user.id}" title="Activate User">
+                    `<button class="btn btn-icon activate-user-btn" data-user-id="${user.id}" title="Promote User">
                         <i class="fas fa-user-check"></i>
                     </button>`}
                 </td>
@@ -179,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle logout
     async function handleLogout() {
         try {
-            const response = await fetch('/api/logout', {
+            const response = await fetch(API_ENDPOINTS.LOGOUT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -203,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Edit user buttons
         document.querySelectorAll('.edit-user-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = parseInt(this.dataset.userId);
+                const userId = this.dataset.userId;
                 openEditUserModal(userId);
             });
         });
@@ -211,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Deactivate user buttons
         document.querySelectorAll('.deactivate-user-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = parseInt(this.dataset.userId);
+                const userId = this.dataset.userId;
                 deactivateUser(userId);
             });
         });
@@ -219,70 +218,73 @@ document.addEventListener('DOMContentLoaded', function() {
         // Activate user buttons
         document.querySelectorAll('.activate-user-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = parseInt(this.dataset.userId);
+                const userId = this.dataset.userId;
                 activateUser(userId);
             });
         });
     }
     
     // Filter users based on selected criteria
-    function filterUsers() {
+    async function filterUsers() {
         const roleFilter = roleFilterElement.value;
-        const statusFilter = statusFilterElement.value;
+        const promotedRoleFilter = statusFilterElement.value; // Status filter actually controls promoted-role
         
-        let filteredUsers = [...mockUsers];
-        
-        // Apply role filter if not 'all'
-        if (roleFilter !== 'all') {
-            filteredUsers = filteredUsers.filter(user => user.role === roleFilter);
+        try {
+            await fetchUsers({
+                role: roleFilter,
+                promotedRole: promotedRoleFilter
+            });
+        } catch (error) {
+            console.error('Error filtering users:', error);
+            showToast('Error applying filters. Please try again.', 'error');
         }
-        
-        // Apply status filter if not 'all'
-        if (statusFilter !== 'all') {
-            filteredUsers = filteredUsers.filter(user => user.status === statusFilter);
-        }
-        
-        currentUsers = filteredUsers;
-        renderUsersList(currentUsers);
     }
+   
     
     // Search users by name or email
-    function searchUsers() {
-        const searchTerm = searchInputElement.value.trim().toLowerCase();
+    async function searchUsers() {
+        const searchTerm = searchInputElement.value.trim();
         
         if (searchTerm === '') {
-            currentUsers = [...mockUsers];
-        } else {
-            currentUsers = mockUsers.filter(user => 
-                user.name.toLowerCase().includes(searchTerm) || 
-                user.email.toLowerCase().includes(searchTerm)
-            );
+            // If search term is empty, reset to all users
+            currentUsers = [...allUsers];
+            renderUsersList(currentUsers);
+            return;
         }
         
-        renderUsersList(currentUsers);
+        try {
+            await fetchUsers({
+                search: searchTerm
+            });
+        } catch (error) {
+            console.error('Error searching users:', error);
+            showToast('Error searching users. Please try again.', 'error');
+        }
     }
     
     // Open the edit user modal with the user's data
     function openEditUserModal(userId) {
-        const user = mockUsers.find(u => u.id === userId);
+        const user = currentUsers.find(u => u.id == userId);
         
         if (!user) return;
         
         // Populate form fields
         document.getElementById('edit-user-id').value = user.id;
-        document.getElementById('edit-user-name').value = user.name;
-        document.getElementById('edit-user-email').value = user.email;
-        document.getElementById('edit-user-role').value = user.role;
-        document.getElementById('edit-user-status').value = user.status;
+        document.getElementById('edit-user-name').value = user.name || '';
+        document.getElementById('edit-user-email').value = user.email || '';
+        document.getElementById('edit-user-role').value = user.role || 'researcher';
+        document.getElementById('edit-user-status').value = user.status || 'active';
         
         // Clear all expertise checkboxes first
         document.querySelectorAll('#expertise-options input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = false;
         });
         
-        // Check the user's expertise areas
-        user.expertise.forEach(expertiseArea => {
-            const checkbox = document.querySelector(`#expertise-options input[value="${expertiseArea}"]`);
+        // Check the user's expertise areas if they exist
+        const expertise = user.research_area ? user.research_area.split(',') : [];
+        expertise.forEach(area => {
+            const normalizedArea = area.trim().toLowerCase().replace(/\s+/g, '-');
+            const checkbox = document.querySelector(`#expertise-options input[value="${normalizedArea}"]`);
             if (checkbox) checkbox.checked = true;
         });
         
@@ -300,59 +302,123 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Save user changes
-    function saveUserChanges() {
-        const userId = parseInt(document.getElementById('edit-user-id').value);
-        const user = mockUsers.find(u => u.id === userId);
+    async function saveUserChanges() {
+        const userId = document.getElementById('edit-user-id').value;
         
-        if (!user) return;
+        // Gather updated user data
+        const updatedUserData = {
+            name: document.getElementById('edit-user-name').value,
+            email: document.getElementById('edit-user-email').value,
+            role: document.getElementById('edit-user-role').value,
+            status: document.getElementById('edit-user-status').value
+        };
         
-        // Update user data
-        user.name = document.getElementById('edit-user-name').value;
-        user.email = document.getElementById('edit-user-email').value;
-        user.role = document.getElementById('edit-user-role').value;
-        user.status = document.getElementById('edit-user-status').value;
-        
-        // Update expertise areas if user is a reviewer
-        if (user.role === 'reviewer') {
-            user.expertise = [];
+        // Add expertise areas if user is a reviewer
+        if (updatedUserData.role === 'reviewer') {
+            const expertiseAreas = [];
             document.querySelectorAll('#expertise-options input[type="checkbox"]:checked').forEach(checkbox => {
-                user.expertise.push(checkbox.value);
+                expertiseAreas.push(checkbox.value);
             });
-        } else {
-            user.expertise = [];
+            
+            updatedUserData.research_area = expertiseAreas.join(',');
         }
         
-        // Close the modal and update the UI
-        editUserModal.classList.remove('active');
-        renderUsersList(currentUsers);
-        
-        // Show success message
-        showToast('User updated successfully', 'success');
+        try {
+            const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedUserData),
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            // Close the modal
+            editUserModal.classList.remove('active');
+            
+            // Refresh the user list
+            await fetchUsers();
+            
+            // Show success message
+            showToast('User updated successfully', 'success');
+        } catch (error) {
+            console.error('Error updating user:', error);
+            showToast('Error updating user. Please try again.', 'error');
+        }
     }
     
     // Deactivate a user
-    function deactivateUser(userId) {
-        const user = mockUsers.find(u => u.id === userId);
+    async function deactivateUser(userId) {
+        const user = currentUsers.find(u => u.id == userId);
         
         if (!user) return;
         
         // Confirm before deactivating
         if (confirm(`Are you sure you want to deactivate ${user.name}?`)) {
-            user.status = 'inactive';
-            renderUsersList(currentUsers);
-            showToast(`${user.name} has been deactivated`, 'info');
+            try {
+                const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'inactive' }),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+                
+                // Refresh the user list
+                await fetchUsers();
+                
+                // Show success message
+                showToast(`${user.name} has been deactivated`, 'info');
+            } catch (error) {
+                console.error('Error deactivating user:', error);
+                showToast('Error deactivating user. Please try again.', 'error');
+            }
         }
     }
     
     // Activate a user
-    function activateUser(userId) {
-        const user = mockUsers.find(u => u.id === userId);
+    async function activateUser(userId) {
+        const user = currentUsers.find(u => u.id == userId);
         
         if (!user) return;
         
-        user.status = 'active';
-        renderUsersList(currentUsers);
-        showToast(`${user.name} has been activated`, 'success');
+        try {
+            const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: 'active' }),
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            // Refresh the user list
+            await fetchUsers();
+            
+            // Show success message
+            showToast(`${user.name} has been activated`, 'success');
+        } catch (error) {
+            console.error('Error activating user:', error);
+            showToast('Error activating user. Please try again.', 'error');
+        }
+    }
+    
+    // Close modal
+    function closeModal(modal) {
+        modal.classList.remove('active');
     }
     
     // Toast notification function
@@ -421,7 +487,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Capitalize the first letter of a string
     function capitalizeFirstLetter(string) {
+        if (!string) return '';
         return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
+    // Error handler for fetch calls
+    function handleFetchError(error, message) {
+        console.error(error);
+        showToast(message, 'error');
     }
     
     // Initialize the page
