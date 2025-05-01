@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects - CollabNexus</title>
     <link rel="stylesheet" href="css/projects.css">
+    <link rel="stylesheet" href="css/projects1.css">
     <link rel="stylesheet" href="css/projectStyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -233,6 +234,27 @@
                 </div>
             </div>
         </div>
+        <!-- Project Details Modal -->
+<div id="details-modal" class="modal">
+    <div class="modal-content details-modal-content">
+        <div class="modal-header">
+            <h2 id="details-project-title">Project Details</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body" id="details-container">
+            <!-- Project details will be loaded here -->
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading project details...
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn primary" id="edit-from-details-btn">
+                <i class="fas fa-edit"></i> Edit Project
+            </button>
+            <button type="button" class="btn secondary" id="close-details-btn">Close</button>
+        </div>
+    </div>
+</div>
     </main>
 <!-- Footer -->
 <footer class="footer">

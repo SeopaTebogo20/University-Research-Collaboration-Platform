@@ -166,27 +166,14 @@ body {
 .search-box {
   display: flex;
   align-items: center;
-  background: white;
   border-radius: 12px;
   padding: 0.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   flex: 1;
   max-width: 400px;
 }
 
-.search-box:focus-within {
-  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.2);
-  transform: translateY(-1px);
-}
 
-.search-box input {
-  border: none;
-  outline: none;
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-}
 
 .search-box button {
   background: none;
