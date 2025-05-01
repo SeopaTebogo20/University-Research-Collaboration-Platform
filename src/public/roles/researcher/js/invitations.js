@@ -39,9 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentInvitationId = null;
   
   // API endpoints
-  const API_BASE_URL = 'http://localhost:3000/api';
+  const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+  ? 'http://localhost:3000/api' 
+  : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
+
   const INVITATIONS_ENDPOINT = `${API_BASE_URL}/invitations`;
-  
+
   // Tab switching logic
   tabs.forEach(tab => {
     tab.addEventListener('click', function() {
