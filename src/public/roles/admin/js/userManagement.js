@@ -136,16 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><span class="status-badge ${statusClass}">${formattedPromotedRole}</span></td>
                 <td>${joinDate}</td>
                 <td class="table-actions">
-                    <button class="btn btn-icon view-profile-btn" data-user-id="${user.id}" title="View Profile">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    ${promotedRole !== 'inactive' ? 
-                    `<button class="btn btn-icon deactivate-user-btn" data-user-id="${user.id}" title="Demote User">
-                        <i class="fas fa-user-slash"></i>
-                    </button>` : 
-                    `<button class="btn btn-icon activate-user-btn" data-user-id="${user.id}" title="Promote User">
-                        <i class="fas fa-user-check"></i>
-                    </button>`}
+                     <button class="btn view-btn" data-id="${user.id}"><i class="fas fa-eye"></i> View Details</button>
                 </td>
             `;
             
@@ -587,7 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeModal(modal) {
         modal.classList.remove('active');
     }
-    
+
     // Toast notification function
     function showToast(message, type = 'info', duration = 5000) {
         const toast = document.createElement('div');
