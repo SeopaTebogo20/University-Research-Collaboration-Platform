@@ -16,10 +16,19 @@ document.addEventListener('DOMContentLoaded', function() {
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
 
-    // API Endpoints
+    // API Endpoints - Dynamically select between local and production URLs
+    const isLocalEnvironment = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1';
+    
+    const BASE_URL = isLocalEnvironment 
+        ? 'http://localhost:3000' 
+        : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net';
+    
+    console.log(`Running in ${isLocalEnvironment ? 'local' : 'production'} environment: ${BASE_URL}`);
+    
     const API_ENDPOINTS = {
-        USERS: 'http://localhost:3000/api/users',
-        LOGOUT: '/api/logout'
+        USERS: `${BASE_URL}/api/users`,
+        LOGOUT: `${BASE_URL}/api/logout`
     };
 
     // Store the current users data
