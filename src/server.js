@@ -68,7 +68,7 @@ app.use(session({
 // Routes
 app.use('/api/projects', projectsRouter);
 app.use('/api/invitations', invitationsRouter);
-app.use('/api/Received_invitations', invitationRouter);
+app.use('/api/received_invitations', invitationRouter);
 app.use('/api/proposal', proposalRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/collaborators', collaboratorsRouter);

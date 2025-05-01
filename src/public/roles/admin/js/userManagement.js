@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
         } catch (error) {
             console.error('Failed to initialize page:', error);
-            showToast('Failed to load user data. Please try again.', 'error');
         }
     }
 
