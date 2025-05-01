@@ -1,1517 +1,767 @@
-// DOM Elements
-const projectsContainer = document.getElementById('projects-container');
-const projectModal = document.getElementById('project-modal');
-const deleteModal = document.getElementById('delete-modal');
-const inviteModal = document.getElementById('invite-modal');
-const profileModal = document.getElementById('profile-modal');
-const projectForm = document.getElementById('project-form');
-const inviteForm = document.getElementById('invite-form');
-const modalTitle = document.getElementById('modal-title');
-const createProjectBtn = document.getElementById('create-project-btn');
-const cancelBtn = document.getElementById('cancel-btn');
-const cancelInviteBtn = document.getElementById('cancel-invite-btn');
-const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-const searchInput = document.getElementById('search-input');
-const searchBtn = document.getElementById('search-btn');
-const collaboratorSearch = document.getElementById('collaborator-search');
-const searchCollaboratorBtn = document.getElementById('search-collaborator-btn');
-const collaboratorsList = document.getElementById('collaborators-list');
-const closeProfileBtn = document.getElementById('close-profile-btn');
-const inviteFromProfileBtn = document.getElementById('invite-from-profile-btn');
-
-// API URLs
-const API_URL = 'http://localhost:3000/api/projects';
-const COLLABORATORS_API_URL = 'http://localhost:3000/api/collaborators';
-
-// State variables
-let projects = [];
-let collaborators = [];
-let currentProjectId = null;
-let inviteProjectId = null;
-let currentCollaboratorId = null;
-
-// Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    fetchProjects();
-    setupTabNavigation();
-});
-createProjectBtn.addEventListener('click', openCreateModal);
-projectForm.addEventListener('submit', handleFormSubmit);
-inviteForm?.addEventListener('submit', handleInviteSubmit);
-cancelBtn.addEventListener('click', closeModal);
-cancelInviteBtn?.addEventListener('click', closeInviteModal);
-confirmDeleteBtn.addEventListener('click', deleteProject);
-cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-searchBtn.addEventListener('click', searchProjects);
-searchCollaboratorBtn?.addEventListener('click', searchCollaborators);
-closeProfileBtn?.addEventListener('click', closeProfileModal);
-inviteFromProfileBtn?.addEventListener('click', inviteFromProfile);
-
-// Search event listeners
-searchInput.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') searchProjects();
-});
-collaboratorSearch?.addEventListener('keyup', (e) => {
-    if (e.key === 'Enter') searchCollaborators();
-});
-
-// Close modals when clicking on span (×)
-document.querySelectorAll('.close').forEach(closeBtn => {
-    closeBtn.addEventListener('click', () => {
-        projectModal.style.display = 'none';
-        deleteModal.style.display = 'none';
-        inviteModal.style.display = 'none';
-        profileModal.style.display = 'none';
-    });
-});
-
-// Close modals when clicking outside of modal content
-window.addEventListener('click', (e) => {
-    if (e.target === projectModal) projectModal.style.display = 'none';
-    if (e.target === deleteModal) deleteModal.style.display = 'none';
-    if (e.target === inviteModal) inviteModal.style.display = 'none';
-    if (e.target === profileModal) profileModal.style.display = 'none';
-});
-
-// Setup tabs in invite modal
-function setupTabNavigation() {
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabContents = document.querySelectorAll('.tab-content');
+    // API URL configuration - supports both local development and production
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000/api' 
+        : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
     
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Remove active class from all buttons and hide all contents
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            tabContents.forEach(content => content.classList.add('hidden'));
+    const PROJECTS_API = `${API_BASE_URL}/projects`;
+    
+    // DOM Elements
+    const projectsContainer = document.getElementById('projects-container');
+    const projectModal = document.getElementById('project-modal');
+    const inviteModal = document.getElementById('invite-modal');
+    const profileModal = document.getElementById('profile-modal');
+    const deleteModal = document.getElementById('delete-modal');
+    const projectForm = document.getElementById('project-form');
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const createProjectBtn = document.getElementById('create-project-btn');
+    
+    // Close buttons
+    document.querySelectorAll('.close, #cancel-btn, #cancel-invite-btn, #close-profile-btn, #cancel-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            projectModal.style.display = 'none';
+            inviteModal.style.display = 'none';
+            profileModal.style.display = 'none';
+            deleteModal.style.display = 'none';
+        });
+    });
+    
+    // Load projects when the page loads
+    loadProjects();
+    
+    // Event Listeners
+    createProjectBtn.addEventListener('click', openCreateProjectModal);
+    searchBtn.addEventListener('click', searchProjects);
+    searchInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+            searchProjects();
+        }
+    });
+    
+    projectForm.addEventListener('submit', handleProjectFormSubmit);
+    document.getElementById('confirm-delete-btn').addEventListener('click', deleteProject);
+    
+    // Tab functionality for invites
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                tab.classList.remove('active');
+            });
             
-            // Add active class to clicked button and show its content
-            button.classList.add('active');
-            const tabId = button.getAttribute('data-tab');
+            // Add active class to clicked tab
+            e.target.classList.add('active');
+            
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected tab content
+            const tabId = e.target.getAttribute('data-tab');
             document.getElementById(tabId).classList.remove('hidden');
         });
     });
-}
-
-// Fetch all projects from API
-async function fetchProjects() {
-    try {
-        showLoading(projectsContainer);
-        const response = await fetch(API_URL);
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch projects');
-        }
-        
-        const data = await response.json();
-        
-        // Debug - log the response structure
-        console.log('API Response:', data);
-        
-        // Check if data is an object with projects property or if it's directly an array
-        if (data && data.projects && Array.isArray(data.projects)) {
-            projects = data.projects;
-        } else if (Array.isArray(data)) {
-            projects = data;
-        } else {
-            console.error('Unexpected data format:', data);
-            projects = [];
-        }
-        
-        displayProjects(projects);
-    } catch (error) {
-        console.error('Error fetching projects:', error);
-        showToast('Error loading projects. Please try again.', 'error');
-        projectsContainer.innerHTML = `
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Unable to load projects. Please check your connection and try again.</p>
-                <button class="btn primary" onclick="fetchProjects()">
-                    <i class="fas fa-sync"></i> Retry
-                </button>
-            </div>
-        `;
-    }
-}
-
-// Fetch collaborators from API
-async function fetchCollaborators() {
-    try {
-        showLoading(collaboratorsList);
-        const response = await fetch(COLLABORATORS_API_URL);
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch collaborators');
-        }
-        
-        const data = await response.json();
-        console.log('Collaborators API Response:', data);
-        
-        // Check data structure and extract collaborators
-        if (data && data.collaborators && Array.isArray(data.collaborators)) {
-            collaborators = data.collaborators;
-        } else if (Array.isArray(data)) {
-            collaborators = data;
-        } else {
-            console.error('Unexpected collaborators data format:', data);
-            collaborators = [];
-        }
-        
-        displayCollaborators(collaborators);
-    } catch (error) {
-        console.error('Error fetching collaborators:', error);
-        showToast('Error loading collaborators. Please try again.', 'error');
-        collaboratorsList.innerHTML = `
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Unable to load collaborators. Please check your connection and try again.</p>
-                <button class="btn primary" onclick="fetchCollaborators()">
-                    <i class="fas fa-sync"></i> Retry
-                </button>
-            </div>
-        `;
-    }
-}
-
-// Get a single collaborator by ID
-async function fetchCollaboratorById(collaboratorId) {
-    try {
-        const response = await fetch(`${COLLABORATORS_API_URL}/${collaboratorId}`);
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch collaborator details');
-        }
-        
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching collaborator details:', error);
-        throw error;
-    }
-}
-
-// Display projects in the UI
-function displayProjects(projectsToDisplay) {
-    // Debug - log projects being displayed
-    console.log('Projects to display:', projectsToDisplay);
     
-    if (!projectsToDisplay || projectsToDisplay.length === 0) {
-        projectsContainer.innerHTML = `
-            <div class="no-projects">
-                <i class="fas fa-folder-open"></i>
-                <p>No projects found. Create a new project to get started.</p>
-            </div>
-        `;
-        return;
-    }
-
-    projectsContainer.innerHTML = projectsToDisplay.map(project => {
-        console.log('Processing project:', project); // Debug individual project
-        
-        // Check if project has the expected structure
-        if (!project || !project.projectDetails) {
-            console.error('Invalid project structure:', project);
-            return '';
-        }
-        
-        // Format skills and requirements arrays
-        const skills = Array.isArray(project.collaborationRequirements?.skillsAndExpertise) 
-            ? project.collaborationRequirements.skillsAndExpertise.join(', ')
-            : '';
+    // Functions
+    async function loadProjects(searchQuery = '') {
+        try {
+            projectsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</div>';
             
-        const researchAreas = project.projectDetails.keyResearchArea ? 
-            project.projectDetails.keyResearchArea.split(',').map(area => 
-                `<span class="tag">${area.trim()}</span>`
-            ).join('') : '';
-        
-        return `
-            <div class="project-card" data-id="${project.id}">
-                <div class="project-header">
-                    <h3 class="project-title">${project.projectDetails.projectTitle}</h3>
-                    <p class="project-researcher">${project.projectDetails.researcherName}</p>
-                </div>
-                ${project.projectDetails.fundingAvailable ? '<span class="funding-badge">Funding Available</span>' : ''}
-                <div class="project-body">
-                    <p class="project-description">${project.projectDetails.description}</p>
-                    
-                    <div class="project-dates">
-                        <div>
-                            <span>Start Date</span>
-                            <strong>${formatDate(project.projectDetails.startDate)}</strong>
-                        </div>
-                        <div>
-                            <span>End Date</span>
-                            <strong>${formatDate(project.projectDetails.endDate)}</strong>
-                        </div>
-                    </div>
-                    
-                    <div class="project-tags">
-                        ${researchAreas}
-                    </div>
-                    
-                    <div class="project-requirements">
-                        <div class="requirement-section">
-                            <h4>Experience Level</h4>
-                            <p>${project.collaborationRequirements?.experienceLevel || 'Not specified'}</p>
-                        </div>
-                        
-                        <div class="requirement-section">
-                            <h4>Skills Required</h4>
-                            <p>${skills}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="project-footer">
-                    <div class="project-actions">
-                        <button class="edit-btn" onclick="openEditModal('${project.id}')">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="delete-btn" onclick="openDeleteModal('${project.id}')">
-                            <i class="fas fa-trash-alt"></i> Delete
-                        </button>
-                    </div>
-                    <button class="invite-btn" onclick="openInviteModal('${project.id}')">
-                        <i class="fas fa-user-plus"></i> Invite Collaborators
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    // After projects are displayed, update with invited collaborators
-    setTimeout(() => {
-        updateProjectDisplayWithInvitedCollaborators();
-    }, 0);
-}
-
-// Display collaborators in the UI
-function displayCollaborators(collaboratorsToDisplay) {
-    if (!collaboratorsToDisplay || collaboratorsToDisplay.length === 0) {
-        collaboratorsList.innerHTML = `
-            <div class="no-collaborators">
-                <i class="fas fa-users"></i>
-                <p>No collaborators found.</p>
-            </div>
-        `;
-        return;
-    }
-
-    collaboratorsList.innerHTML = collaboratorsToDisplay.map(collaborator => {
-        // Extract key information
-        const name = collaborator.name || 'Unknown';
-        const title = collaborator.title || '';
-        const institution = collaborator.institution || 'Not specified';
-        
-        // Format skills/expertise
-        let skillsHTML = 'Not specified';
-        if (collaborator.skills && Array.isArray(collaborator.skills)) {
-            skillsHTML = collaborator.skills.slice(0, 3).join(', ');
-            if (collaborator.skills.length > 3) {
-                skillsHTML += ` (+${collaborator.skills.length - 3} more)`;
+            let url = PROJECTS_API;
+            if (searchQuery) {
+                url += `?search=${encodeURIComponent(searchQuery)}`;
             }
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const projects = await response.json();
+            
+            if (projects.length === 0) {
+                projectsContainer.innerHTML = '<div class="no-results">No projects found. Create a new project to get started.</div>';
+                return;
+            }
+            
+            displayProjects(projects);
+        } catch (error) {
+            console.error('Error loading projects:', error);
+            projectsContainer.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i> Error loading projects. Please try again later.</div>`;
         }
+    }
+    
+    function displayProjects(projects) {
+        projectsContainer.innerHTML = '';
         
-        // Add recommendation badge if applicable
-        const recommendedBadge = collaborator.isRecommended ? 
-            '<span class="recommended-badge"><i class="fas fa-star"></i> Recommended</span>' : '';
+        projects.forEach(project => {
+            const startDate = new Date(project.start_date).toLocaleDateString();
+            const endDate = new Date(project.end_date).toLocaleDateString();
+            const keyResearchAreas = project.key_research_area ? project.key_research_area.split(',').map(area => `<span class="tag">${area.trim()}</span>`).join('') : '';
+            
+            const projectCard = document.createElement('div');
+            projectCard.className = 'project-card';
+            projectCard.dataset.id = project.id;
+            
+            let statusClass = '';
+            let statusText = project.status || 'Active';
+            
+            switch (statusText.toLowerCase()) {
+                case 'completed':
+                    statusClass = 'status-completed';
+                    break;
+                case 'active':
+                    statusClass = 'status-active';
+                    break;
+                case 'pending':
+                    statusClass = 'status-pending';
+                    break;
+                default:
+                    statusClass = 'status-active';
+            }
+            
+            projectCard.innerHTML = `
+                <div class="project-header">
+                    <h3 class="project-title">${project.project_title}</h3>
+                    <div class="project-status ${statusClass}">${statusText}</div>
+                </div>
+                <div class="project-info">
+                    <p class="project-researcher"><i class="fas fa-user"></i> ${project.researcher_name}</p>
+                    <p class="project-dates"><i class="fas fa-calendar"></i> ${startDate} - ${endDate}</p>
+                </div>
+                <div class="project-description">${project.description}</div>
+                <div class="project-tags">
+                    ${keyResearchAreas}
+                    ${project.funding_available ? '<span class="tag funding">Funding Available</span>' : ''}
+                </div>
+                <div class="experience-level">
+                    <span class="label">Experience Level:</span>
+                    <span class="value">${project.experience_level}</span>
+                </div>
+                <div class="project-actions">
+                    <button class="btn view-btn" data-id="${project.id}"><i class="fas fa-eye"></i> View Details</button>
+                    <button class="btn edit-btn" data-id="${project.id}"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn invite-btn" data-id="${project.id}" data-title="${project.project_title}"><i class="fas fa-user-plus"></i> Invite</button>
+                    <button class="btn delete-btn" data-id="${project.id}" data-title="${project.project_title}"><i class="fas fa-trash"></i> Delete</button>
+                </div>
+            `;
+            
+            projectsContainer.appendChild(projectCard);
+            
+            // Add event listeners to action buttons
+            projectCard.querySelector('.view-btn').addEventListener('click', () => viewProjectDetails(project.id));
+            projectCard.querySelector('.edit-btn').addEventListener('click', () => openEditProjectModal(project.id));
+            projectCard.querySelector('.invite-btn').addEventListener('click', () => openInviteModal(project.id, project.project_title));
+            projectCard.querySelector('.delete-btn').addEventListener('click', () => confirmDeleteProject(project.id, project.project_title));
+        });
+    }
+    
+    function searchProjects() {
+        const query = searchInput.value.trim();
+        loadProjects(query);
+    }
+    
+    async function viewProjectDetails(projectId) {
+        try {
+            const response = await fetch(`${PROJECTS_API}/${projectId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const project = await response.json();
+            
+            // You could implement a detailed view modal or redirect to a project details page
+            console.log('Project details:', project);
+            
+            // For now, just open the edit modal to show details
+            openEditProjectModal(projectId);
+            
+        } catch (error) {
+            console.error('Error loading project details:', error);
+            alert('Error loading project details. Please try again later.');
+        }
+    }
+    
+    function openCreateProjectModal() {
+        document.getElementById('modal-title').textContent = 'Add New Project';
+        projectForm.reset();
+        document.getElementById('project-id').value = '';
         
-        // Add same field/institution badges if applicable
-        const sameFieldBadge = collaborator.isSameField ? 
-            '<span class="field-badge"><i class="fas fa-microscope"></i> Same Field</span>' : '';
-        const sameInstitutionBadge = collaborator.isSameInstitution ? 
-            '<span class="institution-badge"><i class="fas fa-university"></i> Same Institution</span>' : '';
+        // Set default dates for new project
+        const today = new Date().toISOString().split('T')[0];
+        const nextYear = new Date();
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
         
-        return `
-            <div class="collaborator-card" data-id="${collaborator.id}">
-                <div class="collaborator-header">
-                    <div class="collaborator-avatar">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <div class="collaborator-info">
-                        <h4>${name}</h4>
-                        <p>${title} at ${institution}</p>
-                        <div class="collaborator-badges">
-                            ${recommendedBadge}
-                            ${sameFieldBadge}
-                            ${sameInstitutionBadge}
-                        </div>
+        document.getElementById('start-date').value = today;
+        document.getElementById('end-date').value = nextYear.toISOString().split('T')[0];
+        
+        projectModal.style.display = 'block';
+    }
+    
+    async function openEditProjectModal(projectId) {
+        try {
+            document.getElementById('modal-title').textContent = 'Edit Project';
+            
+            const response = await fetch(`${PROJECTS_API}/${projectId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const project = await response.json();
+            
+            // Fill the form with project data
+            document.getElementById('project-id').value = project.id;
+            document.getElementById('researcher-name').value = project.researcher_name || '';
+            document.getElementById('project-title').value = project.project_title || '';
+            document.getElementById('description').value = project.description || '';
+            document.getElementById('key-research-area').value = project.key_research_area || '';
+            document.getElementById('start-date').value = project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '';
+            document.getElementById('end-date').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
+            document.getElementById('funding-available').checked = project.funding_available || false;
+            document.getElementById('skills').value = project.skills || '';
+            document.getElementById('experience-level').value = project.experience_level || 'Intermediate';
+            document.getElementById('positions').value = project.positions || '';
+            document.getElementById('technical-requirements').value = project.technical_requirements || '';
+            
+            projectModal.style.display = 'block';
+            
+        } catch (error) {
+            console.error('Error loading project for editing:', error);
+            alert('Error loading project data. Please try again later.');
+        }
+    }
+    
+    async function handleProjectFormSubmit(e) {
+        e.preventDefault();
+        
+        const projectId = document.getElementById('project-id').value;
+        const isNewProject = !projectId;
+        
+        // Collect form data and match it to database fields
+        const projectData = {
+            researcher_name: document.getElementById('researcher-name').value,
+            project_title: document.getElementById('project-title').value,
+            description: document.getElementById('description').value,
+            key_research_area: document.getElementById('key-research-area').value,
+            start_date: document.getElementById('start-date').value,
+            end_date: document.getElementById('end-date').value,
+            funding_available: document.getElementById('funding-available').checked,
+            skills: document.getElementById('skills').value,
+            experience_level: document.getElementById('experience-level').value,
+            positions: document.getElementById('positions').value,
+            technical_requirements: document.getElementById('technical-requirements').value,
+            status: 'Active' // Default status for new projects
+        };
+        
+        try {
+            let response;
+            
+            if (isNewProject) {
+                // Create new project
+                response = await fetch(PROJECTS_API, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(projectData),
+                });
+            } else {
+                // Update existing project
+                response = await fetch(`${PROJECTS_API}/${projectId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(projectData),
+                });
+            }
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            // Close modal and reload projects
+            projectModal.style.display = 'none';
+            loadProjects();
+            
+            // Show success notification
+            showNotification(isNewProject ? 'Project created successfully!' : 'Project updated successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error saving project:', error);
+            showNotification('Error saving project. Please try again later.', 'error');
+        }
+    }
+    
+    function openInviteModal(projectId, projectTitle) {
+        document.getElementById('invite-project-id').value = projectId;
+        document.getElementById('invite-project-title').textContent = projectTitle;
+        
+        // Populate positions dropdown from the project's required positions
+        populatePositionsDropdown(projectId);
+        
+        // Set a default invitation message
+        document.getElementById('collaboration-message').value = `Hi there,\n\nI would like to invite you to collaborate on my research project "${projectTitle}". Your expertise would be valuable for this project.\n\nLooking forward to your response.\n\nBest regards`;
+        
+        // Reset and show the first tab
+        document.querySelector('.tab-btn[data-tab="available-collaborators"]').click();
+        
+        // Load available collaborators
+        loadAvailableCollaborators(projectId);
+        
+        inviteModal.style.display = 'block';
+    }
+    
+    async function populatePositionsDropdown(projectId) {
+        try {
+            const response = await fetch(`${PROJECTS_API}/${projectId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const project = await response.json();
+            const positionsSelect = document.getElementById('collaborator-position');
+            
+            // Clear previous options
+            positionsSelect.innerHTML = '';
+            
+            // Add positions based on project data
+            if (project.positions) {
+                const positions = project.positions.split(',');
+                
+                positions.forEach(position => {
+                    const option = document.createElement('option');
+                    option.value = position.trim();
+                    option.textContent = position.trim();
+                    positionsSelect.appendChild(option);
+                });
+            } else {
+                // Add a default option if no positions defined
+                const option = document.createElement('option');
+                option.value = 'Collaborator';
+                option.textContent = 'Collaborator';
+                positionsSelect.appendChild(option);
+            }
+            
+        } catch (error) {
+            console.error('Error loading positions:', error);
+            
+            // Add a default option on error
+            const positionsSelect = document.getElementById('collaborator-position');
+            positionsSelect.innerHTML = '<option value="Collaborator">Collaborator</option>';
+        }
+    }
+    
+    function loadAvailableCollaborators(projectId) {
+        const collaboratorsList = document.getElementById('collaborators-list');
+        
+        // In a real application, you would fetch available collaborators from the server
+        // For demonstration, we'll show placeholder data
+        collaboratorsList.innerHTML = `
+            <div class="collaborator-card">
+                <div class="collaborator-info">
+                    <h4>Dr. Jane Smith</h4>
+                    <p>Biology Department</p>
+                    <div class="skills">
+                        <span class="tag">Genetics</span>
+                        <span class="tag">Molecular Biology</span>
                     </div>
                 </div>
-                <div class="collaborator-body">
-                    <div class="expertise">
-                        <h5>Expertise:</h5>
-                        <p>${skillsHTML}</p>
+                <div class="collaborator-actions">
+                    <button class="btn view-profile-btn" data-id="user123"><i class="fas fa-id-card"></i> View Profile</button>
+                    <button class="btn invite-user-btn" data-id="user123" data-name="Dr. Jane Smith"><i class="fas fa-paper-plane"></i> Invite</button>
+                </div>
+            </div>
+            
+            <div class="collaborator-card">
+                <div class="collaborator-info">
+                    <h4>Prof. Michael Chen</h4>
+                    <p>Computer Science Department</p>
+                    <div class="skills">
+                        <span class="tag">Machine Learning</span>
+                        <span class="tag">Data Analysis</span>
                     </div>
                 </div>
-                <div class="collaborator-footer">
-                    <button class="btn secondary" onclick="viewCollaboratorProfile('${collaborator.id}')">
-                        <i class="fas fa-id-card"></i> View Profile
-                    </button>
-                    <button class="btn primary" onclick="inviteCollaborator('${collaborator.id}')">
-                        <i class="fas fa-user-plus"></i> Invite
-                    </button>
+                <div class="collaborator-actions">
+                    <button class="btn view-profile-btn" data-id="user456"><i class="fas fa-id-card"></i> View Profile</button>
+                    <button class="btn invite-user-btn" data-id="user456" data-name="Prof. Michael Chen"><i class="fas fa-paper-plane"></i> Invite</button>
+                </div>
+            </div>
+            
+            <div class="collaborator-card">
+                <div class="collaborator-info">
+                    <h4>Dr. Sarah Johnson</h4>
+                    <p>Chemistry Department</p>
+                    <div class="skills">
+                        <span class="tag">Organic Chemistry</span>
+                        <span class="tag">Spectroscopy</span>
+                    </div>
+                </div>
+                <div class="collaborator-actions">
+                    <button class="btn view-profile-btn" data-id="user789"><i class="fas fa-id-card"></i> View Profile</button>
+                    <button class="btn invite-user-btn" data-id="user789" data-name="Dr. Sarah Johnson"><i class="fas fa-paper-plane"></i> Invite</button>
                 </div>
             </div>
         `;
-    }).join('');
-}
-
-// View collaborator profile
-async function viewCollaboratorProfile(collaboratorId) {
-    try {
-        currentCollaboratorId = collaboratorId;
         
-        // Show profile modal with loading state
-        profileModal.style.display = 'block';
-        const profileContainer = document.getElementById('collaborator-profile');
-        showLoading(profileContainer);
+        // Add event listeners to buttons
+        document.querySelectorAll('.view-profile-btn').forEach(btn => {
+            btn.addEventListener('click', () => viewCollaboratorProfile(btn.dataset.id));
+        });
         
-        // Fetch collaborator details
-        const collaborator = await fetchCollaboratorById(collaboratorId);
+        document.querySelectorAll('.invite-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => sendInvitation(projectId, btn.dataset.id, btn.dataset.name));
+        });
+    }
+    
+    function viewCollaboratorProfile(userId) {
+        const profileContent = document.getElementById('collaborator-profile');
         
-        // Format education data
-        let educationHTML = '<p>Education not specified</p>';
-        if (collaborator.education && Array.isArray(collaborator.education)) {
-            educationHTML = collaborator.education.map(edu => 
-                `<div class="education-item">
-                    <strong>${edu.degree}</strong>
-                    <p>${edu.institution}, ${edu.year}</p>
-                </div>`
-            ).join('');
-        }
-        
-        // Format experience data
-        let experienceHTML = '<p>Experience not specified</p>';
-        if (collaborator.experience && Array.isArray(collaborator.experience)) {
-            experienceHTML = collaborator.experience.map(exp => 
-                `<div class="experience-item">
-                    <strong>${exp.title}</strong>
-                    <p>${exp.organization}, ${exp.period}</p>
-                </div>`
-            ).join('');
-        }
-        
-        // Format skills/expertise
-        let skillsHTML = '<p>Expertise not specified</p>';
-        if (collaborator.skills && Array.isArray(collaborator.skills)) {
-            skillsHTML = collaborator.skills.map(skill => 
-                `<span class="tag">${skill}</span>`
-            ).join('');
-        }
-        
-        // Format projects
-        let projectsHTML = '<p>No projects listed</p>';
-        if (collaborator.projects && Array.isArray(collaborator.projects)) {
-            projectsHTML = collaborator.projects.map(project => 
-                `<div class="project-item">
-                    <p>${project}</p>
-                </div>`
-            ).join('');
-        }
-        
-        // Publications and citation metrics
-        const publicationsInfo = collaborator.publications ? 
-            `<p>Publications: ${collaborator.publications}</p>` : '';
-        const citationsInfo = collaborator.citations ? 
-            `<p>Citations: ${collaborator.citations}</p>` : '';
-        
-        // Display profile
-        profileContainer.innerHTML = `
+        // In a real app, you would fetch profile data from the server
+        // For demonstration, we'll show placeholder data
+        profileContent.innerHTML = `
             <div class="profile-header">
                 <div class="profile-avatar">
-                    <i class="fas fa-user-circle fa-4x"></i>
+                    <i class="fas fa-user-circle"></i>
                 </div>
                 <div class="profile-title">
-                    <h3>${collaborator.name || 'Unknown'}</h3>
-                    <p>${collaborator.title || 'Position not specified'} at ${collaborator.institution || 'Institution not specified'}</p>
-                    <p>${collaborator.department || ''}</p>
+                    <h3>Dr. Jane Smith</h3>
+                    <p>Biology Department</p>
                 </div>
             </div>
             
             <div class="profile-section">
-                <h4><i class="fas fa-user"></i> Bio</h4>
-                <p>${collaborator.bio || 'Bio not available'}</p>
-            </div>
-            
-            <div class="profile-section">
-                <h4><i class="fas fa-graduation-cap"></i> Education</h4>
-                <div class="education-container">
-                    ${educationHTML}
+                <h4>Research Areas</h4>
+                <div class="profile-tags">
+                    <span class="tag">Genetics</span>
+                    <span class="tag">Molecular Biology</span>
+                    <span class="tag">Cell Culture</span>
+                    <span class="tag">PCR Techniques</span>
                 </div>
             </div>
             
             <div class="profile-section">
-                <h4><i class="fas fa-briefcase"></i> Experience</h4>
-                <div class="experience-container">
-                    ${experienceHTML}
-                </div>
+                <h4>Experience</h4>
+                <ul class="profile-list">
+                    <li>10+ years in molecular genetics research</li>
+                    <li>Published 25+ peer-reviewed papers</li>
+                    <li>Led 5 major research projects</li>
+                </ul>
             </div>
             
             <div class="profile-section">
-                <h4><i class="fas fa-brain"></i> Skills & Expertise</h4>
-                <div class="tags">
-                    ${skillsHTML}
-                </div>
+                <h4>Education</h4>
+                <ul class="profile-list">
+                    <li>Ph.D. in Molecular Biology, Stanford University</li>
+                    <li>M.Sc. in Genetics, MIT</li>
+                    <li>B.Sc. in Biology, UC Berkeley</li>
+                </ul>
             </div>
             
             <div class="profile-section">
-                <h4><i class="fas fa-flask"></i> Projects</h4>
-                <div class="projects-container">
-                    ${projectsHTML}
-                </div>
-            </div>
-            
-            <div class="profile-section">
-                <h4><i class="fas fa-chart-line"></i> Research Metrics</h4>
-                ${publicationsInfo}
-                ${citationsInfo}
-                <p>Collaborations: ${collaborator.collaborations || 'Not specified'}</p>
-            </div>
-            
-            <div class="profile-section">
-                <h4><i class="fas fa-envelope"></i> Contact</h4>
-                <p>Email: ${collaborator.email || 'Email not provided'}</p>
-                <p>Phone: ${collaborator.phone || 'Phone not provided'}</p>
-                <p>Location: ${collaborator.location || 'Location not provided'}</p>
+                <h4>Recent Publications</h4>
+                <ul class="profile-list">
+                    <li>"Novel Gene Expression Patterns in Human Cancer Cells", Journal of Molecular Biology, 2024</li>
+                    <li>"A Comparative Study of CRISPR Applications", Nature Genetics, 2023</li>
+                </ul>
             </div>
         `;
-    } catch (error) {
-        console.error('Error viewing collaborator profile:', error);
-        showToast('Error loading collaborator profile. Please try again.', 'error');
-    }
-}
-// Close the profile modal
-function closeProfileModal() {
-    profileModal.style.display = 'none';
-}
-
-// For the inviteCollaborator function, add API integration:
-async function inviteCollaborator(collaboratorId) {
-    try {
-        // First fetch the collaborator details
-        const collaborator = await fetchCollaboratorById(collaboratorId);
         
-        // Find the current project
-        const project = projects.find(p => p.id === inviteProjectId);
-        if (!project) {
-            throw new Error('Project not found');
-        }
-        
-        // Get the project title from the modal
-        const projectTitle = document.getElementById('invite-project-title').textContent;
-        
-        // Create skills list for message
-        const skillsList = Array.isArray(collaborator.skills) ? 
-            collaborator.skills.slice(0, 3).join(', ') : 
-            'your field';
-        
-        const message = `Hi ${collaborator.name},
-
-I would like to invite you to collaborate on my research project "${projectTitle}". Your expertise in ${skillsList} would be valuable for this work.
-
-Looking forward to your response.`;
-        
-        // Create invitation data for project storage
-        const collaboratorInfo = {
-            id: collaborator.id,
-            name: collaborator.name,
-            title: collaborator.title || 'Researcher',
-            institution: collaborator.institution || '',
-            email: collaborator.email || '',
-            status: 'invited', // Status could be 'invited', 'accepted', 'declined'
-            invitedDate: new Date().toISOString(),
-            skills: collaborator.skills || []
-        };
-        
-        // Initialize invitedCollaborators array if it doesn't exist
-        if (!project.invitedCollaborators) {
-            project.invitedCollaborators = [];
-        }
-        
-        // Check if collaborator is already invited to avoid duplicates
-        const alreadyInvited = project.invitedCollaborators.some(
-            invited => invited.id === collaborator.id
-        );
-        
-        if (!alreadyInvited) {
-            // Add to project's invitedCollaborators array
-            project.invitedCollaborators.push(collaboratorInfo);
-            
-            // Update the project in the API
-            await updateProjectInAPI(project);
-            
-            // Create invitation data for invitations API
-            const sentInvitationData = {
-                projectId: inviteProjectId,
-                projectTitle: projectTitle,
-                invitedCollaborator: {
-                    id: collaborator.id,
-                    name: collaborator.name,
-                    email: collaborator.email,
-                    institution: collaborator.institution || ''
-                },
-                invitedDate: new Date().toISOString(),
-                status: 'invited',
-                messages: [{
-                    text: message,
-                    sender: 'researcher', // assuming the user is the researcher
-                    timestamp: new Date().toISOString()
-                }]
-            };
-            
-            // Send to invitations API
-            await saveInvitationToAPI(sentInvitationData, 'sent');
-            
-            showToast(`Invitation sent to ${collaborator.name} successfully!`, 'success');
-        } else {
-            showToast(`${collaborator.name} has already been invited to this project.`, 'info');
-        }
-    } catch (error) {
-        console.error('Error inviting collaborator:', error);
-        showToast('Error sending invitation. Please try again.', 'error');
-    }
-}
-
-
-// Add new function to send invitations to the API
-async function saveInvitationToAPI(invitationData, type) {
-    try {
-        const endpoint = type === 'sent' ? 'sent' : 'received';
-        const response = await fetch(`http://localhost:3000/api/invitations/${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(invitationData)
+        document.getElementById('invite-from-profile-btn').dataset.userId = userId;
+        document.getElementById('invite-from-profile-btn').addEventListener('click', () => {
+            profileModal.style.display = 'none';
+            // Get current project ID from the invite modal
+            const projectId = document.getElementById('invite-project-id').value;
+            sendInvitation(projectId, userId, 'Dr. Jane Smith');
         });
         
-        if (!response.ok) {
-            throw new Error(`Failed to save ${type} invitation`);
-        }
-        
-        const savedInvitation = await response.json();
-        console.log(`${type} invitation saved:`, savedInvitation);
-        return savedInvitation;
-    } catch (error) {
-        console.error(`Error saving ${type} invitation:`, error);
-        throw error;
-    }
-}
-
-
-// Add function to fetch invitations for a project
-async function fetchInvitationsForProject(projectId) {
-    try {
-        const response = await fetch(`http://localhost:3000/api/invitations/project/${projectId}`);
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch invitations for project');
-        }
-        
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching invitations for project:', error);
-        throw error;
-    }
-}
-
-// Add a function to update invitation status
-async function updateInvitationStatus(invitationId, type, status) {
-    try {
-        const response = await fetch(`http://localhost:3000/api/invitations/${type}/${invitationId}/status`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ status })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Failed to update invitation status`);
-        }
-        
-        const updatedInvitation = await response.json();
-        return updatedInvitation;
-    } catch (error) {
-        console.error('Error updating invitation status:', error);
-        throw error;
-    }
-}
-
-// Add a function to send a message to an invitation
-async function sendMessageToInvitation(invitationId, type, text, sender) {
-    try {
-        const message = {
-            text,
-            sender,
-            timestamp: new Date().toISOString()
-        };
-        
-        const response = await fetch(`http://localhost:3000/api/invitations/${type}/${invitationId}/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(message)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Failed to send message to invitation`);
-        }
-        
-        const savedMessage = await response.json();
-        return savedMessage;
-    } catch (error) {
-        console.error('Error sending message to invitation:', error);
-        throw error;
-    }
-}
-
-// Additional function to view invitation details - this could be integrated into the UI
-// to allow users to view and respond to invitations
-async function viewInvitationDetails(invitationId, type) {
-    try {
-        const response = await fetch(`http://localhost:3000/api/invitations/${type}/${invitationId}`);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch invitation details`);
-        }
-        
-        const invitation = await response.json();
-        return invitation;
-    } catch (error) {
-        console.error('Error fetching invitation details:', error);
-        throw error;
-    }
-}
-
-
-// Add a function to update project in the API
-async function updateProjectInAPI(project) {
-    try {
-        const response = await fetch(`${API_URL}/${project.id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(project)
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to update project');
-        }
-        
-        // Update the local projects array
-        const index = projects.findIndex(p => p.id === project.id);
-        if (index !== -1) {
-            projects[index] = project;
-        }
-        
-        return true;
-    } catch (error) {
-        console.error('Error updating project:', error);
-        throw error;
-    }
-}
-// Invite collaborator from profile modal
-async function inviteFromProfile() {
-    if (!currentCollaboratorId || !inviteProjectId) {
-        showToast('Invalid project or collaborator selection.', 'error');
-        return;
+        profileModal.style.display = 'block';
     }
     
-    try {
-        await inviteCollaborator(currentCollaboratorId);
-        closeProfileModal();
-    } catch (error) {
-        console.error('Error inviting from profile:', error);
-    }
-}
-
-// Search collaborators based on input
-function searchCollaborators() {
-    const searchTerm = collaboratorSearch.value.toLowerCase();
-    
-    if (!searchTerm.trim()) {
-        displayCollaborators(collaborators);
-        return;
+    function sendInvitation(projectId, userId, userName) {
+        // In a real app, you would send the invitation to the server
+        alert(`Invitation sent to ${userName} for collaboration!`);
+        
+        // Close the invite modal
+        inviteModal.style.display = 'none';
     }
     
-    const filteredCollaborators = collaborators.filter(collaborator => {
-        // Search in name, institution, department, skills, and bio
-        return (
-            (collaborator.name && collaborator.name.toLowerCase().includes(searchTerm)) ||
-            (collaborator.institution && collaborator.institution.toLowerCase().includes(searchTerm)) ||
-            (collaborator.department && collaborator.department.toLowerCase().includes(searchTerm)) ||
-            (collaborator.bio && collaborator.bio.toLowerCase().includes(searchTerm)) ||
-            (collaborator.skills && Array.isArray(collaborator.skills) && 
-                collaborator.skills.some(skill => skill.toLowerCase().includes(searchTerm)))
-        );
+    document.getElementById('invite-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const projectId = document.getElementById('invite-project-id').value;
+        const email = document.getElementById('collaborator-email').value;
+        const position = document.getElementById('collaborator-position').value;
+        
+        // In a real app, you would send this invitation to the server
+        alert(`Invitation sent to ${email} for position: ${position}`);
+        
+        // Close the invite modal
+        inviteModal.style.display = 'none';
     });
     
-    displayCollaborators(filteredCollaborators);
-}
-// Open modal for creating a new project
-function openCreateModal() {
-    resetForm();
-    modalTitle.textContent = 'Add New Project';
-    currentProjectId = null;
-    projectModal.style.display = 'block';
-}
-
-// Open modal for editing an existing project
-function openEditModal(projectId) {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    
-    resetForm();
-    modalTitle.textContent = 'Edit Project';
-    currentProjectId = projectId;
-    // Fill form with project data
-    document.getElementById('project-id').value = project.id;
-    document.getElementById('researcher-name').value = project.projectDetails.researcherName;
-    document.getElementById('project-title').value = project.projectDetails.projectTitle;
-    document.getElementById('description').value = project.projectDetails.description;
-    document.getElementById('key-research-area').value = project.projectDetails.keyResearchArea;
-    document.getElementById('start-date').value = formatDateForInput(project.projectDetails.startDate);
-    document.getElementById('end-date').value = formatDateForInput(project.projectDetails.endDate);
-    document.getElementById('funding-available').checked = project.projectDetails.fundingAvailable;
-    
-    if (project.collaborationRequirements) {
-        const skills = Array.isArray(project.collaborationRequirements.skillsAndExpertise) 
-            ? project.collaborationRequirements.skillsAndExpertise.join(', ')
-            : project.collaborationRequirements.skillsAndExpertise || '';
-            
-        const positions = Array.isArray(project.collaborationRequirements.positionsRequired)
-            ? project.collaborationRequirements.positionsRequired.join(', ')
-            : project.collaborationRequirements.positionsRequired || '';
-            
-        const techReqs = Array.isArray(project.collaborationRequirements.technicalRequirements)
-            ? project.collaborationRequirements.technicalRequirements.join(', ')
-            : project.collaborationRequirements.technicalRequirements || '';
-            
-        document.getElementById('skills').value = skills;
-        document.getElementById('experience-level').value = project.collaborationRequirements.experienceLevel || '';
-        document.getElementById('positions').value = positions;
-        document.getElementById('technical-requirements').value = techReqs;
+    function confirmDeleteProject(projectId, projectTitle) {
+        document.getElementById('confirm-delete-btn').dataset.id = projectId;
+        document.querySelector('.project-to-delete').innerHTML = `
+            <div class="delete-project-info">
+                <h3>${projectTitle}</h3>
+                <p>Project ID: ${projectId}</p>
+            </div>
+        `;
+        
+        deleteModal.style.display = 'block';
     }
     
-    projectModal.style.display = 'block';
-}
-
-// Open invite collaborators modal
-function openInviteModal(projectId) {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    
-    inviteProjectId = projectId;
-    
-    // Display project details in the invite modal
-    document.getElementById('invite-project-title').textContent = project.projectDetails.projectTitle;
-    document.getElementById('invite-project-id').value = projectId;
-    
-    // Set default tab to available collaborators
-    document.querySelector('.tab-btn[data-tab="available-collaborators"]').click();
-    
-    // Clear previous form inputs for manual invite
-    document.getElementById('collaborator-email').value = '';
-    document.getElementById('collaboration-message').value = 
-        `Hi there,\n\nI'd like to invite you to collaborate on my research project "${project.projectDetails.projectTitle}". Your expertise would be valuable for this work.\n\nLooking forward to your response.`;
-
-    // Clear previous position selection and populate with project positions
-    const positionSelect = document.getElementById('collaborator-position');
-    positionSelect.innerHTML = '';
-    
-    if (project.collaborationRequirements && project.collaborationRequirements.positionsRequired) {
-        const positions = Array.isArray(project.collaborationRequirements.positionsRequired) 
-            ? project.collaborationRequirements.positionsRequired 
-            : project.collaborationRequirements.positionsRequired.split(',').map(p => p.trim());
-            
-        positions.forEach(position => {
-            const option = document.createElement('option');
-            option.value = position;
-            option.textContent = position;
-            positionSelect.appendChild(option);
-        });
-    }
-    
-    // Load available collaborators
-    fetchCollaborators();
-    
-    inviteModal.style.display = 'block';
-}
-
-// Open delete confirmation modal
-function openDeleteModal(projectId) {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    
-    currentProjectId = projectId;
-    document.querySelector('.project-to-delete').innerHTML = `
-        <strong>${project.projectDetails.projectTitle}</strong>
-        <p>ID: ${project.id}</p>
-        <p>Researcher: ${project.projectDetails.researcherName}</p>
-    `;
-    
-    deleteModal.style.display = 'block';
-}
-
-// Close the project modal
-function closeModal() {
-    projectModal.style.display = 'none';
-}
-
-// Close the invite modal
-function closeInviteModal() {
-    inviteModal.style.display = 'none';
-}
-
-// Close the delete confirmation modal
-function closeDeleteModal() {
-    deleteModal.style.display = 'none';
-}
-
-// Handle form submission for creating/editing projects
-async function handleFormSubmit(e) {
-    e.preventDefault();
-    
-    try {
-        const projectData = getFormData();
-        const isEditing = currentProjectId !== null;
+    async function deleteProject() {
+        const projectId = document.getElementById('confirm-delete-btn').dataset.id;
         
-        const url = isEditing ? `${API_URL}/${currentProjectId}` : API_URL;
-        const method = isEditing ? 'PUT' : 'POST';
-        
-        console.log('Submitting data:', JSON.stringify(projectData));
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(projectData)
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Failed to ${isEditing ? 'update' : 'create'} project`);
-        }
-        
-        closeModal();
-        fetchProjects();
-        showToast(`Project ${isEditing ? 'updated' : 'created'} successfully!`, 'success');
-    } catch (error) {
-        console.error(`Error ${currentProjectId ? 'updating' : 'creating'} project:`, error);
-        showToast(`Error ${currentProjectId ? 'updating' : 'creating'} project. Please try again.`, 'error');
-    }
-}
-
-// Update handleInviteSubmit function for manual invites
-async function handleInviteSubmit(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('collaborator-email').value;
-    const position = document.getElementById('collaborator-position').value;
-    const message = document.getElementById('collaboration-message').value;
-    
-    if (!email || !position) {
-        showToast('Please fill in all required fields.', 'error');
-        return;
-    }
-    
-    try {
-        // Find the current project
-        const project = projects.find(p => p.id === inviteProjectId);
-        if (!project) {
-            throw new Error('Project not found');
-        }
-        
-        // Create a collaborator info object for manual invites
-        const collaboratorInfo = {
-            id: `manual-${Date.now()}`, // Generate a temporary ID for manual invites
-            name: email.split('@')[0], // Use part of email as name
-            title: position,
-            email: email,
-            status: 'invited',
-            invitedDate: new Date().toISOString(),
-            isManualInvite: true
-        };
-        
-        // Initialize invitedCollaborators array if it doesn't exist
-        if (!project.invitedCollaborators) {
-            project.invitedCollaborators = [];
-        }
-        
-        // Check if email is already invited
-        const alreadyInvited = project.invitedCollaborators.some(
-            invited => invited.email === email
-        );
-        
-        if (!alreadyInvited) {
-            // Add to project's invitedCollaborators array
-            project.invitedCollaborators.push(collaboratorInfo);
-            
-            // Update the project in the API
-            await updateProjectInAPI(project);
-            
-            // Create invitation data for invitations API
-            const sentInvitationData = {
-                projectId: inviteProjectId,
-                projectTitle: project.projectDetails.projectTitle,
-                invitedCollaborator: {
-                    id: collaboratorInfo.id,
-                    name: collaboratorInfo.name,
-                    email: email,
-                    position: position
-                },
-                invitedDate: new Date().toISOString(),
-                status: 'invited',
-                messages: [{
-                    text: message,
-                    sender: 'researcher', // assuming the user is the researcher
-                    timestamp: new Date().toISOString()
-                }]
-            };
-            
-            // Send to invitations API
-            await saveInvitationToAPI(sentInvitationData, 'sent');
-            
-            closeInviteModal();
-            showToast(`Invitation sent to ${email} successfully!`, 'success');
-        } else {
-            showToast(`An invitation has already been sent to ${email}.`, 'info');
-        }
-    } catch (error) {
-        console.error('Error sending invitation:', error);
-        showToast('Error sending invitation. Please try again.', 'error');
-    }
-}
-
-// Add a function to display invited collaborators in the project card
-function updateProjectDisplayWithInvitedCollaborators() {
-    const projectCards = document.querySelectorAll('.project-card');
-    
-    projectCards.forEach(card => {
-        const projectId = card.getAttribute('data-id');
-        const project = projects.find(p => p.id === projectId);
-        
-        if (project && project.invitedCollaborators && project.invitedCollaborators.length > 0) {
-            // Create or update the collaborators section
-            let collaboratorsSection = card.querySelector('.invited-collaborators');
-            
-            if (!collaboratorsSection) {
-                collaboratorsSection = document.createElement('div');
-                collaboratorsSection.className = 'invited-collaborators';
-                
-                // Find the project-body to insert before the footer
-                const projectBody = card.querySelector('.project-body');
-                const footer = card.querySelector('.project-footer');
-                
-                if (projectBody && footer) {
-                    card.insertBefore(collaboratorsSection, footer);
-                }
-            }
-            
-            // Update the content of the collaborators section
-            collaboratorsSection.innerHTML = `
-                <h4 class="collaborators-title">
-                    <i class="fas fa-users"></i> Invited Collaborators (${project.invitedCollaborators.length})
-                </h4>
-                <div class="collaborators-list">
-                    ${project.invitedCollaborators.slice(0, 3).map(collaborator => `
-                        <div class="collaborator-chip">
-                            <i class="fas fa-user-circle"></i>
-                            <span>${collaborator.name || collaborator.email}</span>
-                            <span class="status ${collaborator.status}">${collaborator.status}</span>
-                        </div>
-                    `).join('')}
-                    ${project.invitedCollaborators.length > 3 ? 
-                        `<div class="collaborator-chip more">+${project.invitedCollaborators.length - 3} more</div>` : 
-                        ''}
-                </div>
-            `;
-        }
-    });
-}
-
-// Delete a project
-async function deleteProject() {
-    if (!currentProjectId) return;
-    
-    try {
-        const response = await fetch(`${API_URL}/${currentProjectId}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to delete project');
-        }
-        
-        closeDeleteModal();
-        fetchProjects();
-        showToast('Project deleted successfully!', 'success');
-    } catch (error) {
-        console.error('Error deleting project:', error);
-        showToast('Error deleting project. Please try again.', 'error');
-    }
-}
-
-// Get form data and structure it for API
-function getFormData() {
-    const formData = {
-        projectDetails: {
-            researcherName: document.getElementById('researcher-name').value,
-            projectTitle: document.getElementById('project-title').value,
-            description: document.getElementById('description').value,
-            keyResearchArea: document.getElementById('key-research-area').value,
-            startDate: document.getElementById('start-date').value,
-            endDate: document.getElementById('end-date').value,
-            fundingAvailable: document.getElementById('funding-available').checked
-        },
-        collaborationRequirements: {
-            skillsAndExpertise: document.getElementById('skills').value.split(',').map(item => item.trim()),
-            experienceLevel: document.getElementById('experience-level').value,
-            positionsRequired: document.getElementById('positions').value.split(',').map(item => item.trim()),
-            technicalRequirements: document.getElementById('technical-requirements').value.split(',').map(item => item.trim())
-        }
-    };
-    
-    // If editing, include the project ID
-    if (currentProjectId) {
-        formData.id = currentProjectId;
-    } else {
-        // For new projects, generate an ID using timestamp and random string
-        formData.id = generateProjectId();
-    }
-    
-    return formData;
-}
-
-// Reset the form fields
-function resetForm() {
-    projectForm.reset();
-    document.getElementById('project-id').value = '';
-}
-
-// New function to view and manage project invitations
-async function viewProjectInvitations(projectId) {
-    try {
-        // Create modal for viewing invitations
-        let invitationsModal = document.getElementById('invitations-modal');
-        
-        if (!invitationsModal) {
-            invitationsModal = document.createElement('div');
-            invitationsModal.id = 'invitations-modal';
-            invitationsModal.className = 'modal';
-            
-            // Create modal content
-            invitationsModal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Project Invitations</h2>
-                        <span class="close" onclick="document.getElementById('invitations-modal').style.display='none'">&times;</span>
-                    </div>
-                    <div class="modal-body">
-                        <div class="tab-navigation">
-                            <button class="tab-btn active" data-tab="sent-invitations">Sent Invitations</button>
-                            <button class="tab-btn" data-tab="received-invitations">Received Invitations</button>
-                        </div>
-                        <div id="sent-invitations" class="tab-content">
-                            <div id="sent-invitations-list"></div>
-                        </div>
-                        <div id="received-invitations" class="tab-content hidden">
-                            <div id="received-invitations-list"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(invitationsModal);
-            
-            // Add event listeners for tab navigation
-            invitationsModal.querySelectorAll('.tab-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    invitationsModal.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                    invitationsModal.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-                    
-                    button.classList.add('active');
-                    const tabId = button.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.remove('hidden');
-                });
+        try {
+            const response = await fetch(`${PROJECTS_API}/${projectId}`, {
+                method: 'DELETE',
             });
-        }
-        
-        // Show modal
-        invitationsModal.style.display = 'block';
-        
-        // Show loading state
-        document.getElementById('sent-invitations-list').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading sent invitations...</div>';
-        document.getElementById('received-invitations-list').innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading received invitations...</div>';
-        
-        // Fetch invitations for this project
-        const invitations = await fetchInvitationsForProject(projectId);
-        
-        // Display sent invitations
-        displaySentInvitations(invitations.sentInvitations);
-        
-        // Display received invitations
-        displayReceivedInvitations(invitations.receivedInvitations);
-    } catch (error) {
-        console.error('Error viewing project invitations:', error);
-        showToast('Error loading invitations. Please try again.', 'error');
-    }
-}
-
-// Function to display sent invitations
-function displaySentInvitations(sentInvitations) {
-    const sentInvitationsList = document.getElementById('sent-invitations-list');
-    
-    if (!sentInvitations || sentInvitations.length === 0) {
-        sentInvitationsList.innerHTML = `
-            <div class="no-invitations">
-                <i class="fas fa-envelope-open"></i>
-                <p>No sent invitations for this project.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    sentInvitationsList.innerHTML = sentInvitations.map(invitation => {
-        // Format messages
-        const messagesList = invitation.messages && invitation.messages.length > 0 ?
-            invitation.messages.map(message => `
-                <div class="message ${message.sender === 'researcher' ? 'sent' : 'received'}">
-                    <div class="message-content">
-                        <p>${message.text}</p>
-                    </div>
-                    <div class="message-meta">
-                        <span class="message-time">${formatDate(message.timestamp)}</span>
-                        <span class="message-sender">${message.sender}</span>
-                    </div>
-                </div>
-            `).join('') : 
-            '<p class="no-messages">No messages yet.</p>';
-        
-        return `
-            <div class="invitation-card" data-id="${invitation.id}">
-                <div class="invitation-header">
-                    <h3>Invitation to ${invitation.invitedCollaborator.name || invitation.invitedCollaborator.email}</h3>
-                    <span class="status-badge ${invitation.status}">${invitation.status}</span>
-                </div>
-                <div class="invitation-details">
-                    <p><strong>Project:</strong> ${invitation.projectTitle}</p>
-                    <p><strong>Sent Date:</strong> ${formatDate(invitation.invitedDate)}</p>
-                    <p><strong>Recipient:</strong> ${invitation.invitedCollaborator.email} (${invitation.invitedCollaborator.institution || 'No institution specified'})</p>
-                </div>
-                <div class="invitation-messages">
-                    <h4>Messages</h4>
-                    <div class="messages-container">
-                        ${messagesList}
-                    </div>
-                </div>
-                <div class="invitation-actions">
-                    <button class="btn secondary send-message-btn" onclick="openSendMessageDialog('${invitation.id}', 'sent')">
-                        <i class="fas fa-reply"></i> Send Message
-                    </button>
-                    <button class="btn danger cancel-invitation-btn" onclick="cancelInvitation('${invitation.id}')">
-                        <i class="fas fa-times"></i> Cancel Invitation
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Function to display received invitations
-function displayReceivedInvitations(receivedInvitations) {
-    const receivedInvitationsList = document.getElementById('received-invitations-list');
-    
-    if (!receivedInvitations || receivedInvitations.length === 0) {
-        receivedInvitationsList.innerHTML = `
-            <div class="no-invitations">
-                <i class="fas fa-envelope-open"></i>
-                <p>No received invitations for this project.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    receivedInvitationsList.innerHTML = receivedInvitations.map(invitation => {
-        // Format messages
-        const messagesList = invitation.messages && invitation.messages.length > 0 ?
-            invitation.messages.map(message => `
-                <div class="message ${message.sender === 'researcher' ? 'received' : 'sent'}">
-                    <div class="message-content">
-                        <p>${message.text}</p>
-                    </div>
-                    <div class="message-meta">
-                        <span class="message-time">${formatDate(message.timestamp)}</span>
-                        <span class="message-sender">${message.sender}</span>
-                    </div>
-                </div>
-            `).join('') : 
-            '<p class="no-messages">No messages yet.</p>';
-        
-        // Button state based on status
-        let statusButtons = '';
-        if (invitation.status === 'pending') {
-            statusButtons = `
-                <button class="btn success accept-btn" onclick="respondToInvitation('${invitation.id}', 'accepted')">
-                    <i class="fas fa-check"></i> Accept
-                </button>
-                <button class="btn danger decline-btn" onclick="respondToInvitation('${invitation.id}', 'declined')">
-                    <i class="fas fa-times"></i> Decline
-                </button>
-            `;
-        } else {
-            statusButtons = `
-                <div class="status-indicator ${invitation.status}">
-                    ${invitation.status === 'accepted' ? 
-                        '<i class="fas fa-check-circle"></i> Accepted' : 
-                        '<i class="fas fa-times-circle"></i> Declined'}
-                </div>
-            `;
-        }
-        
-        return `
-            <div class="invitation-card" data-id="${invitation.id}">
-                <div class="invitation-header">
-                    <h3>Invitation from ${invitation.invitedBy.name || invitation.invitedBy.email}</h3>
-                    <span class="status-badge ${invitation.status}">${invitation.status}</span>
-                </div>
-                <div class="invitation-details">
-                    <p><strong>Project:</strong> ${invitation.projectTitle}</p>
-                    <p><strong>Received Date:</strong> ${formatDate(invitation.invitedDate)}</p>
-                    <p><strong>From:</strong> ${invitation.invitedBy.email} (${invitation.invitedBy.institution || 'No institution specified'})</p>
-                </div>
-                <div class="invitation-messages">
-                    <h4>Messages</h4>
-                    <div class="messages-container">
-                        ${messagesList}
-                    </div>
-                </div>
-                <div class="invitation-actions">
-                    <button class="btn secondary send-message-btn" onclick="openSendMessageDialog('${invitation.id}', 'received')">
-                        <i class="fas fa-reply"></i> Send Message
-                    </button>
-                    ${statusButtons}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Function to open a dialog for sending a message to an invitation
-function openSendMessageDialog(invitationId, type) {
-    // Create the send message dialog if it doesn't exist
-    let messageDialog = document.getElementById('send-message-dialog');
-    
-    if (!messageDialog) {
-        messageDialog = document.createElement('div');
-        messageDialog.id = 'send-message-dialog';
-        messageDialog.className = 'modal';
-        
-        messageDialog.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Send Message</h2>
-                    <span class="close" onclick="document.getElementById('send-message-dialog').style.display='none'">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <form id="send-message-form">
-                        <input type="hidden" id="message-invitation-id">
-                        <input type="hidden" id="message-invitation-type">
-                        
-                        <div class="form-group">
-                            <label for="message-text">Message:</label>
-                            <textarea id="message-text" class="form-control" rows="4" required></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn secondary" onclick="document.getElementById('send-message-dialog').style.display='none'">
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn primary">
-                                <i class="fas fa-paper-plane"></i> Send Message
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(messageDialog);
-        
-        // Add event listener for the form
-        document.getElementById('send-message-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
             
-            const invitationId = document.getElementById('message-invitation-id').value;
-            const invitationType = document.getElementById('message-invitation-type').value;
-            const messageText = document.getElementById('message-text').value;
-            
-            try {
-                await sendMessageToInvitation(
-                    invitationId,
-                    invitationType,
-                    messageText,
-                    'researcher' // Assuming the user is always the researcher
-                );
-                
-                messageDialog.style.display = 'none';
-                
-                // Refresh the invitations display
-                const projectId = document.querySelector('.invitation-card[data-id="' + invitationId + '"]')
-                    .closest('.project-card').getAttribute('data-id');
-                    
-                if (projectId) {
-                    viewProjectInvitations(projectId);
-                }
-                
-                showToast('Message sent successfully!', 'success');
-            } catch (error) {
-                console.error('Error sending message:', error);
-                showToast('Error sending message. Please try again.', 'error');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            
+            // Close modal and reload projects
+            deleteModal.style.display = 'none';
+            loadProjects();
+            
+            // Show success notification
+            showNotification('Project deleted successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Error deleting project:', error);
+            showNotification('Error deleting project. Please try again later.', 'error');
+        }
+    }
+    
+    // Utility function for notifications
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="notification-close"><i class="fas fa-times"></i></button>
+        `;
+        
+        // Add to document
+        document.body.appendChild(notification);
+        
+        // Add close button functionality
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.classList.add('notification-hiding');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
         });
-    }
-    
-    // Set values and show dialog
-    document.getElementById('message-invitation-id').value = invitationId;
-    document.getElementById('message-invitation-type').value = type;
-    document.getElementById('message-text').value = '';
-    
-    messageDialog.style.display = 'block';
-}
-
-// Function to cancel an invitation
-async function cancelInvitation(invitationId) {
-    if (!confirm('Are you sure you want to cancel this invitation?')) {
-        return;
-    }
-    
-    try {
-        await updateInvitationStatus(invitationId, 'sent', 'cancelled');
         
-        // Get project ID to refresh invitations view
-        const projectId = document.querySelector('.invitation-card[data-id="' + invitationId + '"]')
-            .closest('.project-card').getAttribute('data-id');
-            
-        if (projectId) {
-            await viewProjectInvitations(projectId);
-            
-            // Also update project data to reflect cancellation
-            fetchProjects();
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                notification.classList.add('notification-hiding');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+    
+    // Close modals when clicking outside content
+    window.addEventListener('click', (e) => {
+        if (e.target === projectModal) {
+            projectModal.style.display = 'none';
+        } else if (e.target === inviteModal) {
+            inviteModal.style.display = 'none';
+        } else if (e.target === profileModal) {
+            profileModal.style.display = 'none';
+        } else if (e.target === deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    });
+    // Add this updated viewProjectDetails function to your projects.js file
+
+async function viewProjectDetails(projectId) {
+    try {
+        const response = await fetch(`${PROJECTS_API}/${projectId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
         
-        showToast('Invitation cancelled successfully!', 'success');
-    } catch (error) {
-        console.error('Error cancelling invitation:', error);
-        showToast('Error cancelling invitation. Please try again.', 'error');
-    }
-}
-
-// Function to respond to a received invitation
-async function respondToInvitation(invitationId, status) {
-    try {
-        await updateInvitationStatus(invitationId, 'received', status);
+        const project = await response.json();
+        const detailsModal = document.getElementById('details-modal');
+        const detailsContainer = document.getElementById('details-container');
         
-        // Get project ID to refresh invitations view
-        const projectId = document.querySelector('.invitation-card[data-id="' + invitationId + '"]')
-            .closest('.project-card').getAttribute('data-id');
-            
-        if (projectId) {
-            await viewProjectInvitations(projectId);
+        // Format dates
+        const startDate = new Date(project.start_date).toLocaleDateString();
+        const endDate = new Date(project.end_date).toLocaleDateString();
+        
+        // Format research areas as tags
+        let keyResearchAreas = '<span class="tag">None specified</span>';
+        if (project.key_research_area) {
+            keyResearchAreas = project.key_research_area
+                .split(',')
+                .map(area => `<span class="tag">${area.trim()}</span>`)
+                .join('');
         }
         
-        const statusText = status === 'accepted' ? 'accepted' : 'declined';
-        showToast(`Invitation ${statusText} successfully!`, 'success');
+        // Format skills
+        let skillsList = '<span>None specified</span>';
+        if (project.skills) {
+            skillsList = project.skills
+                .split(',')
+                .map(skill => `<span class="skill-item">${skill.trim()}</span>`)
+                .join(', ');
+        }
+        
+        // Format positions
+        let positionsList = '<span>None specified</span>';
+        if (project.positions) {
+            positionsList = project.positions
+                .split(',')
+                .map(position => `<span>${position.trim()}</span>`)
+                .join(', ');
+        }
+        
+        // Format technical requirements
+        let technicalReqs = '<span>None specified</span>';
+        if (project.technical_requirements) {
+            technicalReqs = project.technical_requirements
+                .split(',')
+                .map(req => `<span>${req.trim()}</span>`)
+                .join(', ');
+        }
+        
+        // Set status class
+        let statusClass = '';
+        let statusText = project.status || 'Active';
+        
+        switch (statusText.toLowerCase()) {
+            case 'completed':
+                statusClass = 'status-completed';
+                break;
+            case 'active':
+                statusClass = 'status-active';
+                break;
+            case 'pending':
+                statusClass = 'status-pending';
+                break;
+            default:
+                statusClass = 'status-active';
+        }
+        
+        // Update modal title
+        document.getElementById('details-project-title').textContent = project.project_title;
+        
+        // Setup edit button
+        const editFromDetailsBtn = document.getElementById('edit-from-details-btn');
+        editFromDetailsBtn.dataset.id = projectId;
+        editFromDetailsBtn.addEventListener('click', () => {
+            detailsModal.style.display = 'none';
+            openEditProjectModal(projectId);
+        });
+        
+        // Build the details HTML
+        detailsContainer.innerHTML = `
+            <div class="project-details">
+                <div class="details-section">
+                    <div class="details-header">
+                        <h3>Project Overview</h3>
+                        <div class="project-status ${statusClass}">${statusText}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Researcher:</div>
+                        <div class="details-value">${project.researcher_name || 'Not specified'}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Project Timeline:</div>
+                        <div class="details-value">${startDate} - ${endDate}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Funding Available:</div>
+                        <div class="details-value">${project.funding_available ? 'Yes' : 'No'}</div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>Description</h3>
+                    <div class="details-description">${project.description || 'No description provided.'}</div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>Research Areas</h3>
+                    <div class="details-tags">
+                        ${keyResearchAreas}
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>Collaboration Requirements</h3>
+                    <div class="details-row">
+                        <div class="details-label">Experience Level:</div>
+                        <div class="details-value">${project.experience_level || 'Not specified'}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Required Skills:</div>
+                        <div class="details-value">${skillsList}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Open Positions:</div>
+                        <div class="details-value">${positionsList}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Technical Requirements:</div>
+                        <div class="details-value">${technicalReqs}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Show the modal
+        detailsModal.style.display = 'block';
+        
     } catch (error) {
-        console.error('Error responding to invitation:', error);
-        showToast('Error responding to invitation. Please try again.', 'error');
+        console.error('Error loading project details:', error);
+        showNotification('Error loading project details. Please try again later.', 'error');
     }
 }
 
-// Search projects based on input
-function searchProjects() {
-    const searchTerm = searchInput.value.toLowerCase();
+// Add this code to your DOMContentLoaded event handler
+document.addEventListener('DOMContentLoaded', () => {
+    // Existing code...
     
-    if (!searchTerm.trim()) {
-        displayProjects(projects);
-        return;
-    }
+    // Details modal event listeners
+    const detailsModal = document.getElementById('details-modal');
     
-    const filteredProjects = projects.filter(project => {
-        return (
-            project.projectDetails.projectTitle.toLowerCase().includes(searchTerm) ||
-            project.projectDetails.researcherName.toLowerCase().includes(searchTerm) ||
-            project.projectDetails.description.toLowerCase().includes(searchTerm) ||
-            project.projectDetails.keyResearchArea.toLowerCase().includes(searchTerm)
-        );
+    // Close button in header
+    detailsModal.querySelector('.close').addEventListener('click', () => {
+        detailsModal.style.display = 'none';
     });
     
-    displayProjects(filteredProjects);
-}
-
-// Format date for display (YYYY-MM-DD to MMM DD, YYYY)
-function formatDate(dateString) {
-    if (!dateString) return 'Not specified';
-    
-    try {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    } catch (error) {
-        console.error('Error formatting date:', error);
-        return dateString;
-    }
-}
-
-// Format date for input fields (YYYY-MM-DD)
-function formatDateForInput(dateString) {
-    return dateString || '';
-}
-
-// Show loading state in a container
-function showLoading(container) {
-    container.innerHTML = `
-        <div class="loading">
-            <i class="fas fa-spinner fa-spin"></i> Loading...
-        </div>
-    `;
-}
-
-// Show toast notification
-function showToast(message, type = 'success') {
-    // Create toast element
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    // Set message with icon
-    toast.innerHTML = type === 'success' ?
-        `<i class="fas fa-check-circle"></i> ${message}` :
-        `<i class="fas fa-exclamation-circle"></i> ${message}`;
-    
-    // Add to DOM
-    document.body.appendChild(toast);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
-// Generate ID for new projects
-function generateProjectId() {
-    // Find the highest existing project ID number
-    const projectNumbers = projects.map(project => {
-        const match = project.id.match(/PRJ(\d+)/);
-        return match ? parseInt(match[1], 10) : 0;
+    // Close button in footer
+    document.getElementById('close-details-btn').addEventListener('click', () => {
+        detailsModal.style.display = 'none';
     });
     
-    const highestNumber = Math.max(0, ...projectNumbers);
-    const newNumber = highestNumber + 1;
-    
-    // Format the number with leading zeros (PRJ001, PRJ002, etc.)
-    return `PRJ${String(newNumber).padStart(3, '0')}`;
-}
+    // Close when clicking outside modal
+    window.addEventListener('click', (e) => {
+        if (e.target === detailsModal) {
+            detailsModal.style.display = 'none';
+        }
+    });
+});
+});
