@@ -129,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="project-status ${statusClass}">${statusText}</div>
                 </div>
                 <div class="project-info">
-                    <p class="project-researcher"><i class="fas fa-user"></i> ${project.researcher_name}</p>
                     <p class="project-dates"><i class="fas fa-calendar"></i> ${startDate} - ${endDate}</p>
                 </div>
                 <div class="project-description">${project.description}</div>
