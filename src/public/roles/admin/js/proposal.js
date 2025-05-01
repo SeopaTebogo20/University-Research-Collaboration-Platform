@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: 'numeric'
             }) : 'N/A';
             
-            const status = project.reviewer ? 'in-review' : 'pending';
+            const status = project.status || (project.reviewer ? 'in-review' : 'pending');
             const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
             const statusClass = `status-${status}`;
             
@@ -148,8 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${project.key_research_area || 'N/A'}</td>
                 <td><span class="status-badge ${statusClass}">${displayStatus}</span></td>
                 <td class="table-actions">
-                    <button class="btn btn-icon view-btn" title="View Details"><i class="fas fa-eye"></i></button>
-                    <button class="btn btn-icon assign-btn" title="Assign Reviewers"><i class="fas fa-user-plus"></i></button>
+                     <button class="btn view-btn" data-id="${project.id}"><i class="fas fa-eye"></i> View Details</button>
                 </td>
             `;
             
@@ -188,7 +187,13 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'numeric'
         }) : 'N/A';
         
-        const status = currentProposal.reviewer ? 'in-review' : 'pending';
+        // Capturing status for any project
+        //const status = project.status || (project.reviewer ? 'in-review' : 'pending');
+        //const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
+        //const statusClass = `status-${status}`;
+
+        // Capturing status for current project
+        const status = currentProposal.status || (currentProposal.reviewer ? 'in-review' : 'pending');
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
         
         // Extract concepts from description (assuming they might be stored there)
@@ -204,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modalElements.area.textContent = currentProposal.key_research_area || 'N/A';
         modalElements.status.textContent = displayStatus;
         modalElements.abstract.textContent = currentProposal.description || 'No abstract available';
+        
         
         // Display research concepts
         modalElements.concepts.innerHTML = '';
