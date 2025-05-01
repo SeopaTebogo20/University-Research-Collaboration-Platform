@@ -173,16 +173,158 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             const project = await response.json();
+            const detailsModal = document.getElementById('details-modal');
+            const detailsContainer = document.getElementById('details-container');
             
-            // You could implement a detailed view modal or redirect to a project details page
-            console.log('Project details:', project);
+            // Format dates
+            const startDate = new Date(project.start_date).toLocaleDateString();
+            const endDate = new Date(project.end_date).toLocaleDateString();
             
-            // For now, just open the edit modal to show details
-            openEditProjectModal(projectId);
+            // Format research areas as tags
+            let keyResearchAreas = '<span class="tag">None specified</span>';
+            if (project.key_research_area) {
+                keyResearchAreas = project.key_research_area
+                    .split(',')
+                    .map(area => `<span class="tag">${area.trim()}</span>`)
+                    .join('');
+            }
+            
+            // Format skills
+            let skillsList = '<span>None specified</span>';
+            if (project.skills_and_expertise || project.skills) {
+                const skillsData = project.skills_and_expertise || project.skills;
+                skillsList = skillsData
+                    .split(',')
+                    .map(skill => `<span class="skill-item">${skill.trim()}</span>`)
+                    .join(', ');
+            }
+            
+            // Format positions
+            let positionsList = '<span>None specified</span>';
+            if (project.positions_required || project.positions) {
+                const positionsData = project.positions_required || project.positions;
+                positionsList = positionsData
+                    .split(',')
+                    .map(position => `<span>${position.trim()}</span>`)
+                    .join(', ');
+            }
+            
+            // Format technical requirements
+            let technicalReqs = '<span>None specified</span>';
+            if (project.technical_requirements) {
+                technicalReqs = project.technical_requirements
+                    .split(',')
+                    .map(req => `<span>${req.trim()}</span>`)
+                    .join(', ');
+            }
+            
+            // Set status class
+            let statusClass = '';
+            let statusText = project.status || 'Active';
+            
+            switch (statusText.toLowerCase()) {
+                case 'completed':
+                    statusClass = 'status-completed';
+                    break;
+                case 'active':
+                    statusClass = 'status-active';
+                    break;
+                case 'pending':
+                    statusClass = 'status-pending';
+                    break;
+                default:
+                    statusClass = 'status-active';
+            }
+            
+            // Update modal title
+            document.getElementById('details-project-title').textContent = project.project_title;
+            
+            // Setup edit button
+            const editFromDetailsBtn = document.getElementById('edit-from-details-btn');
+            editFromDetailsBtn.dataset.id = projectId;
+            editFromDetailsBtn.addEventListener('click', () => {
+                detailsModal.style.display = 'none';
+                openEditProjectModal(projectId);
+            });
+            
+            // Get username and department
+            const userName = project.userName || 'Not specified';
+            const department = project.department || 'Not specified';
+            
+            // Build the details HTML
+            detailsContainer.innerHTML = `
+                <div class="project-details">
+                    <div class="details-section">
+                        <div class="details-header">
+                            <h3>Project Overview</h3>
+                            <div class="project-status ${statusClass}">${statusText}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Researcher:</div>
+                            <div class="details-value">${project.researcher_name || 'Not specified'}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Department:</div>
+                            <div class="details-value">${department}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">User Name:</div>
+                            <div class="details-value">${userName}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Project Timeline:</div>
+                            <div class="details-value">${startDate} - ${endDate}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Funding Available:</div>
+                            <div class="details-value">${project.funding_available ? 'Yes' : 'No'}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Reviewer:</div>
+                            <div class="details-value">${project.reviewer || 'Not assigned'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h3>Description</h3>
+                        <div class="details-description">${project.description || 'No description provided.'}</div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h3>Research Areas</h3>
+                        <div class="details-tags">
+                            ${keyResearchAreas}
+                        </div>
+                    </div>
+                    
+                    <div class="details-section">
+                        <h3>Collaboration Requirements</h3>
+                        <div class="details-row">
+                            <div class="details-label">Experience Level:</div>
+                            <div class="details-value">${project.experience_level || 'Not specified'}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Required Skills:</div>
+                            <div class="details-value">${skillsList}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Open Positions:</div>
+                            <div class="details-value">${positionsList}</div>
+                        </div>
+                        <div class="details-row">
+                            <div class="details-label">Technical Requirements:</div>
+                            <div class="details-value">${technicalReqs}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Show the modal
+            detailsModal.style.display = 'block';
             
         } catch (error) {
             console.error('Error loading project details:', error);
-            alert('Error loading project details. Please try again later.');
+            showNotification('Error loading project details. Please try again later.', 'error');
         }
     }
     
@@ -199,7 +341,60 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('start-date').value = today;
         document.getElementById('end-date').value = nextYear.toISOString().split('T')[0];
         
+        // Add userId field if not present
+        ensureAdditionalFields();
+        
         projectModal.style.display = 'block';
+    }
+    
+    // Function to ensure all database fields are represented in the form
+    function ensureAdditionalFields() {
+        const form = document.getElementById('project-form');
+        const formBody = form.querySelector('.modal-body');
+        
+        // Check if additional fields section exists
+        let additionalFieldsSection = form.querySelector('.additional-fields');
+        
+        if (!additionalFieldsSection) {
+            // Create section for additional fields from DB schema
+            additionalFieldsSection = document.createElement('div');
+            additionalFieldsSection.className = 'additional-fields';
+            additionalFieldsSection.innerHTML = `
+                <h3>Update Status</h3>
+                
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status">
+                        <option value="Active">Active</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+            `;
+            
+            // Insert before form-actions
+            const formActions = form.querySelector('.form-actions');
+            form.insertBefore(additionalFieldsSection, formActions);
+        }
+        
+        // Rename fields to match DB schema
+        const skillsField = document.getElementById('skills');
+        if (skillsField) {
+            skillsField.id = 'skills-and-expertise';
+            const skillsLabel = skillsField.previousElementSibling;
+            if (skillsLabel) {
+                skillsLabel.setAttribute('for', 'skills-and-expertise');
+            }
+        }
+        
+        const positionsField = document.getElementById('positions');
+        if (positionsField) {
+            positionsField.id = 'positions-required';
+            const positionsLabel = positionsField.previousElementSibling;
+            if (positionsLabel) {
+                positionsLabel.setAttribute('for', 'positions-required');
+            }
+        }
     }
     
     async function openEditProjectModal(projectId) {
@@ -214,6 +409,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const project = await response.json();
             
+            // Ensure additional fields exist before populating
+            ensureAdditionalFields();
+            
             // Fill the form with project data
             document.getElementById('project-id').value = project.id;
             document.getElementById('researcher-name').value = project.researcher_name || '';
@@ -223,16 +421,27 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('start-date').value = project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '';
             document.getElementById('end-date').value = project.end_date ? new Date(project.end_date).toISOString().split('T')[0] : '';
             document.getElementById('funding-available').checked = project.funding_available || false;
-            document.getElementById('skills').value = project.skills || '';
-            document.getElementById('experience-level').value = project.experience_level || 'Intermediate';
-            document.getElementById('positions').value = project.positions || '';
+            
+            // Fill DB schema specific fields
+            const skillsField = document.getElementById('skills-and-expertise') || document.getElementById('skills');
+            skillsField.value = project.skills_and_expertise || project.skills || '';
+            
+            const positionsField = document.getElementById('positions-required') || document.getElementById('positions');
+            positionsField.value = project.positions_required || project.positions || '';
+            
             document.getElementById('technical-requirements').value = project.technical_requirements || '';
+            document.getElementById('experience-level').value = project.experience_level || 'Intermediate';
+            
+            // Additional fields
+            if (document.getElementById('status')) {
+                document.getElementById('status').value = project.status || 'Active';
+            }
             
             projectModal.style.display = 'block';
             
         } catch (error) {
             console.error('Error loading project for editing:', error);
-            alert('Error loading project data. Please try again later.');
+            showNotification('Error loading project data. Please try again later.', 'error');
         }
     }
     
@@ -242,8 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const projectId = document.getElementById('project-id').value;
         const isNewProject = !projectId;
         
+        // Get references to fields (using either original or renamed IDs)
+        const skillsField = document.getElementById('skills-and-expertise') || document.getElementById('skills');
+        const positionsField = document.getElementById('positions-required') || document.getElementById('positions');
+        
         // Collect form data and match it to database fields
         const projectData = {
+            // Primary fields
             researcher_name: document.getElementById('researcher-name').value,
             project_title: document.getElementById('project-title').value,
             description: document.getElementById('description').value,
@@ -251,12 +465,33 @@ document.addEventListener('DOMContentLoaded', () => {
             start_date: document.getElementById('start-date').value,
             end_date: document.getElementById('end-date').value,
             funding_available: document.getElementById('funding-available').checked,
-            skills: document.getElementById('skills').value,
             experience_level: document.getElementById('experience-level').value,
-            positions: document.getElementById('positions').value,
             technical_requirements: document.getElementById('technical-requirements').value,
-            status: 'Active' // Default status for new projects
+            
+            // Fields that might be renamed to match DB schema
+            skills_and_expertise: skillsField ? skillsField.value : '',
+            positions_required: positionsField ? positionsField.value : '',
+            
+            // Additional fields from schema
+            status: document.getElementById('status') ? document.getElementById('status').value : 'Active'
         };
+        
+        // Add optional fields if they exist
+        if (document.getElementById('userId')) {
+            projectData.userId = document.getElementById('userId').value;
+        }
+        
+        if (document.getElementById('department')) {
+            projectData.department = document.getElementById('department').value;
+        }
+        
+        if (document.getElementById('userName')) {
+            projectData.userName = document.getElementById('userName').value;
+        }
+        
+        if (document.getElementById('reviewer')) {
+            projectData.reviewer = document.getElementById('reviewer').value;
+        }
         
         try {
             let response;
@@ -331,9 +566,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Clear previous options
             positionsSelect.innerHTML = '';
             
-            // Add positions based on project data
-            if (project.positions) {
-                const positions = project.positions.split(',');
+            // Add positions based on project data - check both field names
+            const positionsData = project.positions_required || project.positions;
+            
+            if (positionsData) {
+                const positions = positionsData.split(',');
                 
                 positions.forEach(position => {
                     const option = document.createElement('option');
@@ -419,7 +656,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => sendInvitation(projectId, btn.dataset.id, btn.dataset.name));
         });
     }
-    
     function viewCollaboratorProfile(userId) {
         const profileContent = document.getElementById('collaborator-profile');
         
