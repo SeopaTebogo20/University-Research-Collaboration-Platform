@@ -1,132 +1,108 @@
 const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
 const router = express.Router();
+const { createClient } = require('@supabase/supabase-js');
 
-// Path to collaborators data file
-const COLLABORATORS_FILE = path.join(__dirname, '../researcher/data/collaborators.json');
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
 
-// Helper function to read collaborators data
-async function readCollaborators() {
-  try {
-    const data = await fs.readFile(COLLABORATORS_FILE, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading collaborators file:', error);
-    return { collaborators: [] };
+// Create client for admin operations (server-side only)
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false
   }
-}
-
-// Helper function to write collaborators data
-async function writeCollaborators(data) {
-  try {
-    await fs.writeFile(COLLABORATORS_FILE, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (error) {
-    console.error('Error writing collaborators file:', error);
-    return false;
-  }
-}
-
-// Generate a new collaborator ID
-function generateCollaboratorId(collaborators) {
-  const maxId = collaborators.reduce((max, collaborator) => {
-    // Extract the numeric part of the id (c1, c2, etc.)
-    const num = parseInt(collaborator.id.replace('c', ''));
-    return num > max ? num : max;
-  }, 0);
-  return `c${maxId + 1}`;
-}
+});
 
 // GET all collaborators
 router.get('/', async (req, res) => {
   try {
-    const data = await readCollaborators();
-    res.json(data.collaborators);
+    console.log(`[${new Date().toISOString()}] Fetching all collaborators`);
+    
+    // Process query parameters for filtering
+    const { institution, isRecommended, search } = req.query;
+    
+    // Start building the query
+    let query = supabase.from('collaborators').select('*');
+    
+    // Apply filters if they exist
+    if (institution && institution !== 'all') {
+      query = query.eq('institution', institution);
+    }
+    
+    if (isRecommended && isRecommended !== 'all') {
+      query = query.eq('isRecommended', isRecommended);
+    }
+    
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,institution.ilike.%${search}%`);
+    }
+    
+    // Execute the query
+    const { data: collaborators, error } = await query;
+    
+    if (error) throw error;
+    
+    res.json(collaborators);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching collaborators: ${error.message}`);
     res.status(500).json({ message: 'Error fetching collaborators', error: error.message });
   }
 });
 
-// GET single collaborator by ID
+// GET a single collaborator by ID
 router.get('/:id', async (req, res) => {
   try {
-    const data = await readCollaborators();
-    const collaborator = data.collaborators.find(c => c.id === req.params.id);
+    const collaboratorId = req.params.id.trim();
+    console.log(`[${new Date().toISOString()}] Fetching collaborator with ID: ${collaboratorId}`);
     
-    if (!collaborator) {
+    // Modified query to handle potential whitespace and newline characters
+    const { data: collaborators, error } = await supabase
+      .from('collaborators')
+      .select('*')
+      .ilike('id', `%${collaboratorId}%`);
+    
+    if (error) throw error;
+    
+    if (!collaborators || collaborators.length === 0) {
       return res.status(404).json({ message: 'Collaborator not found' });
     }
     
+    // Return the first match if multiple are found
+    const collaborator = collaborators[0];
     res.json(collaborator);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching collaborator: ${error.message}`);
     res.status(500).json({ message: 'Error fetching collaborator', error: error.message });
   }
 });
-
-// POST create new collaborator
+// POST create a new collaborator
 router.post('/', async (req, res) => {
   try {
-    const data = await readCollaborators();
+    console.log(`[${new Date().toISOString()}] Creating new collaborator`);
+    
+    // Extract collaborator data from request body
     const newCollaborator = req.body;
     
     // Validate required fields
-    if (!newCollaborator.name || !newCollaborator.institution || 
-        !newCollaborator.email || !newCollaborator.bio) {
+    if (!newCollaborator.name || !newCollaborator.email || !newCollaborator.institution) {
       return res.status(400).json({ message: 'Missing required collaborator details' });
     }
     
-    // Generate ID if not provided
-    if (!newCollaborator.id) {
-      newCollaborator.id = generateCollaboratorId(data.collaborators);
-    }
+    // Create collaborator in Supabase
+    const { data, error } = await supabase
+      .from('collaborators')
+      .insert([newCollaborator])
+      .select()
+      .single();
     
-    // Set default values if not provided
-    if (!newCollaborator.title) {
-      newCollaborator.title = "Researcher";
-    }
-    if (!newCollaborator.department) {
-      newCollaborator.department = "Research";
-    }
-    if (!newCollaborator.skills) {
-      newCollaborator.skills = [];
-    }
-    if (!newCollaborator.education) {
-      newCollaborator.education = [];
-    }
-    if (!newCollaborator.experience) {
-      newCollaborator.experience = [];
-    }
-    if (!newCollaborator.projects) {
-      newCollaborator.projects = [];
-    }
-    if (newCollaborator.publications === undefined) {
-      newCollaborator.publications = 0;
-    }
-    if (newCollaborator.citations === undefined) {
-      newCollaborator.citations = 0;
-    }
-    if (newCollaborator.collaborations === undefined) {
-      newCollaborator.collaborations = 0;
-    }
-    if (newCollaborator.isCollaborator === undefined) {
-      newCollaborator.isCollaborator = false;
-    }
-    if (newCollaborator.isSameField === undefined) {
-      newCollaborator.isSameField = false;
-    }
-    if (newCollaborator.isSameInstitution === undefined) {
-      newCollaborator.isSameInstitution = false;
-    }
-    if (newCollaborator.isRecommended === undefined) {
-      newCollaborator.isRecommended = false;
-    }
+    if (error) throw error;
     
-    data.collaborators.push(newCollaborator);
-    await writeCollaborators(data);
-    
-    res.status(201).json(newCollaborator);
+    console.log(`[${new Date().toISOString()}] Collaborator created successfully: ${data.id}`);
+    res.status(201).json(data);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error creating collaborator: ${error.message}`);
     res.status(500).json({ message: 'Error creating collaborator', error: error.message });
   }
 });
@@ -134,92 +110,231 @@ router.post('/', async (req, res) => {
 // PUT update existing collaborator
 router.put('/:id', async (req, res) => {
   try {
-    const data = await readCollaborators();
-    const collaboratorIndex = data.collaborators.findIndex(c => c.id === req.params.id);
+    console.log(`[${new Date().toISOString()}] Updating collaborator with ID: ${req.params.id}`);
     
-    if (collaboratorIndex === -1) {
-      return res.status(404).json({ message: 'Collaborator not found' });
-    }
-    
+    // Extract collaborator data from request body
     const updatedCollaborator = req.body;
     
     // Validate required fields
-    if (!updatedCollaborator.name || !updatedCollaborator.institution || 
-        !updatedCollaborator.email || !updatedCollaborator.bio) {
+    if (!updatedCollaborator.name || !updatedCollaborator.email || !updatedCollaborator.institution) {
       return res.status(400).json({ message: 'Missing required collaborator details' });
     }
     
-    // Preserve the ID
-    updatedCollaborator.id = req.params.id;
+    // Check if collaborator exists
+    const { data: existingCollaborator, error: checkError } = await supabase
+      .from('collaborators')
+      .select('id')
+      .eq('id', req.params.id)
+      .single();
     
-    data.collaborators[collaboratorIndex] = updatedCollaborator;
-    await writeCollaborators(data);
+    if (checkError || !existingCollaborator) {
+      return res.status(404).json({ message: 'Collaborator not found' });
+    }
     
-    res.json(updatedCollaborator);
+    // Update collaborator in Supabase
+    const { data: updatedData, error } = await supabase
+      .from('collaborators')
+      .update(updatedCollaborator)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Collaborator updated successfully: ${req.params.id}`);
+    res.json(updatedData);
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error updating collaborator: ${error.message}`);
     res.status(500).json({ message: 'Error updating collaborator', error: error.message });
+  }
+});
+
+// PATCH update collaborator recommendation status
+router.patch('/:id/recommend', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Updating recommendation status for collaborator ID: ${req.params.id}`);
+    
+    const { isRecommended } = req.body;
+    
+    if (isRecommended === undefined) {
+      return res.status(400).json({ message: 'isRecommended value is required' });
+    }
+    
+    // Update only the isRecommended field
+    const { data, error } = await supabase
+      .from('collaborators')
+      .update({ isRecommended })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Collaborator recommendation status updated successfully: ${req.params.id}`);
+    res.json(data);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error updating collaborator recommendation status: ${error.message}`);
+    res.status(500).json({ message: 'Error updating collaborator recommendation status', error: error.message });
+  }
+});
+
+// PATCH update collaborator isCollaborator status
+router.patch('/:id/status', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Updating collaborator status for ID: ${req.params.id}`);
+    
+    const { isCollaborator } = req.body;
+    
+    if (isCollaborator === undefined) {
+      return res.status(400).json({ message: 'isCollaborator value is required' });
+    }
+    
+    // Update only the isCollaborator field
+    const { data, error } = await supabase
+      .from('collaborators')
+      .update({ isCollaborator })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Collaborator status updated successfully: ${req.params.id}`);
+    res.json(data);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error updating collaborator status: ${error.message}`);
+    res.status(500).json({ message: 'Error updating collaborator status', error: error.message });
   }
 });
 
 // DELETE a collaborator
 router.delete('/:id', async (req, res) => {
   try {
-    const data = await readCollaborators();
-    const collaboratorIndex = data.collaborators.findIndex(c => c.id === req.params.id);
+    console.log(`[${new Date().toISOString()}] Deleting collaborator with ID: ${req.params.id}`);
     
-    if (collaboratorIndex === -1) {
+    // Check if collaborator exists
+    const { data: existingCollaborator, error: checkError } = await supabase
+      .from('collaborators')
+      .select('id')
+      .eq('id', req.params.id)
+      .single();
+    
+    if (checkError || !existingCollaborator) {
       return res.status(404).json({ message: 'Collaborator not found' });
     }
     
-    const deletedCollaborator = data.collaborators.splice(collaboratorIndex, 1);
-    await writeCollaborators(data);
+    // Delete collaborator from Supabase
+    const { error } = await supabase
+      .from('collaborators')
+      .delete()
+      .eq('id', req.params.id);
     
-    res.json(deletedCollaborator[0]);
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Collaborator deleted successfully: ${req.params.id}`);
+    res.status(204).send();
   } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error deleting collaborator: ${error.message}`);
     res.status(500).json({ message: 'Error deleting collaborator', error: error.message });
   }
 });
 
-// GET collaborators by filter criteria
-router.get('/filter/:criteria/:value', async (req, res) => {
+// GET collaborators by institution
+router.get('/institution/:institution', async (req, res) => {
   try {
-    const { criteria, value } = req.params;
-    const data = await readCollaborators();
+    console.log(`[${new Date().toISOString()}] Fetching collaborators by institution: ${req.params.institution}`);
     
-    let filteredCollaborators = [];
+    const { data: collaborators, error } = await supabase
+      .from('collaborators')
+      .select('*')
+      .eq('institution', req.params.institution);
     
-    switch(criteria) {
-      case 'institution':
-        filteredCollaborators = data.collaborators.filter(c => 
-          c.institution.toLowerCase().includes(value.toLowerCase()));
-        break;
-      case 'department':
-        filteredCollaborators = data.collaborators.filter(c => 
-          c.department.toLowerCase().includes(value.toLowerCase()));
-        break;
-      case 'skill':
-        filteredCollaborators = data.collaborators.filter(c => 
-          c.skills.some(skill => skill.toLowerCase().includes(value.toLowerCase())));
-        break;
-      case 'isCollaborator':
-        filteredCollaborators = data.collaborators.filter(c => 
-          c.isCollaborator === (value.toLowerCase() === 'true'));
-        break;
-      case 'isSameField':
-        filteredCollaborators = data.collaborators.filter(c => 
-          c.isSameField === (value.toLowerCase() === 'true'));
-        break;
-      case 'isRecommended':
-        filteredCollaborators = data.collaborators.filter(c => 
-          c.isRecommended === (value.toLowerCase() === 'true'));
-        break;
-      default:
-        return res.status(400).json({ message: 'Invalid filter criteria' });
+    if (error) throw error;
+    
+    res.json(collaborators);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching collaborators by institution: ${error.message}`);
+    res.status(500).json({ message: 'Error fetching collaborators by institution', error: error.message });
+  }
+});
+
+// GET all institutions (distinct)
+router.get('/institutions', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Fetching distinct institutions`);
+    
+    // Get all collaborators
+    const { data: collaborators, error } = await supabase
+      .from('collaborators')
+      .select('institution');
+    
+    if (error) throw error;
+    
+    // Extract unique institutions
+    const institutions = [...new Set(collaborators.map(c => c.institution))].filter(Boolean);
+    
+    res.json(institutions);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error fetching institutions: ${error.message}`);
+    res.status(500).json({ message: 'Error fetching institutions', error: error.message });
+  }
+});
+
+// PATCH update collaborator isSameField status
+router.patch('/:id/samefield', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Updating same field status for collaborator ID: ${req.params.id}`);
+    
+    const { isSameField } = req.body;
+    
+    if (isSameField === undefined) {
+      return res.status(400).json({ message: 'isSameField value is required' });
     }
     
-    res.json(filteredCollaborators);
+    // Update only the isSameField field
+    const { data, error } = await supabase
+      .from('collaborators')
+      .update({ isSameField })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Collaborator same field status updated successfully: ${req.params.id}`);
+    res.json(data);
   } catch (error) {
-    res.status(500).json({ message: 'Error filtering collaborators', error: error.message });
+    console.error(`[${new Date().toISOString()}] Error updating collaborator same field status: ${error.message}`);
+    res.status(500).json({ message: 'Error updating collaborator same field status', error: error.message });
+  }
+});
+
+// PATCH update collaborator isSameInstitution status
+router.patch('/:id/institution', async (req, res) => {
+  try {
+    console.log(`[${new Date().toISOString()}] Updating same institution status for collaborator ID: ${req.params.id}`);
+    
+    const { isSameInstitution } = req.body;
+    
+    if (isSameInstitution === undefined) {
+      return res.status(400).json({ message: 'isSameInstitution value is required' });
+    }
+    
+    // Update only the isSameInstitution field
+    const { data, error } = await supabase
+      .from('collaborators')
+      .update({ isSameInstitution })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    
+    console.log(`[${new Date().toISOString()}] Collaborator same institution status updated successfully: ${req.params.id}`);
+    res.json(data);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error updating collaborator same institution status: ${error.message}`);
+    res.status(500).json({ message: 'Error updating collaborator same institution status', error: error.message });
   }
 });
 

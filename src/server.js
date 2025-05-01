@@ -6,10 +6,10 @@ const session = require('express-session');
 const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios'); // You'll need to install axios
 const projectsRouter = require('./public/roles/routes/projects-api'); 
-const collaboratorsRouter = require('./public/roles/routes/collaborators-api'); 
 const invitationsRouter = require('./public/roles/routes/invitations-api'); 
 const proposalRouter = require('./public/roles/routes/proposals-api'); 
-const usersRouter = require('./public/roles/routes/users-api'); 
+const usersRouter = require('./public/roles/routes/users-api');
+const collaboratorsRouter = require('./public/roles/routes/collaborators-api');  
 const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken
 
 // Create the Express application
@@ -66,10 +66,10 @@ app.use(session({
 
 // Routes
 app.use('/api/projects', projectsRouter);
-app.use('/api/collaborators', collaboratorsRouter);
 app.use('/api/invitations', invitationsRouter);
 app.use('/api/proposal', proposalRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/collaborators', collaboratorsRouter);
 
 // Custom middleware for logging
 app.use((req, res, next) => {

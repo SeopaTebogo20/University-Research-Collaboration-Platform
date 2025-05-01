@@ -129,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="project-status ${statusClass}">${statusText}</div>
                 </div>
                 <div class="project-info">
-                    <p class="project-researcher"><i class="fas fa-user"></i> ${project.researcher_name}</p>
                     <p class="project-dates"><i class="fas fa-calendar"></i> ${startDate} - ${endDate}</p>
                 </div>
                 <div class="project-description">${project.description}</div>
@@ -347,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
         projectModal.style.display = 'block';
     }
     
-    // Function to ensure all database fields are represented in the form
     function ensureAdditionalFields() {
         const form = document.getElementById('project-form');
         const formBody = form.querySelector('.modal-body');
@@ -595,152 +593,253 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    function loadAvailableCollaborators(projectId) {
+    async function loadAvailableCollaborators(projectId) {
         const collaboratorsList = document.getElementById('collaborators-list');
+        collaboratorsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading collaborators...</div>';
         
-        // In a real application, you would fetch available collaborators from the server
-        // For demonstration, we'll show placeholder data
-        collaboratorsList.innerHTML = `
-            <div class="collaborator-card">
-                <div class="collaborator-info">
-                    <h4>Dr. Jane Smith</h4>
-                    <p>Biology Department</p>
-                    <div class="skills">
-                        <span class="tag">Genetics</span>
-                        <span class="tag">Molecular Biology</span>
-                    </div>
-                </div>
-                <div class="collaborator-actions">
-                    <button class="btn view-profile-btn" data-id="user123"><i class="fas fa-id-card"></i> View Profile</button>
-                    <button class="btn invite-user-btn" data-id="user123" data-name="Dr. Jane Smith"><i class="fas fa-paper-plane"></i> Invite</button>
-                </div>
-            </div>
+        try {
+            const response = await fetch(`${API_BASE_URL}/collaborators`);
             
-            <div class="collaborator-card">
-                <div class="collaborator-info">
-                    <h4>Prof. Michael Chen</h4>
-                    <p>Computer Science Department</p>
-                    <div class="skills">
-                        <span class="tag">Machine Learning</span>
-                        <span class="tag">Data Analysis</span>
-                    </div>
-                </div>
-                <div class="collaborator-actions">
-                    <button class="btn view-profile-btn" data-id="user456"><i class="fas fa-id-card"></i> View Profile</button>
-                    <button class="btn invite-user-btn" data-id="user456" data-name="Prof. Michael Chen"><i class="fas fa-paper-plane"></i> Invite</button>
-                </div>
-            </div>
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
             
-            <div class="collaborator-card">
-                <div class="collaborator-info">
-                    <h4>Dr. Sarah Johnson</h4>
-                    <p>Chemistry Department</p>
-                    <div class="skills">
-                        <span class="tag">Organic Chemistry</span>
-                        <span class="tag">Spectroscopy</span>
+            const collaborators = await response.json();
+            
+            if (collaborators.length === 0) {
+                collaboratorsList.innerHTML = '<div class="no-results">No collaborators found.</div>';
+                return;
+            }
+            
+            // Clear loading message
+            collaboratorsList.innerHTML = '';
+            
+            // Display each collaborator
+            collaborators.forEach(collaborator => {
+                const collaboratorCard = document.createElement('div');
+                collaboratorCard.className = 'collaborator-card';
+                
+                // Format skills as tags
+                let skillsTags = '<span class="tag">No skills specified</span>';
+                if (collaborator.skills) {
+                    skillsTags = collaborator.skills
+                        .split(',')
+                        .map(skill => `<span class="tag">${skill.trim()}</span>`)
+                        .join('');
+                }
+                
+                collaboratorCard.innerHTML = `
+                    <div class="collaborator-info">
+                        <h4>${collaborator.name || 'No name provided'}</h4>
+                        <p>${collaborator.department || 'No department specified'}</p>
+                        <div class="skills">
+                            ${skillsTags}
+                        </div>
                     </div>
+                    <div class="collaborator-actions">
+                        <button class="btn view-profile-btn" data-id="${collaborator.id}" data-name="${collaborator.name}">
+                            <i class="fas fa-id-card"></i> View Profile
+                        </button>
+                        <button class="btn invite-user-btn" data-id="${collaborator.id}" data-name="${collaborator.name}">
+                            <i class="fas fa-paper-plane"></i> Invite
+                        </button>
+                    </div>
+                `;
+                
+                collaboratorsList.appendChild(collaboratorCard);
+                
+                // Add event listeners to buttons
+                collaboratorCard.querySelector('.view-profile-btn').addEventListener('click', () => 
+                    viewCollaboratorProfile(collaborator.id, collaborator.name));
+                collaboratorCard.querySelector('.invite-user-btn').addEventListener('click', () => 
+                    sendInvitation(projectId, collaborator.id, collaborator.name));
+            });
+            
+        } catch (error) {
+            console.error('Error loading collaborators:', error);
+            collaboratorsList.innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle"></i> Error loading collaborators. Please try again later.
                 </div>
-                <div class="collaborator-actions">
-                    <button class="btn view-profile-btn" data-id="user789"><i class="fas fa-id-card"></i> View Profile</button>
-                    <button class="btn invite-user-btn" data-id="user789" data-name="Dr. Sarah Johnson"><i class="fas fa-paper-plane"></i> Invite</button>
-                </div>
-            </div>
-        `;
-        
-        // Add event listeners to buttons
-        document.querySelectorAll('.view-profile-btn').forEach(btn => {
-            btn.addEventListener('click', () => viewCollaboratorProfile(btn.dataset.id));
-        });
-        
-        document.querySelectorAll('.invite-user-btn').forEach(btn => {
-            btn.addEventListener('click', () => sendInvitation(projectId, btn.dataset.id, btn.dataset.name));
-        });
+            `;
+        }
     }
-    function viewCollaboratorProfile(userId) {
+    
+    async function viewCollaboratorProfile(userId, userName) {
         const profileContent = document.getElementById('collaborator-profile');
+        profileContent.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading profile...</div>';
         
-        // In a real app, you would fetch profile data from the server
-        // For demonstration, we'll show placeholder data
-        profileContent.innerHTML = `
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    <i class="fas fa-user-circle"></i>
+        try {
+            // Trim the userId to remove any whitespace or newline characters
+            const trimmedUserId = userId.trim();
+            
+            const response = await fetch(`${API_BASE_URL}/collaborators/${trimmedUserId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Handle case where API returns an array instead of single object
+            const profile = Array.isArray(data) ? data[0] : data;
+            
+            if (!profile) {
+                throw new Error('Collaborator not found');
+            }
+    
+            // Format research areas as tags
+            let researchAreas = '<span class="tag">None specified</span>';
+            if (profile.research_areas) {
+                researchAreas = profile.research_areas
+                    .split(',')
+                    .map(area => `<span class="tag">${area.trim()}</span>`)
+                    .join('');
+            }
+            
+            // Format education as list items
+            let educationList = '<li>No education information</li>';
+            if (profile.education) {
+                educationList = profile.education
+                    .split('\n')
+                    .filter(item => item.trim())
+                    .map(item => `<li>${item.trim()}</li>`)
+                    .join('');
+            }
+            
+            // Format skills as tags
+            let skillsTags = '<span class="tag">No skills specified</span>';
+            if (profile.skills) {
+                skillsTags = profile.skills
+                    .split(',')
+                    .map(skill => `<span class="tag">${skill.trim()}</span>`)
+                    .join('');
+            }
+            
+            // Build the profile HTML
+            profileContent.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="profile-title">
+                        <h3>${profile.name || userName || 'Collaborator'}</h3>
+                        <p>${profile.title || ''}</p>
+                        <p>${profile.institution || 'No institution specified'}</p>
+                    </div>
                 </div>
-                <div class="profile-title">
-                    <h3>Dr. Jane Smith</h3>
-                    <p>Biology Department</p>
+                
+                <div class="profile-section">
+                    <h4>Contact Information</h4>
+                    <div class="profile-contact">
+                        <p><i class="fas fa-envelope"></i> ${profile.email || 'No email provided'}</p>
+                        <p><i class="fas fa-phone"></i> ${profile.phone || 'No phone provided'}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> ${profile.location || 'No location provided'}</p>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="profile-section">
-                <h4>Research Areas</h4>
-                <div class="profile-tags">
-                    <span class="tag">Genetics</span>
-                    <span class="tag">Molecular Biology</span>
-                    <span class="tag">Cell Culture</span>
-                    <span class="tag">PCR Techniques</span>
+                
+                <div class="profile-section">
+                    <h4>Bio</h4>
+                    <div class="profile-bio">${profile.bio || 'No bio provided.'}</div>
                 </div>
-            </div>
+                
+                <div class="profile-section">
+                    <h4>Research Areas</h4>
+                    <div class="profile-tags">
+                        ${profile.research_area}
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h4>Skills</h4>
+                    <div class="profile-tags">
+                        ${skillsTags}
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h4>Education</h4>
+                    <ul class="profile-list">
+                        ${educationList}
+                    </ul>
+                </div>
+                
+                <div class="profile-section">
+                    <h4>Experience</h4>
+                    <ul class="profile-list">
+                        ${profile.experience ? 
+                            profile.experience.split('\n').filter(item => item.trim()).map(item => `<li>${item.trim()}</li>`).join('') : 
+                            '<li>No experience information</li>'}
+                    </ul>
+                </div>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">${profile.publications || 0}</div>
+                        <div class="stat-label">Publications</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${profile.citations || 0}</div>
+                        <div class="stat-label">Citations</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${profile.collaborations || 0}</div>
+                        <div class="stat-label">Collaborations</div>
+                    </div>
+                </div>
+            `;
             
-            <div class="profile-section">
-                <h4>Experience</h4>
-                <ul class="profile-list">
-                    <li>10+ years in molecular genetics research</li>
-                    <li>Published 25+ peer-reviewed papers</li>
-                    <li>Led 5 major research projects</li>
-                </ul>
-            </div>
+            // Setup invite button
+            const inviteFromProfileBtn = document.getElementById('invite-from-profile-btn');
+            inviteFromProfileBtn.dataset.userId = trimmedUserId;
+            inviteFromProfileBtn.addEventListener('click', () => {
+                profileModal.style.display = 'none';
+                const projectId = document.getElementById('invite-project-id').value;
+                sendInvitation(projectId, trimmedUserId, profile.name || userName);
+            });
             
-            <div class="profile-section">
-                <h4>Education</h4>
-                <ul class="profile-list">
-                    <li>Ph.D. in Molecular Biology, Stanford University</li>
-                    <li>M.Sc. in Genetics, MIT</li>
-                    <li>B.Sc. in Biology, UC Berkeley</li>
-                </ul>
-            </div>
+            profileModal.style.display = 'block';
             
-            <div class="profile-section">
-                <h4>Recent Publications</h4>
-                <ul class="profile-list">
-                    <li>"Novel Gene Expression Patterns in Human Cancer Cells", Journal of Molecular Biology, 2024</li>
-                    <li>"A Comparative Study of CRISPR Applications", Nature Genetics, 2023</li>
-                </ul>
-            </div>
-        `;
-        
-        document.getElementById('invite-from-profile-btn').dataset.userId = userId;
-        document.getElementById('invite-from-profile-btn').addEventListener('click', () => {
-            profileModal.style.display = 'none';
-            // Get current project ID from the invite modal
-            const projectId = document.getElementById('invite-project-id').value;
-            sendInvitation(projectId, userId, 'Dr. Jane Smith');
-        });
-        
-        profileModal.style.display = 'block';
+        } catch (error) {
+            console.error('Error loading collaborator profile:', error);
+            profileContent.innerHTML = `
+                <div class="error">
+                    <i class="fas fa-exclamation-triangle"></i> Error loading profile: ${error.message}
+                </div>
+            `;
+        }
     }
     
-    function sendInvitation(projectId, userId, userName) {
-        // In a real app, you would send the invitation to the server
-        alert(`Invitation sent to ${userName} for collaboration!`);
-        
-        // Close the invite modal
-        inviteModal.style.display = 'none';
+    async function sendInvitation(projectId, userId, userName) {
+        try {
+            const position = document.getElementById('collaborator-position').value;
+            const message = document.getElementById('collaboration-message').value;
+            
+            const response = await fetch(`${API_BASE_URL}/invitations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    project_id: projectId,
+                    collaborator_id: userId,
+                    position: position,
+                    message: message
+                }),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            showNotification(`Invitation sent to ${userName} successfully!`, 'success');
+            inviteModal.style.display = 'none';
+            
+        } catch (error) {
+            console.error('Error sending invitation:', error);
+            showNotification('Error sending invitation. Please try again later.', 'error');
+        }
     }
-    
-    document.getElementById('invite-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const projectId = document.getElementById('invite-project-id').value;
-        const email = document.getElementById('collaborator-email').value;
-        const position = document.getElementById('collaborator-position').value;
-        
-        // In a real app, you would send this invitation to the server
-        alert(`Invitation sent to ${email} for position: ${position}`);
-        
-        // Close the invite modal
-        inviteModal.style.display = 'none';
-    });
     
     function confirmDeleteProject(projectId, projectTitle) {
         document.getElementById('confirm-delete-btn').dataset.id = projectId;
@@ -828,157 +927,6 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteModal.style.display = 'none';
         }
     });
-    // Add this updated viewProjectDetails function to your projects.js file
-
-async function viewProjectDetails(projectId) {
-    try {
-        const response = await fetch(`${PROJECTS_API}/${projectId}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        
-        const project = await response.json();
-        const detailsModal = document.getElementById('details-modal');
-        const detailsContainer = document.getElementById('details-container');
-        
-        // Format dates
-        const startDate = new Date(project.start_date).toLocaleDateString();
-        const endDate = new Date(project.end_date).toLocaleDateString();
-        
-        // Format research areas as tags
-        let keyResearchAreas = '<span class="tag">None specified</span>';
-        if (project.key_research_area) {
-            keyResearchAreas = project.key_research_area
-                .split(',')
-                .map(area => `<span class="tag">${area.trim()}</span>`)
-                .join('');
-        }
-        
-        // Format skills
-        let skillsList = '<span>None specified</span>';
-        if (project.skills) {
-            skillsList = project.skills
-                .split(',')
-                .map(skill => `<span class="skill-item">${skill.trim()}</span>`)
-                .join(', ');
-        }
-        
-        // Format positions
-        let positionsList = '<span>None specified</span>';
-        if (project.positions) {
-            positionsList = project.positions
-                .split(',')
-                .map(position => `<span>${position.trim()}</span>`)
-                .join(', ');
-        }
-        
-        // Format technical requirements
-        let technicalReqs = '<span>None specified</span>';
-        if (project.technical_requirements) {
-            technicalReqs = project.technical_requirements
-                .split(',')
-                .map(req => `<span>${req.trim()}</span>`)
-                .join(', ');
-        }
-        
-        // Set status class
-        let statusClass = '';
-        let statusText = project.status || 'Active';
-        
-        switch (statusText.toLowerCase()) {
-            case 'completed':
-                statusClass = 'status-completed';
-                break;
-            case 'active':
-                statusClass = 'status-active';
-                break;
-            case 'pending':
-                statusClass = 'status-pending';
-                break;
-            default:
-                statusClass = 'status-active';
-        }
-        
-        // Update modal title
-        document.getElementById('details-project-title').textContent = project.project_title;
-        
-        // Setup edit button
-        const editFromDetailsBtn = document.getElementById('edit-from-details-btn');
-        editFromDetailsBtn.dataset.id = projectId;
-        editFromDetailsBtn.addEventListener('click', () => {
-            detailsModal.style.display = 'none';
-            openEditProjectModal(projectId);
-        });
-        
-        // Build the details HTML
-        detailsContainer.innerHTML = `
-            <div class="project-details">
-                <div class="details-section">
-                    <div class="details-header">
-                        <h3>Project Overview</h3>
-                        <div class="project-status ${statusClass}">${statusText}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Researcher:</div>
-                        <div class="details-value">${project.researcher_name || 'Not specified'}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Project Timeline:</div>
-                        <div class="details-value">${startDate} - ${endDate}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Funding Available:</div>
-                        <div class="details-value">${project.funding_available ? 'Yes' : 'No'}</div>
-                    </div>
-                </div>
-                
-                <div class="details-section">
-                    <h3>Description</h3>
-                    <div class="details-description">${project.description || 'No description provided.'}</div>
-                </div>
-                
-                <div class="details-section">
-                    <h3>Research Areas</h3>
-                    <div class="details-tags">
-                        ${keyResearchAreas}
-                    </div>
-                </div>
-                
-                <div class="details-section">
-                    <h3>Collaboration Requirements</h3>
-                    <div class="details-row">
-                        <div class="details-label">Experience Level:</div>
-                        <div class="details-value">${project.experience_level || 'Not specified'}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Required Skills:</div>
-                        <div class="details-value">${skillsList}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Open Positions:</div>
-                        <div class="details-value">${positionsList}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Technical Requirements:</div>
-                        <div class="details-value">${technicalReqs}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Show the modal
-        detailsModal.style.display = 'block';
-        
-    } catch (error) {
-        console.error('Error loading project details:', error);
-        showNotification('Error loading project details. Please try again later.', 'error');
-    }
-}
-
-// Add this code to your DOMContentLoaded event handler
-document.addEventListener('DOMContentLoaded', () => {
-    // Existing code...
     
     // Details modal event listeners
     const detailsModal = document.getElementById('details-modal');
@@ -999,5 +947,4 @@ document.addEventListener('DOMContentLoaded', () => {
             detailsModal.style.display = 'none';
         }
     });
-});
 });
