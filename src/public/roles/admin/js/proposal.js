@@ -101,8 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const filteredProposals = projectsData.filter(project => {
             // Map the database fields to our UI fields
-            // Updated status logic: "pending" if reviewer is null, "assigned" if reviewer has a value
-            const status = project.reviewer ? 'assigned' : 'pending';
+            const status = project.reviewer ? 'in-review' : 'pending';
             const area = project.key_research_area || '';
             
             const statusMatch = currentFilters.status === 'all' || status === currentFilters.status;
@@ -130,8 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: 'numeric'
             }) : 'N/A';
             
-            // Updated status logic to match requirements
-            const status = project.reviewer ? 'assigned' : 'pending';
+            const status = project.reviewer ? 'in-review' : 'pending';
             const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
             const statusClass = `status-${status}`;
             
@@ -183,8 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'numeric'
         }) : 'N/A';
         
-        // Updated status logic to match requirements
-        const status = currentProposal.reviewer ? 'assigned' : 'pending';
+        const status = currentProposal.reviewer ? 'in-review' : 'pending';
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
         
         // Extract concepts from description (assuming they might be stored there)

@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
     const { data: projects, error } = await supabase
       .from('projects')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { descending: false });
     
     if (error) throw error;
     
