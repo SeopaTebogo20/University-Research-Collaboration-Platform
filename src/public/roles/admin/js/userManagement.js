@@ -8,8 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterForm = document.querySelector('.filter-form');
     const searchForm = document.querySelector('.search-form');
     const editUserModal = document.getElementById('edit-user-modal');
+    const viewProfileModal = document.getElementById('view-profile-modal');
+    const profileContent = document.getElementById('profile-content');
     const editUserForm = document.getElementById('edit-user-form');
     const saveUserBtn = document.getElementById('save-user-btn');
+    const promoteUserBtn = document.getElementById('promote-user-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const closeModalButtons = document.querySelectorAll('.close-modal');
     const toastContainer = document.createElement('div');
@@ -113,8 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const displayId = index + 1; // Sequential ID starting from 1
             userRow.dataset.userId = user.id; // Keep original ID for API operations
             
-            // Format the promoted-role (replacing status) with appropriate styling
-            const promotedRole = user['promoted-role'] || 'pending'; // Default to regular if not specified
+            // Format the promoted-role with appropriate styling
+            const promotedRole = user['promoted-role'] || 'pending'; // Default to pending if not specified
             const statusClass = promotedRole === 'active' ? 'status-active' : 
                               promotedRole === 'pending' ? 'status-pending' : 'status-inactive';
             
@@ -133,8 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><span class="status-badge ${statusClass}">${formattedPromotedRole}</span></td>
                 <td>${joinDate}</td>
                 <td class="table-actions">
-                    <button class="btn btn-icon edit-user-btn" data-user-id="${user.id}" title="Edit User">
-                        <i class="fas fa-edit"></i>
+                    <button class="btn btn-icon view-profile-btn" data-user-id="${user.id}" title="View Profile">
+                        <i class="fas fa-eye"></i>
                     </button>
                     ${promotedRole !== 'inactive' ? 
                     `<button class="btn btn-icon deactivate-user-btn" data-user-id="${user.id}" title="Demote User">
@@ -171,11 +174,17 @@ document.addEventListener('DOMContentLoaded', function() {
         closeModalButtons.forEach(button => {
             button.addEventListener('click', function() {
                 closeModal(editUserModal);
+                closeModal(viewProfileModal);
             });
         });
         
         // Save user button
         saveUserBtn.addEventListener('click', saveUserChanges);
+
+        // Promote user button (if exists)
+        if (promoteUserBtn) {
+            promoteUserBtn.addEventListener('click', promoteToReviewer);
+        }
         
         // Logout button
         logoutBtn.addEventListener('click', function(e) {
@@ -208,11 +217,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Attach event listeners to user action buttons
     function attachUserActionListeners() {
-        // Edit user buttons
-        document.querySelectorAll('.edit-user-btn').forEach(button => {
+        // View profile buttons
+        document.querySelectorAll('.view-profile-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const userId = this.dataset.userId;
-                openEditUserModal(userId);
+                openViewProfileModal(userId);
             });
         });
         
@@ -236,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filter users based on selected criteria
     async function filterUsers() {
         const roleFilter = roleFilterElement.value;
-        const promotedRoleFilter = statusFilterElement.value; // Status filter actually controls promoted-role
+        const promotedRoleFilter = statusFilterElement.value; // Status filter controls promoted-role
         
         try {
             await fetchUsers({
@@ -249,7 +258,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
    
-    
     // Search users by name or email
     async function searchUsers() {
         const searchTerm = searchInputElement.value.trim();
@@ -268,6 +276,156 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error searching users:', error);
             showToast('Error searching users. Please try again.', 'error');
+        }
+    }
+    
+    // Open the view profile modal with all user data
+    function openViewProfileModal(userId) {
+        const user = currentUsers.find(u => u.id == userId);
+        
+        if (!user) return;
+        
+        // Store the user ID for the promote button
+        viewProfileModal.dataset.userId = user.id;
+        
+        // Format the data for display
+        const promotedRole = user['promoted-role'] || 'pending';
+        const statusClass = promotedRole === 'active' ? 'status-active' : 
+                          promotedRole === 'pending' ? 'status-pending' : 'status-inactive';
+        
+        // Create formatted expertise list if available
+        let expertiseHtml = '';
+        if (user.research_area) {
+            const expertiseAreas = user.research_area.split(',').map(area => area.trim());
+            expertiseHtml = `
+                <div class="profile-section">
+                    <h3>Research Areas</h3>
+                    <ul class="profile-list">
+                        ${expertiseAreas.map(area => `<li>${capitalizeFirstLetter(area)}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Create department and academic_role section if available
+        let additionalInfoHtml = '';
+        if (user.department || user.academic_role) {
+            additionalInfoHtml = `
+                <div class="profile-section">
+                    <h3>Academic Information</h3>
+                    ${user.department ? `<p><strong>Department:</strong> ${user.department}</p>` : ''}
+                    ${user.academic_role ? `<p><strong>Academic Role:</strong> ${user.academic_role}</p>` : ''}
+                </div>
+            `;
+        }
+        
+        // Create qualifications section if available
+        let qualificationsHtml = '';
+        if (user.qualifications) {
+            qualificationsHtml = `
+                <div class="profile-section">
+                    <h3>Qualifications</h3>
+                    <p>${user.qualifications}</p>
+                </div>
+            `;
+        }
+        
+        // Create research experience section if available
+        let experienceHtml = '';
+        if (user.research_experience) {
+            experienceHtml = `
+                <div class="profile-section">
+                    <h3>Research Experience</h3>
+                    <p>${user.research_experience} years</p>
+                </div>
+            `;
+        }
+        
+        // Create current project section if available
+        let projectHtml = '';
+        if (user.current_project) {
+            projectHtml = `
+                <div class="profile-section">
+                    <h3>Current Project</h3>
+                    <p>${user.current_project}</p>
+                </div>
+            `;
+        }
+        
+        // Create contact info section
+        let contactHtml = `
+            <div class="profile-section">
+                <h3>Contact Information</h3>
+                <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
+                ${user.phone ? `<p><strong>Phone:</strong> ${user.phone}</p>` : ''}
+            </div>
+        `;
+        
+        // Combine all sections
+        profileContent.innerHTML = `
+            <div class="profile-header">
+                <h2>${user.name || 'Unnamed User'}</h2>
+                <div class="user-meta">
+                    <span class="role-badge">${capitalizeFirstLetter(user.role || 'User')}</span>
+                    <span class="status-badge ${statusClass}">${capitalizeFirstLetter(promotedRole)}</span>
+                </div>
+                <p class="join-date">Member since ${formatDate(user.created_at)}</p>
+            </div>
+            
+            ${contactHtml}
+            ${additionalInfoHtml}
+            ${qualificationsHtml}
+            ${experienceHtml}
+            ${expertiseHtml}
+            ${projectHtml}
+        `;
+        
+        // Show or hide promote button based on current role and promoted-role
+        const promoteBtn = document.getElementById('promote-user-btn');
+        if (promoteBtn) {
+            // Only show promote button if user isn't already a reviewer and isn't inactive
+            const canPromote = user.role !== 'reviewer' && promotedRole !== 'inactive';
+            promoteBtn.style.display = canPromote ? 'block' : 'none';
+        }
+        
+        // Open the modal
+        viewProfileModal.classList.add('active');
+    }
+    
+    // Promote user to Reviewer
+    async function promoteToReviewer() {
+        const userId = viewProfileModal.dataset.userId;
+        if (!userId) return;
+        
+        const user = currentUsers.find(u => u.id == userId);
+        if (!user) return;
+        
+        try {
+            // Update the user's promoted-role to reviewer
+            const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'promoted-role': 'reviewer' }),
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            // Close the modal
+            closeModal(viewProfileModal);
+            
+            // Refresh the user list
+            await fetchUsers();
+            
+            // Show success message
+            showToast(`${user.name} has been promoted to Reviewer`, 'success');
+        } catch (error) {
+            console.error('Error promoting user:', error);
+            showToast('Error promoting user. Please try again.', 'error');
         }
     }
     

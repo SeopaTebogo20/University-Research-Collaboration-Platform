@@ -3,8 +3,15 @@
  * Manages the display and interaction with research proposals using API
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // API endpoint
-    const API_URL = 'http://localhost:3000/api/projects';
+    // API Endpoints - Dynamically select between local and production URLs
+    const isLocalEnvironment = window.location.hostname === 'localhost' || 
+                              window.location.hostname === '127.0.0.1';
+    
+    const BASE_URL = isLocalEnvironment
+        ? 'http://localhost:3000'
+        : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net';
+    
+    const API_URL = `${BASE_URL}/api/projects`;
     
     // Store for proposals and reviewers
     let projectsData = [];
