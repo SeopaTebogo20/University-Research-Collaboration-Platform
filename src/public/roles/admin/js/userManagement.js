@@ -2,16 +2,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const usersListElement = document.getElementById('users-list');
-    const roleFilterElement = document.getElementById('role-filter');
-    const statusFilterElement = document.getElementById('status-filter');
     const searchInputElement = document.getElementById('search-input');
-    const filterForm = document.querySelector('.filter-form');
     const searchForm = document.querySelector('.search-form');
-    const editUserModal = document.getElementById('edit-user-modal');
-    const viewProfileModal = document.getElementById('view-profile-modal');
+    const viewProfileModal = document.createElement('div');
+    viewProfileModal.id = 'view-profile-modal';
+    viewProfileModal.className = 'modal';
+    viewProfileModal.innerHTML = `
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div id="profile-content" class="profile-content"></div>
+            <div class="modal-actions">
+                <button id="promote-user-btn" class="btn btn-primary">Promote to Reviewer</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(viewProfileModal);
+    
     const profileContent = document.getElementById('profile-content');
-    const editUserForm = document.getElementById('edit-user-form');
-    const saveUserBtn = document.getElementById('save-user-btn');
     const promoteUserBtn = document.getElementById('promote-user-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const closeModalButtons = document.querySelectorAll('.close-modal');
@@ -19,15 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
 
-    // API Endpoints - Dynamically select between local and production URLs
+    // API Endpoints
     const isLocalEnvironment = window.location.hostname === 'localhost' || 
                               window.location.hostname === '127.0.0.1';
     
     const BASE_URL = isLocalEnvironment 
         ? 'http://localhost:3000' 
         : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net';
-    
-    console.log(`Running in ${isLocalEnvironment ? 'local' : 'production'} environment: ${BASE_URL}`);
     
     const API_ENDPOINTS = {
         USERS: `${BASE_URL}/api/users`,
@@ -45,28 +50,19 @@ document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
         } catch (error) {
             console.error('Failed to initialize page:', error);
+            showToast('Failed to load user data. Please try again.', 'error');
         }
     }
 
     // Fetch users from API
     async function fetchUsers(filters = {}) {
         try {
-            // Build query parameters for filtering
             const queryParams = new URLSearchParams();
-            
-            if (filters.role && filters.role !== 'all') {
-                queryParams.append('role', filters.role);
-            }
-            
-            if (filters.promotedRole && filters.promotedRole !== 'all') {
-                queryParams.append('promoted-role', filters.promotedRole);
-            }
             
             if (filters.search) {
                 queryParams.append('search', filters.search);
             }
             
-            // Create URL with query parameters
             const url = queryParams.toString() 
                 ? `${API_ENDPOINTS.USERS}?${queryParams.toString()}` 
                 : API_ENDPOINTS.USERS;
@@ -109,22 +105,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Generate sequential display IDs starting from 1
         users.forEach((user, index) => {
             const userRow = document.createElement('tr');
-            const displayId = index + 1; // Sequential ID starting from 1
-            userRow.dataset.userId = user.id; // Keep original ID for API operations
+            const displayId = index + 1;
+            userRow.dataset.userId = user.id;
             
-            // Format the promoted-role with appropriate styling
-            const promotedRole = user['promoted-role'] || 'pending'; // Default to pending if not specified
-            const statusClass = promotedRole === 'active' ? 'status-active' : 
+            const promotedRole = user['promoted-role'] || 'pending';
+            const statusClass = promotedRole === 'Reviewer' ? 'status-active' : 
                               promotedRole === 'pending' ? 'status-pending' : 'status-inactive';
             
-            // Capitalize the first letter of the role and promoted-role
             const formattedRole = capitalizeFirstLetter(user.role || '');
             const formattedPromotedRole = capitalizeFirstLetter(promotedRole);
             
-            // Format join date based on created_at field
             const joinDate = user.created_at ? formatDate(user.created_at) : 'N/A';
             
             userRow.innerHTML = `
@@ -142,18 +134,11 @@ document.addEventListener('DOMContentLoaded', function() {
             usersListElement.appendChild(userRow);
         });
         
-        // Attach event listeners to the newly created buttons
         attachUserActionListeners();
     }
 
     // Set up event listeners
     function setupEventListeners() {
-        // Filter form submission
-        filterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            filterUsers();
-        });
-        
         // Search form submission
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();
@@ -163,23 +148,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // Close modal buttons
         closeModalButtons.forEach(button => {
             button.addEventListener('click', function() {
-                closeModal(editUserModal);
                 closeModal(viewProfileModal);
             });
         });
         
-        // Save user button
-        saveUserBtn.addEventListener('click', saveUserChanges);
-
-        // Promote user button (if exists)
-        if (promoteUserBtn) {
-            promoteUserBtn.addEventListener('click', promoteToReviewer);
-        }
+        // Promote user button
+        promoteUserBtn.addEventListener('click', promoteToReviewer);
         
         // Logout button
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();
             handleLogout();
+        });
+
+        // Close modal when clicking outside the content
+        viewProfileModal.addEventListener('click', function(e) {
+            if (e.target === viewProfileModal) {
+                closeModal(viewProfileModal);
+            }
         });
     }
     
@@ -207,45 +193,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Attach event listeners to user action buttons
     function attachUserActionListeners() {
-        // View profile buttons
-        document.querySelectorAll('.view-profile-btn').forEach(button => {
+        // View details buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
             button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
+                const userId = this.dataset.id;
                 openViewProfileModal(userId);
             });
         });
-        
-        // Deactivate user buttons
-        document.querySelectorAll('.deactivate-user-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
-                deactivateUser(userId);
-            });
-        });
-        
-        // Activate user buttons
-        document.querySelectorAll('.activate-user-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const userId = this.dataset.userId;
-                activateUser(userId);
-            });
-        });
-    }
-    
-    // Filter users based on selected criteria
-    async function filterUsers() {
-        const roleFilter = roleFilterElement.value;
-        const promotedRoleFilter = statusFilterElement.value; // Status filter controls promoted-role
-        
-        try {
-            await fetchUsers({
-                role: roleFilter,
-                promotedRole: promotedRoleFilter
-            });
-        } catch (error) {
-            console.error('Error filtering users:', error);
-            showToast('Error applying filters. Please try again.', 'error');
-        }
     }
    
     // Search users by name or email
@@ -253,7 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchTerm = searchInputElement.value.trim();
         
         if (searchTerm === '') {
-            // If search term is empty, reset to all users
             currentUsers = [...allUsers];
             renderUsersList(currentUsers);
             return;
@@ -278,38 +231,26 @@ document.addEventListener('DOMContentLoaded', function() {
         // Store the user ID for the promote button
         viewProfileModal.dataset.userId = user.id;
         
-        // Format the data for display
+        // Format the promoted-role with appropriate styling
         const promotedRole = user['promoted-role'] || 'pending';
-        const statusClass = promotedRole === 'active' ? 'status-active' : 
+        const statusClass = promotedRole === 'Reviewer' ? 'status-active' : 
                           promotedRole === 'pending' ? 'status-pending' : 'status-inactive';
         
-        // Create formatted expertise list if available
-        let expertiseHtml = '';
+        // Format research areas if available
+        let researchAreasHtml = '';
         if (user.research_area) {
-            const expertiseAreas = user.research_area.split(',').map(area => area.trim());
-            expertiseHtml = `
+            const researchAreas = user.research_area.split(',').map(area => area.trim());
+            researchAreasHtml = `
                 <div class="profile-section">
                     <h3>Research Areas</h3>
                     <ul class="profile-list">
-                        ${expertiseAreas.map(area => `<li>${capitalizeFirstLetter(area)}</li>`).join('')}
+                        ${researchAreas.map(area => `<li>${capitalizeFirstLetter(area)}</li>`).join('')}
                     </ul>
                 </div>
             `;
         }
         
-        // Create department and academic_role section if available
-        let additionalInfoHtml = '';
-        if (user.department || user.academic_role) {
-            additionalInfoHtml = `
-                <div class="profile-section">
-                    <h3>Academic Information</h3>
-                    ${user.department ? `<p><strong>Department:</strong> ${user.department}</p>` : ''}
-                    ${user.academic_role ? `<p><strong>Academic Role:</strong> ${user.academic_role}</p>` : ''}
-                </div>
-            `;
-        }
-        
-        // Create qualifications section if available
+        // Format qualifications if available
         let qualificationsHtml = '';
         if (user.qualifications) {
             qualificationsHtml = `
@@ -320,21 +261,10 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         
-        // Create research experience section if available
-        let experienceHtml = '';
-        if (user.research_experience) {
-            experienceHtml = `
-                <div class="profile-section">
-                    <h3>Research Experience</h3>
-                    <p>${user.research_experience} years</p>
-                </div>
-            `;
-        }
-        
-        // Create current project section if available
-        let projectHtml = '';
+        // Format current project if available
+        let currentProjectHtml = '';
         if (user.current_project) {
-            projectHtml = `
+            currentProjectHtml = `
                 <div class="profile-section">
                     <h3>Current Project</h3>
                     <p>${user.current_project}</p>
@@ -342,40 +272,56 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
         }
         
-        // Create contact info section
-        let contactHtml = `
+        // Combine all sections
+        profileContent.innerHTML = `
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <div class="avatar-placeholder">${getInitials(user.name)}</div>
+                </div>
+                <div class="profile-header-content">
+                    <h2>${user.name || 'Unnamed User'}</h2>
+                    <div class="user-meta">
+                        <span class="role-badge">${capitalizeFirstLetter(user.role || 'User')}</span>
+                        <span class="status-badge ${statusClass}">${capitalizeFirstLetter(promotedRole)}</span>
+                    </div>
+                    <p class="join-date">Member since ${formatDate(user.created_at)}</p>
+                </div>
+            </div>
+            
             <div class="profile-section">
                 <h3>Contact Information</h3>
                 <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
                 ${user.phone ? `<p><strong>Phone:</strong> ${user.phone}</p>` : ''}
             </div>
-        `;
-        
-        // Combine all sections
-        profileContent.innerHTML = `
-            <div class="profile-header">
-                <h2>${user.name || 'Unnamed User'}</h2>
-                <div class="user-meta">
-                    <span class="role-badge">${capitalizeFirstLetter(user.role || 'User')}</span>
-                    <span class="status-badge ${statusClass}">${capitalizeFirstLetter(promotedRole)}</span>
-                </div>
-                <p class="join-date">Member since ${formatDate(user.created_at)}</p>
+            
+            <div class="profile-section">
+                <h3>Academic Information</h3>
+                ${user.department ? `<p><strong>Department:</strong> ${user.department}</p>` : ''}
+                ${user.academic_role ? `<p><strong>Academic Role:</strong> ${user.academic_role}</p>` : ''}
             </div>
             
-            ${contactHtml}
-            ${additionalInfoHtml}
             ${qualificationsHtml}
-            ${experienceHtml}
-            ${expertiseHtml}
-            ${projectHtml}
+            
+            <div class="profile-section">
+                <h3>Research Experience</h3>
+                <p>${user.research_experience || '0'} years</p>
+                <p><strong>Projects Created:</strong> ${user.projects_created || '0'}</p>
+            </div>
+            
+            ${researchAreasHtml}
+            
+            ${currentProjectHtml}
+            
+            <div class="profile-section">
+                <h3>Account Information</h3>
+                <p><strong>User ID:</strong> ${user.id}</p>
+                <p><strong>Last Updated:</strong> ${formatDate(user.updated_at)}</p>
+            </div>
         `;
         
-        // Show or hide promote button based on current role and promoted-role
-        const promoteBtn = document.getElementById('promote-user-btn');
-        if (promoteBtn) {
-            // Only show promote button if user isn't already a reviewer and isn't inactive
-            const canPromote = user.role !== 'reviewer' && promotedRole !== 'inactive';
-            promoteBtn.style.display = canPromote ? 'block' : 'none';
+        // Show or hide promote button based on current promoted-role
+        if (promoteUserBtn) {
+            promoteUserBtn.style.display = promotedRole !== 'Reviewer' ? 'block' : 'none';
         }
         
         // Open the modal
@@ -391,13 +337,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!user) return;
         
         try {
-            // Update the user's promoted-role to reviewer
+            if (!confirm(`Are you sure you want to promote ${user.name} to Reviewer?`)) {
+                return;
+            }
+            
             const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 'promoted-role': 'reviewer' }),
+                body: JSON.stringify({ 'promoted-role': 'Reviewer' }),
                 credentials: 'include'
             });
             
@@ -405,171 +354,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`API error: ${response.status}`);
             }
             
-            // Close the modal
             closeModal(viewProfileModal);
-            
-            // Refresh the user list
             await fetchUsers();
-            
-            // Show success message
             showToast(`${user.name} has been promoted to Reviewer`, 'success');
         } catch (error) {
             console.error('Error promoting user:', error);
             showToast('Error promoting user. Please try again.', 'error');
-        }
-    }
-    
-    // Open the edit user modal with the user's data
-    function openEditUserModal(userId) {
-        const user = currentUsers.find(u => u.id == userId);
-        
-        if (!user) return;
-        
-        // Populate form fields
-        document.getElementById('edit-user-id').value = user.id;
-        document.getElementById('edit-user-name').value = user.name || '';
-        document.getElementById('edit-user-email').value = user.email || '';
-        document.getElementById('edit-user-role').value = user.role || 'researcher';
-        document.getElementById('edit-user-status').value = user.status || 'active';
-        
-        // Clear all expertise checkboxes first
-        document.querySelectorAll('#expertise-options input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-        
-        // Check the user's expertise areas if they exist
-        const expertise = user.research_area ? user.research_area.split(',') : [];
-        expertise.forEach(area => {
-            const normalizedArea = area.trim().toLowerCase().replace(/\s+/g, '-');
-            const checkbox = document.querySelector(`#expertise-options input[value="${normalizedArea}"]`);
-            if (checkbox) checkbox.checked = true;
-        });
-        
-        // Show or hide expertise options based on role
-        const expertiseFieldset = document.querySelector('fieldset.form-group:nth-of-type(2)');
-        expertiseFieldset.style.display = user.role === 'reviewer' ? 'block' : 'none';
-        
-        // Add change event listener to role select to show/hide expertise options
-        document.getElementById('edit-user-role').addEventListener('change', function() {
-            expertiseFieldset.style.display = this.value === 'reviewer' ? 'block' : 'none';
-        });
-        
-        // Open the modal
-        editUserModal.classList.add('active');
-    }
-    
-    // Save user changes
-    async function saveUserChanges() {
-        const userId = document.getElementById('edit-user-id').value;
-        
-        // Gather updated user data
-        const updatedUserData = {
-            name: document.getElementById('edit-user-name').value,
-            email: document.getElementById('edit-user-email').value,
-            role: document.getElementById('edit-user-role').value,
-            status: document.getElementById('edit-user-status').value
-        };
-        
-        // Add expertise areas if user is a reviewer
-        if (updatedUserData.role === 'reviewer') {
-            const expertiseAreas = [];
-            document.querySelectorAll('#expertise-options input[type="checkbox"]:checked').forEach(checkbox => {
-                expertiseAreas.push(checkbox.value);
-            });
-            
-            updatedUserData.research_area = expertiseAreas.join(',');
-        }
-        
-        try {
-            const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(updatedUserData),
-                credentials: 'include'
-            });
-            
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-            
-            // Close the modal
-            editUserModal.classList.remove('active');
-            
-            // Refresh the user list
-            await fetchUsers();
-            
-            // Show success message
-            showToast('User updated successfully', 'success');
-        } catch (error) {
-            console.error('Error updating user:', error);
-            showToast('Error updating user. Please try again.', 'error');
-        }
-    }
-    
-    // Deactivate a user
-    async function deactivateUser(userId) {
-        const user = currentUsers.find(u => u.id == userId);
-        
-        if (!user) return;
-        
-        // Confirm before deactivating
-        if (confirm(`Are you sure you want to deactivate ${user.name}?`)) {
-            try {
-                const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: 'inactive' }),
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-                
-                // Refresh the user list
-                await fetchUsers();
-                
-                // Show success message
-                showToast(`${user.name} has been deactivated`, 'info');
-            } catch (error) {
-                console.error('Error deactivating user:', error);
-                showToast('Error deactivating user. Please try again.', 'error');
-            }
-        }
-    }
-    
-    // Activate a user
-    async function activateUser(userId) {
-        const user = currentUsers.find(u => u.id == userId);
-        
-        if (!user) return;
-        
-        try {
-            const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ status: 'active' }),
-                credentials: 'include'
-            });
-            
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-            
-            // Refresh the user list
-            await fetchUsers();
-            
-            // Show success message
-            showToast(`${user.name} has been activated`, 'success');
-        } catch (error) {
-            console.error('Error activating user:', error);
-            showToast('Error activating user. Please try again.', 'error');
         }
     }
     
@@ -591,9 +381,6 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'error':
                 icon = '<i class="fas fa-exclamation-circle"></i>';
                 break;
-            case 'warning':
-                icon = '<i class="fas fa-exclamation-triangle"></i>';
-                break;
             default:
                 icon = '<i class="fas fa-info-circle"></i>';
         }
@@ -608,17 +395,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         toastContainer.appendChild(toast);
         
-        // Add active class after a small delay to trigger animation
         setTimeout(() => {
             toast.classList.add('active');
         }, 10);
         
-        // Remove toast after duration
         const timeout = setTimeout(() => {
             removeToast(toast);
         }, duration);
         
-        // Close button handler
         const closeBtn = toast.querySelector('.toast-close');
         closeBtn.addEventListener('click', () => {
             clearTimeout(timeout);
@@ -628,7 +412,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function removeToast(toast) {
         toast.classList.remove('active');
-        // Remove from DOM after animation completes
         setTimeout(() => {
             toastContainer.removeChild(toast);
         }, 300);
@@ -636,22 +419,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Utility Functions
     
-    // Format date to a more readable format
     function formatDate(dateString) {
+        if (!dateString) return 'N/A';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
     
-    // Capitalize the first letter of a string
     function capitalizeFirstLetter(string) {
         if (!string) return '';
-        return string.charAt(0).toUpperCase() + string.slice(1);
+        return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
     }
     
-    // Error handler for fetch calls
-    function handleFetchError(error, message) {
-        console.error(error);
-        showToast(message, 'error');
+    function getInitials(name) {
+        if (!name) return '?';
+        return name.split(' ')
+            .map(part => part[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
     }
     
     // Initialize the page
