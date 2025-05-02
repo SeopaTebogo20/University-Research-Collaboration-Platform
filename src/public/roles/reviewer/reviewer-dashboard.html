@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviewer Dashboard - CollabNexus Research Hub</title>
+    <meta name="description" content="Reviewer dashboard for CollabNexus Research Hub">
+    <meta name="author" content="CollabNexus">
+    
+    <meta property="og:title" content="Reviewer Dashboard - CollabNexus Research Hub">
+    <meta property="og:description" content="Reviewer dashboard for CollabNexus Research Hub">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/reviewer-styles.css">
+    <link rel="stylesheet" href="css/reviewer-styles-enhanced.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .proposals-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .proposals-table th, .proposals-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+
+        .proposals-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: none;
+        }
+
+        .proposals-table tr:hover td {
+            background-color: #f8f9fa;
+        }
+
+        .proposals-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #6D28D9;
+            color: white;
+            border: 1px solid #6D28D9;
+        }
+
+        .btn-primary:hover {
+            background-color: #5B21B6;
+            border-color: #5B21B6;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #dee2e6;
+            color: #212529;
+        }
+
+        .btn-outline:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-pending {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        .status-approved {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-revision {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .evaluation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rating-star {
+            color: #adb5bd;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .rating-star.selected {
+            color: #ffc107;
+        }
+
+        .rating-star.hovered {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="reviewer-dashboard.html" class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+        </a>
+        <ul class="nav-links">
+            <li><a href="reviewer-dashboard.html" class="active"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+            <li><a href="proposals.html"><i class="fas fa-clipboard-list"></i> Assigned Proposals</a></li>
+            <li><a href="history.html"><i class="fas fa-history"></i> Review History</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+        </ul>
+    </nav>
+
+    <main class="reviewer-dashboard">
+        <header class="dashboard-header">
+            <h1>Reviewer Dashboard</h1>
+            <p>Welcome back, Reviewer! Here are the proposals assigned to you for evaluation.</p>
+        </header>
+
+        <section class="review-stats">
+            <article class="stat-card">
+                <i class="fas fa-clock stat-icon"></i>
+                <h3>Pending Reviews</h3>
+                <p class="stat-number">5</p>
+                <p class="stat-detail">Needs your evaluation</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <h3>Completed Reviews</h3>
+                <p class="stat-number">12</p>
+                <p class="stat-detail">This month</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-calendar-alt stat-icon"></i>
+                <h3>Upcoming Deadlines</h3>
+                <p class="stat-number">3</p>
+                <p class="stat-detail">Due this week</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-star stat-icon"></i>
+                <h3>Your Rating</h3>
+                <p class="stat-number">4.8</p>
+                <p class="stat-detail">Out of 5</p>
+            </article>
+        </section>
+
+        <section class="proposals-card">
+            <header class="card-header">
+                <h2>Assigned Proposals</h2>
+                <fieldset class="filter-controls">
+                    <select class="styled-select">
+                        <option value="all">All Proposals</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="revision">Needs Revision</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <button class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </fieldset>
+            </header>
+            <table class="proposals-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Novel Approaches to Quantum Computing</td>
+                        <td>Dr. Sarah Chen</td>
+                        <td>April 28, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary evaluate-btn" data-proposal="quantum-computing">Evaluate</button></td>
+                    </tr>
+                    <tr>
+                        <td>AI Applications in Medical Diagnostics</td>
+                        <td>Dr. Michael Johnson</td>
+                        <td>April 21, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary evaluate-btn" data-proposal="ai-medical">Evaluate</button></td>
+                    </tr>
+                    <tr>
+                        <td>Sustainable Agriculture Techniques</td>
+                        <td>Dr. Elena Rodriguez</td>
+                        <td>April 23, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary evaluate-btn" data-proposal="sustainable-ag">Evaluate</button></td>
+                    </tr>
+                    <tr>
+                        <td>Climate Change Impact on Marine Ecosystems</td>
+                        <td>Prof. James Wilson</td>
+                        <td>April 25, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary evaluate-btn" data-proposal="climate-change">Evaluate</button></td>
+                    </tr>
+                    <tr>
+                        <td>Renewable Energy Integration in Urban Infrastructure</td>
+                        <td>Dr. Lisa Morgan</td>
+                        <td>April 20, 2025</td>
+                        <td><mark class="status-badge status-approved">Approved</mark></td>
+                        <td><button class="btn btn-outline view-btn">View</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <section class="evaluation-modal">
+        <article class="modal-content">
+            <header class="modal-header">
+                <h2>Proposal Evaluation</h2>
+                <button class="close-modal" aria-label="Close modal">×</button>
+            </header>
+            <section class="modal-body">
+                <h3 id="proposal-title">Novel Approaches to Quantum Computing</h3>
+                <p class="proposal-meta">By <em id="proposal-author">Dr. Sarah Chen</em> • Submitted <time id="proposal-date">April 28, 2025</time></p>
+                
+                <form id="evaluation-form">
+                    <fieldset class="form-group">
+                        <legend>Feedback</legend>
+                        <textarea id="feedback" class="styled-input" rows="6" placeholder="Enter your detailed feedback here..." required></textarea>
+                    </fieldset>
+                    
+                    <fieldset class="form-group rating-container">
+                        <legend>Quality Rating</legend>
+                        <p class="rating-stars">
+                            <button type="button" class="rating-star" data-value="1" aria-label="Rate 1 star"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="2" aria-label="Rate 2 stars"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="3" aria-label="Rate 3 stars"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="4" aria-label="Rate 4 stars"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="5" aria-label="Rate 5 stars"><i class="far fa-star"></i></button>
+                        </p>
+                        <input type="hidden" id="rating-value" name="rating" class="rating-value" required>
+                        <p class="rating-label">Selected: <output id="rating-display" for="rating-value">0/5</output></p>
+                    </fieldset>
+                    
+                    <fieldset class="form-group">
+                        <legend>Recommendation</legend>
+                        <ul class="recommendation-options">
+                            <li>
+                                <input type="radio" id="approve" name="recommendation" value="approve" required>
+                                <label for="approve">Approve</label>
+                            </li>
+                            <li>
+                                <input type="radio" id="revision" name="recommendation" value="revision">
+                                <label for="revision">Request Revision</label>
+                            </li>
+                            <li>
+                                <input type="radio" id="reject" name="recommendation" value="reject">
+                                <label for="reject">Reject</label>
+                            </li>
+                        </ul>
+                    </fieldset>
+                    
+                    <footer class="modal-footer">
+                        <button type="button" class="btn btn-outline cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Evaluation</button>
+                    </footer>
+                </form>
+            </section>
+        </article>
+    </section>
+
+    <footer class="footer">
+        <section class="container">
+            <nav class="footer-content">
+                <article class="footer-column">
+                    <h3 class="footer-logo">
+                        <i class="fas fa-book-open book-logo"></i>
+                        CollabNexus
+                    </h3>
+                    <p>A platform for collaborative research and knowledge sharing.</p>
+                </article>
+                <article class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Reviewer Guidelines</a></li>
+                        <li><a href="#">Best Practices</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Report Issue</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </article>
+            </nav>
+            <p class="footer-bottom">© 2025 CollabNexus Research Hub. All rights reserved.</p>
+        </section>
+    </footer>
+
+    <script src="js/reviewer-dashboard.js"></script>
+</body>
+</html>

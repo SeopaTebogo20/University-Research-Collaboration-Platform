@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposal Details - CollabNexus Research Hub</title>
+    <meta name="description" content="Detailed view of research proposals for reviewers">
+    <meta name="author" content="CollabNexus">
+    
+    <meta property="og:title" content="Proposal Details - CollabNexus Research Hub">
+    <meta property="og:description" content="Detailed view of research proposals for reviewers">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/proposal-details.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="reviewer-dashboard.html" class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+        </a>
+        <ul class="nav-links">
+            <li><a href="reviewer-dashboard.html"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+            <li><a href="proposals.html" class="active"><i class="fas fa-clipboard-list"></i> Assigned Proposals</a></li>
+            <li><a href="history.html"><i class="fas fa-history"></i> Review History</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+        </ul>
+    </nav>
+
+    <main class="proposal-details">
+        <header class="details-header">
+            <a href="reviewer-dashboard.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+            <h1 id="details-title">Proposal Title</h1>
+            <p class="proposal-meta">Submitted by <strong id="details-author">Author Name</strong> on <span id="details-date">Submission Date</span></p>
+            <section class="research-areas">
+                <h2>Key Research Areas</h2>
+                <ul class="research-tags" id="research-tags">
+                    <!-- Will be populated by JavaScript -->
+                </ul>
+            </section>
+            <button class="btn-primary evaluate-btn" id="evaluate-btn"><i class="fas fa-edit"></i> Evaluate Proposal</button>
+        </header>
+
+        <section class="details-container">
+            <article class="proposal-summary">
+                <header>
+                    <h2>Abstract</h2>
+                </header>
+                <p id="proposal-abstract">Loading abstract...</p>
+            </article>
+
+            <article class="proposal-content">
+                <header class="content-tabs">
+                    <button class="tab-button active" data-tab="methodology">Methodology</button>
+                    <button class="tab-button" data-tab="objectives">Objectives</button>
+                    <button class="tab-button" data-tab="timeline">Timeline</button>
+                    <button class="tab-button" data-tab="budget">Budget</button>
+                    <button class="tab-button" data-tab="attachments">Attachments</button>
+                </header>
+                
+                <section id="methodology" class="tab-content active">
+                    <h3>Research Methodology</h3>
+                    <p id="methodology-content">Loading methodology details...</p>
+                </section>
+                
+                <section id="objectives" class="tab-content">
+                    <h3>Research Objectives</h3>
+                    <ul id="objectives-list">
+                        <li>Loading objectives...</li>
+                    </ul>
+                </section>
+                
+                <section id="timeline" class="tab-content">
+                    <h3>Project Timeline</h3>
+                    <table class="timeline-table">
+                        <thead>
+                            <tr>
+                                <th>Phase</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Deliverables</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeline-content">
+                            <tr>
+                                <td colspan="4">Loading timeline data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+                
+                <section id="budget" class="tab-content">
+                    <h3>Budget Breakdown</h3>
+                    <table class="budget-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="budget-content">
+                            <tr>
+                                <td colspan="3">Loading budget data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+                
+                <section id="attachments" class="tab-content">
+                    <h3>Attached Documents</h3>
+                    <ul class="attachments-list" id="attachments-list">
+                        <li>Loading attachments...</li>
+                    </ul>
+                </section>
+            </article>
+            
+            <aside class="evaluation-sidebar">
+                <header>
+                    <h2>Evaluation</h2>
+                </header>
+                
+                <section class="review-criteria">
+                    <h3>Review Criteria</h3>
+                    <form id="criteria-form">
+                        <fieldset class="criteria-group">
+                            <legend>Scientific Merit</legend>
+                            <label class="rating-label">
+                                <input type="radio" name="scientific-merit" value="1">
+                                <span class="rating-text">1</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="scientific-merit" value="2">
+                                <span class="rating-text">2</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="scientific-merit" value="3">
+                                <span class="rating-text">3</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="scientific-merit" value="4">
+                                <span class="rating-text">4</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="scientific-merit" value="5">
+                                <span class="rating-text">5</span>
+                            </label>
+                        </fieldset>
+                        
+                        <fieldset class="criteria-group">
+                            <legend>Methodology</legend>
+                            <label class="rating-label">
+                                <input type="radio" name="methodology" value="1">
+                                <span class="rating-text">1</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="methodology" value="2">
+                                <span class="rating-text">2</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="methodology" value="3">
+                                <span class="rating-text">3</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="methodology" value="4">
+                                <span class="rating-text">4</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="methodology" value="5">
+                                <span class="rating-text">5</span>
+                            </label>
+                        </fieldset>
+                        
+                        <fieldset class="criteria-group">
+                            <legend>Feasibility</legend>
+                            <label class="rating-label">
+                                <input type="radio" name="feasibility" value="1">
+                                <span class="rating-text">1</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="feasibility" value="2">
+                                <span class="rating-text">2</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="feasibility" value="3">
+                                <span class="rating-text">3</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="feasibility" value="4">
+                                <span class="rating-text">4</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="feasibility" value="5">
+                                <span class="rating-text">5</span>
+                            </label>
+                        </fieldset>
+                        
+                        <fieldset class="criteria-group">
+                            <legend>Impact</legend>
+                            <label class="rating-label">
+                                <input type="radio" name="impact" value="1">
+                                <span class="rating-text">1</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="impact" value="2">
+                                <span class="rating-text">2</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="impact" value="3">
+                                <span class="rating-text">3</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="impact" value="4">
+                                <span class="rating-text">4</span>
+                            </label>
+                            <label class="rating-label">
+                                <input type="radio" name="impact" value="5">
+                                <span class="rating-text">5</span>
+                            </label>
+                        </fieldset>
+                    </form>
+                </section>
+                
+                <section class="feedback-section">
+                    <h3>Reviewer Feedback</h3>
+                    <textarea id="reviewer-feedback" placeholder="Enter your detailed feedback on this proposal..." rows="8" class="styled-input"></textarea>
+                </section>
+                
+                <section class="recommendation-section">
+                    <h3>Final Recommendation</h3>
+                    <ul class="recommendation-options">
+                        <li>
+                            <input type="radio" id="approve" name="recommendation" value="approve">
+                            <label for="approve">Approve</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="revision" name="recommendation" value="revision">
+                            <label for="revision">Require Revision</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="reject" name="recommendation" value="reject">
+                            <label for="reject">Reject</label>
+                        </li>
+                    </ul>
+                </section>
+                
+                <footer class="action-buttons">
+                    <button class="btn-outline save-draft-btn">Save Draft</button>
+                    <button class="btn-primary submit-review-btn">Submit Review</button>
+                </footer>
+            </aside>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <section class="container">
+            <section class="footer-content">
+                <article class="footer-column">
+                    <header class="footer-logo">
+                        <i class="fas fa-book-open book-logo"></i>
+                        CollabNexus
+                    </header>
+                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                </article>
+                <article class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Review Guidelines</a></li>
+                        <li><a href="#">Submission Calendar</a></li>
+                        <li><a href="#">Research Ethics</a></li>
+                    </ul>
+                </article>
+                <article class="footer-column">
+                    <h3>Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Admin</a></li>
+                        <li><a href="#">FAQs</a></li>
+                    </ul>
+                </article>
+            </section>
+            <section class="footer-bottom">
+                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
+            </section>
+        </section>
+    </footer>
+
+    <script src="js/proposal-details.js"></script>
+</body>
+</html>
