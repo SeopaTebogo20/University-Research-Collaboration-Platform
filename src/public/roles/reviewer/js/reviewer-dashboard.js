@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get DOM elements
     const evaluationModal = document.querySelector('.evaluation-modal');
     const evaluateButtons = document.querySelectorAll('.evaluate-btn');
+    const viewButtons = document.querySelectorAll('.view-btn');
     const closeModalButton = document.querySelector('.close-modal');
     const cancelButton = document.querySelector('.cancel-btn');
     const evaluationForm = document.getElementById('evaluation-form');
@@ -37,8 +38,67 @@ document.addEventListener('DOMContentLoaded', function() {
             title: 'Climate Change Impact on Marine Ecosystems',
             author: 'Prof. James Wilson',
             date: 'April 25, 2025'
+        },
+        'renewable-energy': {
+            title: 'Renewable Energy Integration in Urban Infrastructure',
+            author: 'Dr. Lisa Morgan',
+            date: 'April 20, 2025'
         }
     };
+
+    // Evaluations data (would normally be loaded from evaluations.json)
+    let evaluations = [
+        {
+            proposalId: "quantum-computing",
+            title: "Novel Approaches to Quantum Computing",
+            author: "Dr. Sarah Chen",
+            date: "April 28, 2025",
+            feedback: "",
+            rating: 0,
+            recommendation: "",
+            status: "pending"
+        },
+        {
+            proposalId: "ai-medical",
+            title: "AI Applications in Medical Diagnostics",
+            author: "Dr. Michael Johnson",
+            date: "April 21, 2025",
+            feedback: "",
+            rating: 0,
+            recommendation: "",
+            status: "pending"
+        },
+        {
+            proposalId: "sustainable-ag",
+            title: "Sustainable Agriculture Techniques",
+            author: "Dr. Elena Rodriguez",
+            date: "April 23, 2025",
+            feedback: "",
+            rating: 0,
+            recommendation: "",
+            status: "pending"
+        },
+        {
+            proposalId: "climate-change",
+            title: "Climate Change Impact on Marine Ecosystems",
+            author: "Prof. James Wilson",
+            date: "April 25, 2025",
+            feedback: "",
+            rating: 0,
+            recommendation: "",
+            status: "pending"
+        },
+        {
+            proposalId: "renewable-energy",
+            title: "Renewable Energy Integration in Urban Infrastructure",
+            author: "Dr. Lisa Morgan",
+            date: "April 20, 2025",
+            feedback: "Excellent proposal with clear methodology and significant potential impact. The research design is robust and well-articulated.",
+            rating: 5,
+            recommendation: "approve",
+            status: "approved"
+        }
+    ];
 
     // Function to show modal
     function showModal() {
@@ -52,6 +112,18 @@ document.addEventListener('DOMContentLoaded', function() {
         evaluationForm.reset();
         resetStarRating();
         document.body.classList.remove('modal-open');
+        
+        // Reset form fields to editable
+        document.getElementById('feedback').readOnly = false;
+        document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
+            radio.disabled = false;
+        });
+        
+        // Reset submit button
+        const submitBtn = document.querySelector('.modal-footer .btn-primary');
+        submitBtn.textContent = 'Submit Evaluation';
+        submitBtn.type = 'submit';
+        document.querySelector('.cancel-btn').style.display = '';
     }
 
     // Handle star rating system
@@ -118,6 +190,57 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('rating-display').textContent = '0/5';
     }
 
+    // Function to show evaluation in view mode
+    function showEvaluation(proposalId) {
+        const evaluation = evaluations.find(e => e.proposalId === proposalId);
+        if (!evaluation) return;
+        
+        proposalTitle.textContent = evaluation.title;
+        proposalAuthor.textContent = evaluation.author;
+        proposalDate.textContent = evaluation.date;
+        
+        // Set feedback (readonly)
+        const feedbackField = document.getElementById('feedback');
+        feedbackField.value = evaluation.feedback;
+        feedbackField.readOnly = true;
+        
+        // Set rating
+        currentRating = evaluation.rating;
+        document.getElementById('rating-value').value = currentRating;
+        ratingStars.forEach((star, index) => {
+            const icon = star.querySelector('i');
+            if (index < currentRating) {
+                icon.classList.add('selected');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                icon.classList.remove('selected');
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+            }
+        });
+        document.getElementById('rating-display').textContent = currentRating + '/5';
+        
+        // Set recommendation (disabled)
+        if (evaluation.recommendation) {
+            document.getElementById(evaluation.recommendation).checked = true;
+            document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
+                radio.disabled = true;
+            });
+        }
+        
+        // Change submit button to close button
+        const submitBtn = document.querySelector('.modal-footer .btn-primary');
+        submitBtn.textContent = 'Close';
+        submitBtn.type = 'button';
+        submitBtn.onclick = closeModal;
+        
+        // Hide cancel button
+        document.querySelector('.cancel-btn').style.display = 'none';
+        
+        showModal();
+    }
+
     // Initialize star rating system
     setupStarRating();
 
@@ -135,9 +258,28 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset form in case it was previously used
             evaluationForm.reset();
             resetStarRating();
+            document.getElementById('feedback').readOnly = false;
+            document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
+                radio.disabled = false;
+            });
+            
+            // Reset submit button
+            const submitBtn = document.querySelector('.modal-footer .btn-primary');
+            submitBtn.textContent = 'Submit Evaluation';
+            submitBtn.type = 'submit';
+            document.querySelector('.cancel-btn').style.display = '';
             
             // Show the modal
             showModal();
+        });
+    });
+
+    // Handle view buttons
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const proposalId = this.getAttribute('data-proposal');
+            currentProposalId = proposalId;
+            showEvaluation(proposalId);
         });
     });
 
@@ -160,13 +302,31 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // In a real app, you would send this data to the server
-        console.log('Evaluation submitted:', {
-            proposal: currentProposalId,
-            feedback,
-            recommendation: recommendation.value,
-            rating: currentRating
-        });
+        // Update evaluations data
+        const evaluationIndex = evaluations.findIndex(e => e.proposalId === currentProposalId);
+        if (evaluationIndex !== -1) {
+            evaluations[evaluationIndex] = {
+                ...evaluations[evaluationIndex],
+                feedback,
+                rating: currentRating,
+                recommendation: recommendation.value,
+                status: recommendation.value === 'approve' ? 'approved' : 
+                       recommendation.value === 'revision' ? 'revision' : 'rejected'
+            };
+        } else {
+            // If not found, add new evaluation (shouldn't happen in this case)
+            evaluations.push({
+                proposalId: currentProposalId,
+                title: proposalTitle.textContent,
+                author: proposalAuthor.textContent,
+                date: proposalDate.textContent,
+                feedback,
+                rating: currentRating,
+                recommendation: recommendation.value,
+                status: recommendation.value === 'approve' ? 'approved' : 
+                       recommendation.value === 'revision' ? 'revision' : 'rejected'
+            });
+        }
         
         // Show success message
         alert('Evaluation submitted successfully!');
@@ -197,6 +357,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const evaluateBtn = row.querySelector('.evaluate-btn');
         evaluateBtn.textContent = 'View';
         evaluateBtn.className = 'btn btn-outline view-btn';
+        evaluateBtn.setAttribute('data-proposal', currentProposalId);
+        
+        // Update event listener for the new view button
+        evaluateBtn.addEventListener('click', function() {
+            showEvaluation(currentProposalId);
+        });
     });
 
     // Filter proposals by status
@@ -225,13 +391,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.querySelector('i').classList.remove('fa-spin');
         }, 1000);
     });
-    
-    /* Close modal when clicking outside of it (on the backdrop)
-    evaluationModal.addEventListener('click', function(event) {
-        if (event.target === evaluationModal) {
-            closeModal();
-        }
-    }); */
     
     // Prevent closing when clicking inside the modal content
     const modalContent = document.querySelector('.modal-content');
