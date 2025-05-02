@@ -231,16 +231,16 @@
     border-bottom: 1px solid #e4e4e7;
     background: linear-gradient(to right, #f8fafc, #f3f4f6);
   }
-  
   .modal-header h2 {
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0;
-    color: #1f2937;
     background: linear-gradient(135deg, #1f2937, #6d28d9);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent; /* fallback for non-webkit browsers */
   }
+  
   
   
   .close-modal:hover {
@@ -337,6 +337,7 @@
     background: linear-gradient(135deg, #8b5cf6, #6d28d9);
     color: white;
     border: none;
+    height: 100%;     
     box-shadow: 0 4px 10px rgba(109, 40, 217, 0.2);
   }
   
@@ -593,7 +594,6 @@
     margin-top: 0;
     margin-bottom: 1rem;
     background: linear-gradient(135deg, #1f2937, #6d28d9);
-    -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
   

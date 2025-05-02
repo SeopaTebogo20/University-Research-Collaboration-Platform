@@ -156,18 +156,17 @@ body {
     max-width: 600px;
   }
 
-
-
-
 .filter-form fieldset {
-    border: none;
-    padding: 0;
-    margin: 0;
     display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
     align-items: flex-end;
-}
+    gap: 10px;
+    border: none;
+    padding: 0; 
+  }
+  
+  .btn.btn-primary {
+    height: 100%;          /* optional: makes button height match select */
+  }
 
 .filter-form label {
     font-weight: 500;
