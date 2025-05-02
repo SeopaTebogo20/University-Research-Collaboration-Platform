@@ -1,0 +1,54 @@
+{
+    "evaluations": [
+      {
+        "proposalId": "quantum-computing",
+        "title": "Novel Approaches to Quantum Computing",
+        "author": "Dr. Sarah Chen",
+        "date": "April 28, 2025",
+        "feedback": "",
+        "rating": 0,
+        "recommendation": "",
+        "status": "pending"
+      },
+      {
+        "proposalId": "ai-medical",
+        "title": "AI Applications in Medical Diagnostics",
+        "author": "Dr. Michael Johnson",
+        "date": "April 21, 2025",
+        "feedback": "",
+        "rating": 0,
+        "recommendation": "",
+        "status": "pending"
+      },
+      {
+        "proposalId": "sustainable-ag",
+        "title": "Sustainable Agriculture Techniques",
+        "author": "Dr. Elena Rodriguez",
+        "date": "April 23, 2025",
+        "feedback": "",
+        "rating": 0,
+        "recommendation": "",
+        "status": "pending"
+      },
+      {
+        "proposalId": "climate-change",
+        "title": "Climate Change Impact on Marine Ecosystems",
+        "author": "Prof. James Wilson",
+        "date": "April 25, 2025",
+        "feedback": "",
+        "rating": 0,
+        "recommendation": "",
+        "status": "pending"
+      },
+      {
+        "proposalId": "renewable-energy",
+        "title": "Renewable Energy Integration in Urban Infrastructure",
+        "author": "Dr. Lisa Morgan",
+        "date": "April 20, 2025",
+        "feedback": "Excellent proposal with clear methodology and significant potential impact. The research design is robust and well-articulated.",
+        "rating": 5,
+        "recommendation": "approve",
+        "status": "approved"
+      }
+    ]
+  }
