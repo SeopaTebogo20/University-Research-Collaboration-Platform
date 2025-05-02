@@ -11,7 +11,7 @@ const invitationRouter = require('./public/roles/routes/received_invitations-api
 const proposalRouter = require('./public/roles/routes/assigned-proposals-api'); 
 const usersRouter = require('./public/roles/routes/users-api');
 const collaboratorsRouter = require('./public/roles/routes/collaborators-api');  
-const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken
+const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken.
 
 // Create the Express application
 const app = express();
