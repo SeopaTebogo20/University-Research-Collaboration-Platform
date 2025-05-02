@@ -231,15 +231,6 @@
     border-bottom: 1px solid #e4e4e7;
     background: linear-gradient(to right, #f8fafc, #f3f4f6);
   }
-  .modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0;
-    background: linear-gradient(135deg, #1f2937, #6d28d9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent; /* fallback for non-webkit browsers */
-  }
   
   
   
@@ -585,16 +576,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
-  }
-  
-  .profile-section h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #1f2937, #6d28d9);
-    -webkit-text-fill-color: transparent;
   }
   
   .profile-section p {

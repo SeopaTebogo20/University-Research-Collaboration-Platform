@@ -8,7 +8,7 @@ const axios = require('axios'); // You'll need to install axios
 const projectsRouter = require('./public/roles/routes/projects-api'); 
 const invitationsRouter = require('./public/roles/routes/invitations-api'); 
 const invitationRouter = require('./public/roles/routes/received_invitations-api'); 
-const proposalRouter = require('./public/roles/routes/proposals-api'); 
+const proposalRouter = require('./public/roles/routes/assigned-proposals-api'); 
 const usersRouter = require('./public/roles/routes/users-api');
 const collaboratorsRouter = require('./public/roles/routes/collaborators-api');  
 const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken
@@ -69,7 +69,7 @@ app.use(session({
 app.use('/api/projects', projectsRouter);
 app.use('/api/invitations', invitationsRouter);
 app.use('/api/received_invitations', invitationRouter);
-app.use('/api/proposal', proposalRouter);
+app.use('/api/proposals', proposalRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/collaborators', collaboratorsRouter);
 

@@ -80,11 +80,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
-            allUsers = data;
-            currentUsers = [...data];
+            
+            // Filter users to only include researchers and reviewers
+            const filteredUsers = data.filter(user => {
+                const role = (user.role || '').toLowerCase();
+                return role === 'researcher' || role === 'reviewer';
+            });
+            
+            allUsers = filteredUsers;
+            currentUsers = [...filteredUsers];
             renderUsersList(currentUsers);
             
-            return data;
+            return filteredUsers;
         } catch (error) {
             console.error('Error fetching users:', error);
             showToast('Error fetching user data. Please try again.', 'error');
@@ -99,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (users.length === 0) {
             const noResultsRow = document.createElement('tr');
             noResultsRow.innerHTML = `
-                <td colspan="7" class="text-center">No users found matching your criteria</td>
+                <td colspan="7" class="text-center">No researchers or reviewers found matching your criteria</td>
             `;
             usersListElement.appendChild(noResultsRow);
             return;
@@ -145,11 +152,11 @@ document.addEventListener('DOMContentLoaded', function() {
             searchUsers();
         });
         
-        // Close modal buttons
-        closeModalButtons.forEach(button => {
-            button.addEventListener('click', function() {
+        // Close modal buttons - ensure we're attaching to all close buttons including dynamically created ones
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('close-modal') || e.target.closest('.close-modal')) {
                 closeModal(viewProfileModal);
-            });
+            }
         });
         
         // Promote user button
@@ -319,16 +326,27 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
         
-        // Show or hide promote button based on current promoted-role
+        // Update button text based on user role
+        const userRole = (user.role || '').toLowerCase();
+        const promotedRoleLower = promotedRole.toLowerCase();
+        
         if (promoteUserBtn) {
-            promoteUserBtn.style.display = promotedRole !== 'Reviewer' ? 'block' : 'none';
+            // Change button text based on user role
+            if (userRole === 'reviewer') {
+                promoteUserBtn.textContent = 'Activate Reviewer';
+            } else {
+                promoteUserBtn.textContent = 'Promote to Reviewer';
+            }
+            
+            // Hide button if already promoted
+            promoteUserBtn.style.display = promotedRoleLower !== 'reviewer' ? 'block' : 'none';
         }
         
         // Open the modal
         viewProfileModal.classList.add('active');
     }
     
-    // Promote user to Reviewer
+    // Promote user to Reviewer - UPDATED FUNCTION
     async function promoteToReviewer() {
         const userId = viewProfileModal.dataset.userId;
         if (!userId) return;
@@ -336,17 +354,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const user = currentUsers.find(u => u.id == userId);
         if (!user) return;
         
+        const userRole = (user.role || '').toLowerCase();
+        const confirmMessage = userRole === 'reviewer' 
+            ? `Are you sure you want to activate ${user.name} as a Reviewer?` 
+            : `Are you sure you want to promote ${user.name} to Reviewer?`;
+        
         try {
-            if (!confirm(`Are you sure you want to promote ${user.name} to Reviewer?`)) {
+            if (!confirm(confirmMessage)) {
                 return;
             }
             
+            // Get all current user data first
+            const userData = { ...user };
+            
+            // Update only the promoted-role field
+            userData['promoted-role'] = 'reviewer';
+            
+            // Use PUT method to update the user
             const response = await fetch(`${API_ENDPOINTS.USERS}/${userId}`, {
-                method: 'PATCH',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 'promoted-role': 'Reviewer' }),
+                body: JSON.stringify(userData),
                 credentials: 'include'
             });
             
@@ -354,12 +384,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`API error: ${response.status}`);
             }
             
+            const successMessage = userRole === 'reviewer'
+                ? `${user.name} has been activated as a Reviewer`
+                : `${user.name} has been promoted to Reviewer`;
+                
             closeModal(viewProfileModal);
             await fetchUsers();
-            showToast(`${user.name} has been promoted to Reviewer`, 'success');
+            showToast(successMessage, 'success');
         } catch (error) {
-            console.error('Error promoting user:', error);
-            showToast('Error promoting user. Please try again.', 'error');
+            console.error('Error updating user:', error);
+            
+            const errorMessage = userRole === 'reviewer'
+                ? 'Error activating reviewer. Please try again.'
+                : 'Error promoting user. Please try again.';
+                
+            showToast(errorMessage, 'error');
         }
     }
     

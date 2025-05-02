@@ -207,9 +207,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        filteredProposals.forEach(project => {
+        // Display proposals with sequential numbering from 1
+        filteredProposals.forEach((project, index) => {
             const row = document.createElement('tr');
-            row.dataset.id = project.id;
+            row.dataset.id = project.id; // Keep original ID in dataset for reference
+            
+            const displayIndex = index + 1; // Start numbering from 1
             
             const startDate = project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -222,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const statusClass = `status-${status}`;
             
             row.innerHTML = `
-                <td>${project.id}</td>
+                <td>${displayIndex}</td>
                 <td>${project.project_title}</td>
                 <td>${project.researcher_name}</td>
                 <td>${startDate}</td>
@@ -270,9 +273,22 @@ document.addEventListener('DOMContentLoaded', function() {
             extractKeywords(currentProposal.description) : 
             ['No concepts available'];
         
+        // Find the display index of the current proposal
+        const filteredProposals = projectsData.filter(project => {
+            const status = project.reviewer ? 'in-review' : 'pending';
+            const area = project.key_research_area || '';
+            
+            const statusMatch = currentFilters.status === 'all' || status === currentFilters.status;
+            const areaMatch = currentFilters.researchArea === 'all' || 
+                             area.toLowerCase().replace(/\s+/g, '-') === currentFilters.researchArea;
+            return statusMatch && areaMatch;
+        });
+        
+        const displayIndex = filteredProposals.findIndex(p => p.id === proposalId) + 1;
+        
         // Update modal content
         modalElements.title.textContent = currentProposal.project_title;
-        modalElements.id.textContent = currentProposal.id;
+        modalElements.id.textContent = displayIndex; // Display sequential number instead of DB ID
         modalElements.researcher.textContent = currentProposal.researcher_name;
         modalElements.date.textContent = startDate;
         modalElements.area.textContent = currentProposal.key_research_area || 'N/A';
