@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const API_URL = `${BASE_URL}/api/projects`;
     const USERS_API_URL = `${BASE_URL}/api/users`;
+    const PROPOSALS_API_URL = `${BASE_URL}/api/proposals`; // Endpoint for assigned proposals
     
     // Store for proposals and reviewers
     let projectsData = [];
@@ -253,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Open proposal details modal
-    function openProposalDetails(proposalId) {
+    async function openProposalDetails(proposalId) {
         currentProposal = projectsData.find(p => p.id === proposalId);
         
         if (!currentProposal) return;
@@ -304,19 +305,44 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Display assigned reviewers
-        modalElements.reviewers.innerHTML = '';
-        if (!currentProposal.reviewer) {
-            const li = document.createElement('li');
-            li.textContent = 'No reviewers assigned yet.';
-            modalElements.reviewers.appendChild(li);
-        } else {
-            const li = document.createElement('li');
-            li.textContent = currentProposal.reviewer;
-            modalElements.reviewers.appendChild(li);
-        }
+        await displayAssignedReviewers(proposalId);
         
         // Show the modal
         proposalModal.showModal();
+    }
+    
+    // Display assigned reviewers for a proposal
+    async function displayAssignedReviewers(proposalId) {
+        try {
+            // Fetch assigned reviewers for this proposal
+            const response = await fetch(`${PROPOSALS_API_URL}?project_id=${proposalId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const assignments = await response.json();
+            
+            modalElements.reviewers.innerHTML = '';
+            
+            if (!assignments || assignments.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No reviewers assigned yet.';
+                modalElements.reviewers.appendChild(li);
+            } else {
+                assignments.forEach(assignment => {
+                    const li = document.createElement('li');
+                    // Find reviewer name from reviewersData if available
+                    const reviewer = reviewersData.find(r => r.id === assignment.reviewerId);
+                    li.textContent = reviewer ? reviewer.name : `Reviewer ID: ${assignment.reviewerId}`;
+                    modalElements.reviewers.appendChild(li);
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching assigned reviewers:', error);
+            const li = document.createElement('li');
+            li.textContent = 'Error loading reviewer assignments.';
+            modalElements.reviewers.appendChild(li);
+        }
     }
     
     // Helper function to extract keywords/concepts from text
@@ -502,6 +528,76 @@ document.addEventListener('DOMContentLoaded', function() {
         reviewerProfileModal.showModal();
     }
     
+// Assign reviewer to the current proposal
+async function assignReviewer(reviewer) {
+    if (!currentProposal || !reviewer) return;
+    
+    try {
+        // Prepare the data in exact format that works with your API
+        const assignmentData = {
+            project_id: currentProposal.id,
+            project_name: currentProposal.project_title,
+            reviewerId: reviewer.id,
+            researcherId: currentProposal.researcher_id || 'REV456', // Using default from your working example
+            rating: null,  // Explicitly set to null as in your working example
+            review_message: null,  // Explicitly set to null as in your working example
+            created_at: new Date().toISOString()
+        };
+
+        // Debug log - shows exactly what we're sending
+        console.log('Sending assignment data:', JSON.stringify(assignmentData, null, 2));
+        
+        const response = await fetch(PROPOSALS_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(assignmentData)
+        });
+
+        // More detailed response handling
+        const responseText = await response.text();
+        let responseData;
+        
+        try {
+            responseData = responseText ? JSON.parse(responseText) : {};
+        } catch (e) {
+            console.warn('Could not parse JSON response:', responseText);
+            responseData = { message: responseText };
+        }
+
+        console.log('Server response:', {
+            status: response.status,
+            data: responseData
+        });
+
+        if (!response.ok) {
+            throw new Error(responseData.message || `Server responded with status ${response.status}`);
+        }
+        
+        // Update UI on success
+        currentProposal.reviewer = reviewer.name;
+        currentProposal.reviewerId = reviewer.id;
+        
+        // Close modals
+        assignReviewerModal.close();
+        reviewerProfileModal.close();
+        
+        // Show success message
+        alert(`Successfully assigned ${reviewer.name} to review "${currentProposal.project_title}"`);
+        
+        // Refresh the data
+        fetchProjects();
+        
+    } catch (error) {
+        console.error('Assignment failed:', {
+            error: error.toString(),
+            stack: error.stack
+        });
+        alert(`Failed to assign reviewer: ${error.message}`);
+    }
+}
+    
     // Search for available reviewers
     async function searchReviewers(searchTerm) {
         assignModalElements.reviewersList.innerHTML = '';
@@ -551,63 +647,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return params;
-    }
-    
-    // Assign reviewer to the current proposal
-    async function assignReviewer(reviewer) {
-        if (!reviewer || !currentProposal) {
-            console.error('Missing reviewer or proposal data');
-            return;
-        }
-        
-        try {
-            // Update project with reviewer information
-            const response = await fetch(`${API_URL}/${currentProposal.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    reviewer: reviewer.name,
-                    reviewer_id: reviewer.id,
-                    status: 'in-review'
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            // Update local data
-            currentProposal.reviewer = reviewer.name;
-            currentProposal.reviewer_id = reviewer.id;
-            currentProposal.status = 'in-review';
-            
-            // Close modals
-            assignReviewerModal.close();
-            reviewerProfileModal.close();
-            
-            // Refetch data to ensure we have the latest
-            await fetchProjects();
-            
-            // Show a success message
-            alert(`Reviewer "${reviewer.name}" successfully assigned to "${currentProposal.project_title}"`);
-            
-        } catch (error) {
-            console.error('Error assigning reviewer:', error);
-            alert('Failed to assign reviewer. Please try again later.');
-            
-            // For prototype purposes, update the UI even if the API call fails
-            currentProposal.reviewer = reviewer.name;
-            currentProposal.reviewer_id = reviewer.id;
-            currentProposal.status = 'in-review';
-            
-            // Close modals
-            assignReviewerModal.close();
-            reviewerProfileModal.close();
-            
-            loadProposals();
-        }
     }
     
     // Setup event listeners
