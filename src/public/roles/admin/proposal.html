@@ -3,222 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin proposal - CollabNexus Research Hub</title>
-    <meta name="description" content="Admin proposal for CollabNexus Research Hub">
+    <title>Assigned Proposals - CollabNexus Research Hub</title>
+    <meta name="description" content="Assigned proposals for review on CollabNexus Research Hub">
     <meta name="author" content="CollabNexus">
-
-    <link rel="stylesheet" href="css/admin-styles2.css">
-
-    <link rel="stylesheet" href="css/proposals.css">
-    <link rel="stylesheet" href="css/proposals1.css">
-    <!-- Font Awesome for icons -->
+    
+    <meta property="og:title" content="Assigned Proposals - CollabNexus Research Hub">
+    <meta property="og:description" content="Assigned proposals for review on CollabNexus Research Hub">
+    <meta property="og:type" content="website">
+    
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/reviewer-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .proposals-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .proposals-table th, .proposals-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: middle;
+        }
+
+        .proposals-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: none;
+        }
+
+        .proposals-table tr:hover td {
+            background-color: #f8f9fa;
+        }
+
+        .proposals-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #6D28D9;
+            color: white;
+            border: 1px solid #6D28D9;
+        }
+
+        .btn-primary:hover {
+            background-color: #5B21B6;
+            border-color: #5B21B6;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #dee2e6;
+            color: #212529;
+        }
+
+        .btn-outline:hover {
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-pending {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        .status-approved {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-revision {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .evaluation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fa-star.selected {
+        color: #ffc107 !important;
+        }
+
+        .fa-star.hovered {
+    color: #ffc107 !important;
+        }
+        
+        .rating-star {
+            color: #adb5bd;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .rating-star.selected {
+            color: #ffc107;
+        }
+
+        .rating-star.hovered {
+            color: #ffc107;
+        }
+        
+        .rating-star.selected i {
+            color: #ffc107 !important;
+        }
+        
+        .rating-star.hovered i {
+            color: #ffc107 !important;
+        }
+        
+        /* Read-only styling for feedback */
+        #feedback[readonly] {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            cursor: not-allowed;
+        }
+        
+        /* Disabled radio button styling */
+        input[type="radio"]:disabled + label {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar">
-        <header class="logo">
-            <a href="dashboard.html" class="logo">
+        <a href="reviewer-dashboard.html" class="logo">
             <i class="fas fa-book-open book-logo"></i>
             CollabNexus
         </a>
-        </header>
         <ul class="nav-links">
-            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="proposal.html" class="active"><i class="fas fa-file-alt"></i>Manage Proposals</a></li>
-            <li><a href="userManagement.html"><i class="fas fa-users"></i> Manage Users</a></li>
+            <li><a href="reviewer-dashboard.html"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+            <li><a href="proposals.html" class="active"><i class="fas fa-clipboard-list"></i> Assigned Proposals</a></li>
+            <li><a href="history.html"><i class="fas fa-history"></i> Review History</a></li>
             <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
         </ul>
     </nav>
-      
-    <main class="admin-proposal">
-        <header class="proposal-header">
-            <h1>Submitted Proposals</h1>
-            <p>Manage all research proposals and assign reviewers</p>
+
+    <main class="reviewer-dashboard">
+        <header class="dashboard-header">
+            <h1>Assigned Proposals</h1>
+            <p>Here are all the proposals currently assigned to you for evaluation.</p>
         </header>
 
-        <section class="filter-section">
-            <form class="filter-form">
-                <fieldset>
-                    <select id="status-filter" class="styled-input">
-                        <option value="all">Filter by Status</option>
-                        <option value="pending">Pending Review</option>
-                        <option value="in-review">In Review</option>
+        <section class="proposals-card">
+            <header class="card-header">
+                <h2>Your Proposals</h2>
+                <fieldset class="filter-controls">
+                    <select class="styled-select">
+                        <option value="all">All Proposals</option>
+                        <option value="pending">Pending</option>
                         <option value="approved">Approved</option>
-                        <option value="completed">Rejected</option>
                         <option value="revision">Needs Revision</option>
+                        <option value="rejected">Rejected</option>
                     </select>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply</button>
+                    <button class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
                 </fieldset>
-            </form>
-        </section>
-
-        <section class="proposal-list-section">
-            <h2>Research Proposals</h2>
-            <table class="proposal-table">
+            </header>
+            <table class="proposals-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Title</th>
-                        <th>Researcher</th>
-                        <th>Submitted Date</th>
-                        <th>Research Area</th>
+                        <th>Author</th>
+                        <th>Submission Date</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
-                <tbody id="proposals-list">
-                    <!-- Proposals will be loaded here by JavaScript -->
+                <tbody>
+                    <tr>
+                        <td>Novel Approaches to Quantum Computing</td>
+                        <td>Dr. Sarah Chen</td>
+                        <td>April 28, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary edit-btn" data-proposal="quantum-computing">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>AI Applications in Medical Diagnostics</td>
+                        <td>Dr. Michael Johnson</td>
+                        <td>April 21, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary edit-btn" data-proposal="ai-medical">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>Sustainable Agriculture Techniques</td>
+                        <td>Dr. Elena Rodriguez</td>
+                        <td>April 23, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary edit-btn" data-proposal="sustainable-ag">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>Climate Change Impact on Marine Ecosystems</td>
+                        <td>Prof. James Wilson</td>
+                        <td>April 25, 2025</td>
+                        <td><mark class="status-badge status-pending">Pending</mark></td>
+                        <td><button class="btn btn-primary edit-btn" data-proposal="climate-change">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>Renewable Energy Integration in Urban Infrastructure</td>
+                        <td>Dr. Lisa Morgan</td>
+                        <td>April 20, 2025</td>
+                        <td><mark class="status-badge status-approved">Approved</mark></td>
+                        <td><button class="btn btn-outline view-btn" data-proposal="renewable-energy">View</button></td>
+                    </tr>
                 </tbody>
             </table>
         </section>
     </main>
 
-    <!-- Modal for Proposal Details -->
-    <dialog id="proposal-modal" class="modal">
+    <section class="evaluation-modal">
         <article class="modal-content">
             <header class="modal-header">
-                <h2 id="modal-proposal-title">Proposal Title</h2>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
+                <h2>Proposal Evaluation</h2>
+                <button class="close-modal" aria-label="Close modal">×</button>
             </header>
             <section class="modal-body">
-                <article class="proposal-details">
-                    <h3>Proposal Details</h3>
-                    <p><strong>ID:</strong> <em id="modal-proposal-id"></em></p>
-                    <p><strong>Researcher:</strong> <em id="modal-proposal-researcher"></em></p>
-                    <p><strong>Submitted Date:</strong> <time id="modal-proposal-date"></time></p>
-                    <p><strong>Research Area:</strong> <em id="modal-proposal-area"></em></p>
-                    <p><strong>Status:</strong> <em id="modal-proposal-status"></em></p>
-                </article>
+                <h3 id="proposal-title">Novel Approaches to Quantum Computing</h3>
+                <p class="proposal-meta">By <em id="proposal-author">Dr. Sarah Chen</em> • Submitted <time id="proposal-date">April 28, 2025</time></p>
                 
-                <article class="proposal-abstract">
-                    <h3>Abstract</h3>
-                    <p id="modal-proposal-abstract"></p>
-                </article>
-                
-                <article class="key-concepts">
-                    <h3>Key Research Areas/Concepts</h3>
-                    <ul id="modal-proposal-concepts"></ul>
-                </article>
-                
-                <article class="assigned-reviewers">
-                    <h3>Assigned Reviewers</h3>
-                    <ul id="modal-assigned-reviewers">
-                        <!-- Assigned reviewers will be displayed here -->
-                    </ul>
-                </article>
-            </section>
-            <footer class="modal-footer">
-                <button id="assign-reviewers-btn" class="btn btn-primary"><i class="fas fa-user-plus"></i> Assign Reviewers</button>
-            </footer>
-        </article>
-    </dialog>
-    
-
-    <!-- Modal for Assigning Reviewers -->
-    <dialog id="assign-reviewer-modal" class="modal">
-        <article class="modal-content">
-            <header class="modal-header">
-                <h2>Assign Reviewers</h2>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </header>
-            <section class="modal-body">
-                <p>Assign reviewers to <strong id="assign-proposal-title"></strong></p>
-                
-                <section class="reviewer-search">
-                    <label for="reviewer-search-input">Search Reviewers by Expertise:</label>
-                    <input type="text" id="reviewer-search-input" class="styled-input" placeholder="E.g., Machine Learning, Genomics">
-                    <button id="search-reviewers-btn" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
-                </section>
-                
-                <section class="reviewer-selection">
-                    <h3>Available Reviewers</h3>
-                    <p class="info-text">Select reviewers who match the research area expertise.</p>
-                    <ul id="available-reviewers" class="reviewer-list">
-                        <!-- Available reviewers will be loaded here -->
-                    </ul>
-                </section>
+                <form id="evaluation-form">
+                    <fieldset class="form-group">
+                        <legend>Feedback</legend>
+                        <textarea id="feedback" class="styled-input" rows="6" placeholder="Enter your detailed feedback here..." required></textarea>
+                    </fieldset>
+                    
+                    <fieldset class="form-group rating-container">
+                        <legend>Quality Rating</legend>
+                        <p class="rating-stars">
+                            <button type="button" class="rating-star" data-value="1" aria-label="Rate 1 star"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="2" aria-label="Rate 2 stars"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="3" aria-label="Rate 3 stars"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="4" aria-label="Rate 4 stars"><i class="far fa-star"></i></button>
+                            <button type="button" class="rating-star" data-value="5" aria-label="Rate 5 stars"><i class="far fa-star"></i></button>
+                        </p>
+                        <input type="hidden" id="rating-value" name="rating" class="rating-value" required>
+                        <p class="rating-label">Selected: <output id="rating-display" for="rating-value">0/5</output></p>
+                    </fieldset>
+                    
+                    <fieldset class="form-group">
+                        <legend>Recommendation</legend>
+                        <ul class="recommendation-options">
+                            <li>
+                                <input type="radio" id="approve" name="recommendation" value="approve" required>
+                                <label for="approve">Approve</label>
+                            </li>
+                            <li>
+                                <input type="radio" id="revision" name="recommendation" value="revision">
+                                <label for="revision">Request Revision</label>
+                            </li>
+                            <li>
+                                <input type="radio" id="reject" name="recommendation" value="reject">
+                                <label for="reject">Reject</label>
+                            </li>
+                        </ul>
+                    </fieldset>
+                    
+                    <footer class="modal-footer">
+                        <button type="button" class="btn btn-outline cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Evaluation</button>
+                    </footer>
+                </form>
             </section>
         </article>
-    </dialog>
-    
-    <!-- Add this HTML code to your page to create the reviewer profile modal -->
-<dialog id="reviewer-profile-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h2>Reviewer Profile</h2>
-        
-        <div class="profile-details">
-            <div class="profile-section">
-                <h3 id="reviewer-name"></h3>
-                <p><strong>Role:</strong> <span id="reviewer-role"></span></p>
-                <p><strong>Department:</strong> <span id="reviewer-department"></span></p>
-                <p><strong>Academic Role:</strong> <span id="reviewer-academic-role"></span></p>
-                <p><strong>Email:</strong> <span id="reviewer-email"></span></p>
-                <p><strong>Phone:</strong> <span id="reviewer-phone"></span></p>
-            </div>
-            
-            <div class="profile-section">
-                <h3>Research Information</h3>
-                <p><strong>Research Area:</strong> <span id="reviewer-research-area"></span></p>
-                <p><strong>Research Experience:</strong> <span id="reviewer-research-experience"></span> years</p>
-                <p><strong>Qualifications:</strong> <span id="reviewer-qualifications"></span></p>
-                <p><strong>Current Project:</strong> <span id="reviewer-current-project"></span></p>
-            </div>
-        </div>
-        
-        <div class="modal-footer">
-            <button id="select-reviewer-btn" class="btn primary-btn">Assign as Reviewer</button>
-        </div>
-    </div>
-</dialog>
+    </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <section class="container">
-            <section class="footer-content">
+            <nav class="footer-content">
                 <article class="footer-column">
-                    <header class="footer-logo">
+                    <h3 class="footer-logo">
                         <i class="fas fa-book-open book-logo"></i>
                         CollabNexus
-                    </header>
-                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
-                </article>
-                <article class="footer-column">
-                    <h3>Solutions</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">For Researchers</a></li>
-                        <li><a href="#">For Universities</a></li>
-                        <li><a href="#">For Industry</a></li>
-                        <li><a href="#">For Funding Agencies</a></li>
-                    </ul>
+                    </h3>
+                    <p>A platform for collaborative research and knowledge sharing.</p>
                 </article>
                 <article class="footer-column">
                     <h3>Resources</h3>
                     <ul class="footer-links">
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Research Guides</a></li>
-                        <li><a href="#">Webinars</a></li>
-                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Reviewer Guidelines</a></li>
+                        <li><a href="#">Best Practices</a></li>
+                        <li><a href="#">FAQs</a></li>
                     </ul>
                 </article>
                 <article class="footer-column">
-                    <h3>Company</h3>
+                    <h3>Support</h3>
                     <ul class="footer-links">
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Report Issue</a></li>
                     </ul>
                 </article>
-            </section>
-            <section class="footer-bottom">
-                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
-            </section>
+                <article class="footer-column">
+                    <h3>Legal</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </article>
+            </nav>
+            <p class="footer-bottom">© 2025 CollabNexus Research Hub. All rights reserved.</p>
         </section>
     </footer>
 
-    <script src="js/proposal.js"></script>
+    <script src="js/reviewer-dashboard.js"></script>
+    <script src="proposal-detalis"></script>
 </body>
 </html>
