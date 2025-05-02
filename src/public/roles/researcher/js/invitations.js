@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
   : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
 
   const RECEIVED_INVITATIONS_ENDPOINT = `${API_BASE_URL}/received_invitations`;
-  const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/sent_invitations`; // Assuming this will be added later
+  const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/project_invitations`; // Assuming this will be added later
   const INVITATIONS_ENDPOINT = `${API_BASE_URL}/invitations`; // For operations like updating status
 
   // Tab switching logic
@@ -99,7 +99,13 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Use a mock response for now until the sent invitations API is implemented
       // In the future, replace this with: const response = await fetch(SENT_INVITATIONS_ENDPOINT);
-      return [];
+      const response = await fetch(SENT_INVITATIONS_ENDPOINT);
+      if (!response.ok) {
+        throw new Error('Failed to fetch SENT invitations');
+      }
+      
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error('Error fetching sent invitations:', error);
       showToast('Error loading sent invitations. Please try again.', 'error');
