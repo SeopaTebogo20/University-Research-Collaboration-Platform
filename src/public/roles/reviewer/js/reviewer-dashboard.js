@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Evaluations data (would normally be loaded from evaluations.json)
-    let evaluations = [
+    // Load evaluations from localStorage or use default
+    let evaluations = JSON.parse(localStorage.getItem('evaluations')) || [
         {
             proposalId: "quantum-computing",
             title: "Novel Approaches to Quantum Computing",
@@ -100,6 +100,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     ];
 
+    // Initialize the UI with saved evaluations
+    function initializeUI() {
+        evaluations.forEach(evaluation => {
+            if (evaluation.status !== 'pending') {
+                const row = document.querySelector(`.evaluate-btn[data-proposal="${evaluation.proposalId}"]`)?.closest('tr');
+                if (row) {
+                    const statusCell = row.querySelector('.status-badge');
+                    const evaluateBtn = row.querySelector('.evaluate-btn');
+                    
+                    // Update status badge
+                    switch(evaluation.status) {
+                        case 'approved':
+                            statusCell.textContent = 'Approved';
+                            statusCell.className = 'status-badge status-approved';
+                            break;
+                        case 'revision':
+                            statusCell.textContent = 'Needs Revision';
+                            statusCell.className = 'status-badge status-revision';
+                            break;
+                        case 'rejected':
+                            statusCell.textContent = 'Rejected';
+                            statusCell.className = 'status-badge status-rejected';
+                            break;
+                    }
+                    
+                    // Update button to view mode
+                    if (evaluateBtn) {
+                        evaluateBtn.textContent = 'View';
+                        evaluateBtn.className = 'btn btn-outline view-btn';
+                        evaluateBtn.setAttribute('data-proposal', evaluation.proposalId);
+                    }
+                }
+            }
+        });
+    }
+
     // Function to show modal
     function showModal() {
         evaluationModal.style.display = 'flex';
@@ -119,6 +155,11 @@ document.addEventListener('DOMContentLoaded', function() {
             radio.disabled = false;
         });
         
+        // Reset star interaction
+        ratingStars.forEach(star => {
+            star.style.pointerEvents = 'auto';
+        });
+        
         // Reset submit button
         const submitBtn = document.querySelector('.modal-footer .btn-primary');
         submitBtn.textContent = 'Submit Evaluation';
@@ -131,9 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
         ratingStars.forEach((star, index) => {
             // Mouseover event
             star.addEventListener('mouseover', () => {
-                // Highlight this star and all previous stars
-                for (let i = 0; i <= index; i++) {
-                    ratingStars[i].querySelector('i').classList.add('hovered');
+                // Only allow hover if not in view mode
+                if (!document.getElementById('feedback').readOnly) {
+                    // Highlight this star and all previous stars
+                    for (let i = 0; i <= index; i++) {
+                        ratingStars[i].querySelector('i').classList.add('hovered');
+                    }
                 }
             });
             
@@ -150,27 +194,30 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Click event
             star.addEventListener('click', () => {
-                currentRating = parseInt(star.getAttribute('data-value'));
-                document.getElementById('rating-value').value = currentRating;
-                
-                // Update visual state of stars
-                ratingStars.forEach((s, i) => {
-                    const icon = s.querySelector('i');
-                    if (icon) {
-                        if (i < currentRating) {
-                            icon.classList.add('selected');
-                            icon.classList.remove('far');
-                            icon.classList.add('fas');
-                        } else {
-                            icon.classList.remove('selected');
-                            icon.classList.remove('fas');
-                            icon.classList.add('far');
+                // Only allow rating if not in view mode
+                if (!document.getElementById('feedback').readOnly) {
+                    currentRating = parseInt(star.getAttribute('data-value'));
+                    document.getElementById('rating-value').value = currentRating;
+                    
+                    // Update visual state of stars
+                    ratingStars.forEach((s, i) => {
+                        const icon = s.querySelector('i');
+                        if (icon) {
+                            if (i < currentRating) {
+                                icon.classList.add('selected');
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                            } else {
+                                icon.classList.remove('selected');
+                                icon.classList.remove('fas');
+                                icon.classList.add('far');
+                            }
                         }
-                    }
-                });
-                
-                // Update rating display
-                document.getElementById('rating-display').textContent = currentRating + '/5';
+                    });
+                    
+                    // Update rating display
+                    document.getElementById('rating-display').textContent = currentRating + '/5';
+                }
             });
         });
     }
@@ -201,29 +248,36 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set feedback (readonly)
         const feedbackField = document.getElementById('feedback');
-        feedbackField.value = evaluation.feedback;
+        feedbackField.value = evaluation.feedback || "No feedback available";
         feedbackField.readOnly = true;
         
         // Set rating
-        currentRating = evaluation.rating;
+        currentRating = evaluation.rating || 0;
         document.getElementById('rating-value').value = currentRating;
         ratingStars.forEach((star, index) => {
             const icon = star.querySelector('i');
-            if (index < currentRating) {
-                icon.classList.add('selected');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-            } else {
-                icon.classList.remove('selected');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
+            if (icon) {
+                if (index < currentRating) {
+                    icon.classList.add('selected');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                } else {
+                    icon.classList.remove('selected');
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                }
             }
+            // Disable star interaction in view mode
+            star.style.pointerEvents = 'none';
         });
         document.getElementById('rating-display').textContent = currentRating + '/5';
         
         // Set recommendation (disabled)
         if (evaluation.recommendation) {
-            document.getElementById(evaluation.recommendation).checked = true;
+            const recommendationEl = document.getElementById(evaluation.recommendation);
+            if (recommendationEl) {
+                recommendationEl.checked = true;
+            }
             document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
                 radio.disabled = true;
             });
@@ -243,12 +297,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize star rating system
     setupStarRating();
+    initializeUI();
 
     // Open modal when evaluate button is clicked
     evaluateButtons.forEach(button => {
         button.addEventListener('click', function() {
             const proposalId = this.getAttribute('data-proposal');
             currentProposalId = proposalId;
+            
+            // Get existing evaluation data if it exists
+            const existingEvaluation = evaluations.find(e => e.proposalId === proposalId);
             const proposal = proposals[proposalId];
             
             proposalTitle.textContent = proposal.title;
@@ -258,9 +316,46 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset form in case it was previously used
             evaluationForm.reset();
             resetStarRating();
+            
+            // If there's existing data, populate the form with it
+            if (existingEvaluation && existingEvaluation.feedback) {
+                document.getElementById('feedback').value = existingEvaluation.feedback;
+                
+                if (existingEvaluation.rating > 0) {
+                    currentRating = existingEvaluation.rating;
+                    document.getElementById('rating-value').value = currentRating;
+                    
+                    // Update stars visual
+                    ratingStars.forEach((star, i) => {
+                        const icon = star.querySelector('i');
+                        if (icon) {
+                            if (i < currentRating) {
+                                icon.classList.add('selected');
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                            }
+                        }
+                    });
+                    
+                    document.getElementById('rating-display').textContent = currentRating + '/5';
+                }
+                
+                if (existingEvaluation.recommendation) {
+                    const recommendationEl = document.getElementById(existingEvaluation.recommendation);
+                    if (recommendationEl) {
+                        recommendationEl.checked = true;
+                    }
+                }
+            }
+            
             document.getElementById('feedback').readOnly = false;
             document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
                 radio.disabled = false;
+            });
+            
+            // Enable star interaction
+            ratingStars.forEach(star => {
+                star.style.pointerEvents = 'auto';
             });
             
             // Reset submit button
@@ -282,12 +377,44 @@ document.addEventListener('DOMContentLoaded', function() {
             showEvaluation(proposalId);
         });
     });
+    
+    // Update existing evaluate buttons converted to view buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-btn')) {
+            const proposalId = e.target.getAttribute('data-proposal');
+            if (proposalId) {
+                currentProposalId = proposalId;
+                showEvaluation(proposalId);
+            }
+        }
+    });
 
     // Close modal when X button is clicked
     closeModalButton.addEventListener('click', closeModal);
 
     // Close modal when Cancel button is clicked
     cancelButton.addEventListener('click', closeModal);
+
+    // Save form data in case of accidental closure
+    let tempFormData = {};
+    
+    // Monitor for form changes and save to temporary storage
+    evaluationForm.addEventListener('input', function(e) {
+        if (currentProposalId) {
+            tempFormData[currentProposalId] = tempFormData[currentProposalId] || {};
+            
+            if (e.target.id === 'feedback') {
+                tempFormData[currentProposalId].feedback = e.target.value;
+            } else if (e.target.name === 'recommendation') {
+                tempFormData[currentProposalId].recommendation = e.target.value;
+            }
+            
+            // Rating is handled separately via the star rating system
+            
+            // Save to session storage (persists while browser is open)
+            sessionStorage.setItem('tempFormData', JSON.stringify(tempFormData));
+        }
+    });
 
     // Handle form submission
     evaluationForm.addEventListener('submit', function(e) {
@@ -302,78 +429,133 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Update evaluations data
-        const evaluationIndex = evaluations.findIndex(e => e.proposalId === currentProposalId);
-        if (evaluationIndex !== -1) {
-            evaluations[evaluationIndex] = {
-                ...evaluations[evaluationIndex],
-                feedback,
-                rating: currentRating,
-                recommendation: recommendation.value,
-                status: recommendation.value === 'approve' ? 'approved' : 
-                       recommendation.value === 'revision' ? 'revision' : 'rejected'
-            };
-        } else {
-            // If not found, add new evaluation (shouldn't happen in this case)
-            evaluations.push({
-                proposalId: currentProposalId,
-                title: proposalTitle.textContent,
-                author: proposalAuthor.textContent,
-                date: proposalDate.textContent,
-                feedback,
-                rating: currentRating,
-                recommendation: recommendation.value,
-                status: recommendation.value === 'approve' ? 'approved' : 
-                       recommendation.value === 'revision' ? 'revision' : 'rejected'
-            });
+        // Create a backup of current evaluations
+        const evaluationsBackup = JSON.stringify(evaluations);
+        
+        try {
+            // Update evaluations data
+            const evaluationIndex = evaluations.findIndex(e => e.proposalId === currentProposalId);
+            if (evaluationIndex !== -1) {
+                evaluations[evaluationIndex] = {
+                    ...evaluations[evaluationIndex],
+                    feedback,
+                    rating: currentRating,
+                    recommendation: recommendation.value,
+                    status: recommendation.value === 'approve' ? 'approved' : 
+                           recommendation.value === 'revision' ? 'revision' : 'rejected'
+                };
+            } else {
+                // If not found, add new evaluation (shouldn't happen in this case)
+                evaluations.push({
+                    proposalId: currentProposalId,
+                    title: proposalTitle.textContent,
+                    author: proposalAuthor.textContent,
+                    date: proposalDate.textContent,
+                    feedback,
+                    rating: currentRating,
+                    recommendation: recommendation.value,
+                    status: recommendation.value === 'approve' ? 'approved' : 
+                           recommendation.value === 'revision' ? 'revision' : 'rejected'
+                });
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('evaluations', JSON.stringify(evaluations));
+            
+            // Clear the temporary form data for this proposal
+            if (tempFormData[currentProposalId]) {
+                delete tempFormData[currentProposalId];
+                sessionStorage.setItem('tempFormData', JSON.stringify(tempFormData));
+            }
+            
+            // Show success message with feedback confirmation
+            const feedbackPreview = feedback.length > 50 ? feedback.substring(0, 50) + '...' : feedback;
+            alert(`Evaluation submitted successfully!\n\nFeedback saved: "${feedbackPreview}"\nRating: ${currentRating}/5\nRecommendation: ${recommendation.value}`);
+            
+            // Update the UI to reflect the new status
+            const row = document.querySelector(`.evaluate-btn[data-proposal="${currentProposalId}"]`)?.closest('tr');
+            if (row) {
+                const statusCell = row.querySelector('.status-badge');
+                const evalButton = row.querySelector('.evaluate-btn');
+                
+                // Update status
+                const status = evaluations.find(e => e.proposalId === currentProposalId)?.status;
+                if (status) {
+                    // Update status badge
+                    switch(status) {
+                        case 'approved':
+                            statusCell.textContent = 'Approved';
+                            statusCell.className = 'status-badge status-approved';
+                            break;
+                        case 'revision':
+                            statusCell.textContent = 'Needs Revision';
+                            statusCell.className = 'status-badge status-revision';
+                            break;
+                        case 'rejected':
+                            statusCell.textContent = 'Rejected';
+                            statusCell.className = 'status-badge status-rejected';
+                            break;
+                    }
+                    
+                    // Update button
+                    if (evalButton) {
+                        evalButton.textContent = 'View';
+                        evalButton.className = 'btn btn-outline view-btn';
+                    }
+                }
+            }
+            
+            // Close the modal
+            closeModal();
+            
+        } catch (error) {
+            // If there's an error, restore from backup
+            console.error("Error saving evaluation:", error);
+            alert("There was an error saving your evaluation. Please try again.");
+            localStorage.setItem('evaluations', evaluationsBackup);
         }
-        
-        // Show success message
-        alert('Evaluation submitted successfully!');
-        
-        // Close modal
-        closeModal();
-        
-        // Update the UI to reflect the new status
-        const row = document.querySelector(`.evaluate-btn[data-proposal="${currentProposalId}"]`).closest('tr');
-        const statusCell = row.querySelector('.status-badge');
-        
-        switch(recommendation.value) {
-            case 'approve':
-                statusCell.textContent = 'Approved';
-                statusCell.className = 'status-badge status-approved';
-                break;
-            case 'revision':
-                statusCell.textContent = 'Needs Revision';
-                statusCell.className = 'status-badge status-revision';
-                break;
-            case 'reject':
-                statusCell.textContent = 'Rejected';
-                statusCell.className = 'status-badge status-rejected';
-                break;
-        }
-        
-        // Change evaluate button to view button
-        const evaluateBtn = row.querySelector('.evaluate-btn');
-        evaluateBtn.textContent = 'View';
-        evaluateBtn.className = 'btn btn-outline view-btn';
-        evaluateBtn.setAttribute('data-proposal', currentProposalId);
-        
-        // Update event listener for the new view button
-        evaluateBtn.addEventListener('click', function() {
-            showEvaluation(currentProposalId);
-        });
     });
 
-    // Filter proposals by status
+    // Refresh button functionality with data verification
+    refreshButton.addEventListener('click', function() {
+        // Check if there's saved data first
+        const savedData = localStorage.getItem('evaluations');
+        if (savedData) {
+            try {
+                // Try to parse the data to verify it's valid JSON
+                const parsedData = JSON.parse(savedData);
+                if (Array.isArray(parsedData)) {
+                    // Valid data, reload the page
+                    window.location.reload();
+                } else {
+                    throw new Error("Saved data is not in expected format");
+                }
+            } catch (e) {
+                console.error("Error parsing saved evaluations:", e);
+                alert("There was an issue with the saved evaluation data. Restoring default data.");
+                localStorage.removeItem('evaluations');
+                window.location.reload();
+            }
+        } else {
+            // No saved data, just reload
+            window.location.reload();
+        }
+    });
+
+    // Filter functionality
     statusFilter.addEventListener('change', function() {
-        const status = this.value;
+        const selectedStatus = this.value;
         const rows = document.querySelectorAll('.proposals-table tbody tr');
         
         rows.forEach(row => {
-            const rowStatus = row.querySelector('.status-badge').textContent.toLowerCase();
+            const statusBadge = row.querySelector('.status-badge');
+            const status = statusBadge ? statusBadge.textContent.toLowerCase() : '';
             
-            if (status === 'all' || rowStatus.includes(status)) {
+            if (selectedStatus === 'all' || 
+                (selectedStatus === 'pending' && status === 'pending') ||
+                (selectedStatus === 'approved' && status === 'approved') ||
+                (selectedStatus === 'revision' && status === 'needs revision') ||
+                (selectedStatus === 'rejected' && status === 'rejected')) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
@@ -381,22 +563,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Refresh button
-    refreshButton.addEventListener('click', function() {
-        // In a real app, this would fetch updated data from the server
-        console.log('Refreshing data...');
-        this.querySelector('i').classList.add('fa-spin');
-        
-        setTimeout(() => {
-            this.querySelector('i').classList.remove('fa-spin');
-        }, 1000);
-    });
-    
-    // Prevent closing when clicking inside the modal content
-    const modalContent = document.querySelector('.modal-content');
-    if (modalContent) {
-        modalContent.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
+    // Check for unsaved form data on page load
+    try {
+        const savedTemp = sessionStorage.getItem('tempFormData');
+        if (savedTemp) {
+            tempFormData = JSON.parse(savedTemp);
+        }
+    } catch (e) {
+        console.error("Error loading temporary form data:", e);
+        sessionStorage.removeItem('tempFormData');
     }
+    
+    // Window beforeunload event - warn user if they have unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        // Check if there's any unsaved form data
+        if (Object.keys(tempFormData).length > 0) {
+            // Standard way to show confirmation dialog when leaving page
+            const confirmationMessage = 'You have unsaved evaluation feedback. Are you sure you want to leave?';
+            e.returnValue = confirmationMessage;
+            return confirmationMessage;
+        }
+    });
 });
