@@ -88,36 +88,7 @@ body {
     background-color: var(--light-purple);
 }
 
-/* Main Content - Updated to match proposal style */
-.admin-proposal {
-    margin-top: 4rem;
-    padding: 2rem;
-    flex: 1;
-    min-height: calc(100vh - 4rem);
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
-}
 
-.proposal-header {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: var(--card-shadow);
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-}
-
-.proposal-header h1 {
-    margin: 0;
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.proposal-header p {
-    margin: 0.5rem 0 0;
-    color: var(--text-secondary);
-}
 
 /* Filter Section - Styled as cards */
 .filter-section {
@@ -618,13 +589,7 @@ body {
 }
 
 /* Filter Section */
-.filter-section, .search-section {
-    background: white;
-    border-radius: 0.5rem;
-    box-shadow: var(--card-shadow);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
+
 
 .filter-form fieldset, .search-form fieldset {
     border: none;

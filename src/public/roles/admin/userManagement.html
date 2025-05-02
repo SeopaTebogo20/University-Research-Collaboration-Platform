@@ -8,6 +8,9 @@
     <meta name="author" content="CollabNexus">
     
     <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-styles2.css">
+    <link rel="stylesheet" href="css/proposals1.css">
+    <link rel="stylesheet" href="css/users.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -22,9 +25,10 @@
         
         </header>
         <ul class="nav-links">
-            <li><a href="proposal.html"><i class="fas fa-chart-line"></i> proposal</a></li>
-            <li><a href="userManagement.html"><i class="fas fa-users"></i> User Management</a></li>
-            <li><a href="messages.html" class="active"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="proposal.html"><i class="fas fa-file-alt"></i>Manage Proposals</a></li>
+            <li><a href="userManagement.html" class="active"><i class="fas fa-users"></i> Manage Users</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
             <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </nav>
@@ -34,37 +38,10 @@
             <h1>User Management</h1>
             <p>Manage researcher and reviewer accounts</p>
         </header>
-
-        <section class="filter-section">
-            <form class="filter-form">
-                <fieldset>
-                    <legend>Filter Users</legend>
-                    <label for="role-filter">Role:</label>
-                    <select id="role-filter" class="styled-input">
-                        <option value="all">All Roles</option>
-                        <option value="researcher">Researcher</option>
-                        <option value="reviewer">Reviewer</option>
-                        <option value="admin">Admin</option>
-                    </select>
-
-                    <label for="status-filter">Status:</label>
-                    <select id="status-filter" class="styled-input">
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="pending">Pending</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
-                </fieldset>
-            </form>
-        </section>
-
         <section class="search-section">
             <form class="search-form">
                 <fieldset>
-                    <legend>Search Users</legend>
-                    <input type="text" id="search-input" class="styled-input" placeholder="Search by name or email...">
+                    <input type="text" id="search-input" class="styled-input" placeholder="Search users ...">
                     <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
                 </fieldset>
             </form>
@@ -90,75 +67,6 @@
             </table>
         </section>
     </main>
-
-    <!-- Modal for Edit User -->
-    <section id="edit-user-modal" class="modal">
-        <article class="modal-content">
-            <header class="modal-header">
-                <h2>Edit User</h2>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </header>
-            <main class="modal-body">
-                <form id="edit-user-form">
-                    <input type="hidden" id="edit-user-id">
-                    
-                    <fieldset class="form-group">
-                        <legend>User Information</legend>
-                        <label for="edit-user-name">Name:</label>
-                        <input type="text" id="edit-user-name" class="styled-input" required>
-                        
-                        <label for="edit-user-email">Email:</label>
-                        <input type="email" id="edit-user-email" class="styled-input" required>
-                        
-                        <label for="edit-user-role">Role:</label>
-                        <select id="edit-user-role" class="styled-input" required>
-                            <option value="researcher">Researcher</option>
-                            <option value="reviewer">Reviewer</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                        
-                        <label for="edit-user-status">Status:</label>
-                        <select id="edit-user-status" class="styled-input" required>
-                            <option value="active">Active</option>
-                            <option value="pending">Pending</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </fieldset>
-                    
-                    <fieldset class="form-group">
-                        <legend>Expertise Areas</legend>
-                        <p class="info-text">For Reviewers, select their areas of expertise</p>
-                        <ul class="expertise-options" id="expertise-options">
-                            <li>
-                                <input type="checkbox" id="expertise-cs" class="styled-checkbox" value="computer-science">
-                                <label for="expertise-cs">Computer Science</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" id="expertise-bio" class="styled-checkbox" value="biology">
-                                <label for="expertise-bio">Biology</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" id="expertise-med" class="styled-checkbox" value="medicine">
-                                <label for="expertise-med">Medicine</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" id="expertise-phys" class="styled-checkbox" value="physics">
-                                <label for="expertise-phys">Physics</label>
-                            </li>
-                            <li>
-                                <input type="checkbox" id="expertise-econ" class="styled-checkbox" value="economics">
-                                <label for="expertise-econ">Economics</label>
-                            </li>
-                        </ul>
-                    </fieldset>
-                </form>
-            </main>
-            <footer class="modal-footer">
-                <button id="save-user-btn" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
-                <button class="btn btn-outline close-modal"><i class="fas fa-times"></i> Cancel</button>
-            </footer>
-        </article>
-    </section>
     
     <!-- Footer -->
     <footer class="footer">

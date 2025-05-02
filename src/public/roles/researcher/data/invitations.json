@@ -53,7 +53,7 @@
         "email": "r.chang@oci.org"
       },
       "invitedDate": "2025-04-20T08:43:19.502Z",
-      "status": "pending",
+      "status": "declined",
       "description": "Developing novel biodegradable polymers that can replace conventional plastics in marine environments",
       "requiredSkills": [
         "Polymer Chemistry",
@@ -62,7 +62,23 @@
         "Biodegradation Testing"
       ],
       "duration": "15 months",
-      "messages": []
+      "messages": [
+        {
+          "text": "fsgsfs",
+          "sender": "you",
+          "timestamp": "2025-05-01T20:33:33.774Z"
+        },
+        {
+          "text": "gt",
+          "sender": "you",
+          "timestamp": "2025-05-01T20:36:01.223Z"
+        },
+        {
+          "text": "gfh",
+          "sender": "you",
+          "timestamp": "2025-05-01T20:36:24.803Z"
+        }
+      ]
     },
     {
       "id": "INV005",

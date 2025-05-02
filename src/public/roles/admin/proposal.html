@@ -8,6 +8,9 @@
     <meta name="author" content="CollabNexus">
 
     <link rel="stylesheet" href="css/admin-styles2.css">
+
+    <link rel="stylesheet" href="css/proposals.css">
+    <link rel="stylesheet" href="css/proposals1.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -21,44 +24,32 @@
         </a>
         </header>
         <ul class="nav-links">
-            <li><a href="proposal.html"><i class="fas fa-chart-line"></i> proposal</a></li>
-            <li><a href="userManagement.html"><i class="fas fa-users"></i> User Management</a></li>
-            <li><a href="messages.html" class="active"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li><a href="dashboard.html"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+            <li><a href="proposal.html" class="active"><i class="fas fa-file-alt"></i>Manage Proposals</a></li>
+            <li><a href="userManagement.html"><i class="fas fa-users"></i> Manage Users</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
             <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
     </nav>
       
     <main class="admin-proposal">
         <header class="proposal-header">
-            <h1>Submitted Proposals proposal</h1>
+            <h1>Submitted Proposals</h1>
             <p>Manage all research proposals and assign reviewers</p>
         </header>
 
         <section class="filter-section">
             <form class="filter-form">
                 <fieldset>
-                    <legend>Filter Proposals</legend>
-                    <label for="status-filter">Status:</label>
                     <select id="status-filter" class="styled-input">
-                        <option value="all">All</option>
+                        <option value="all">Filter by Status</option>
                         <option value="pending">Pending Review</option>
                         <option value="in-review">In Review</option>
                         <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
+                        <option value="completed">Rejected</option>
                         <option value="revision">Needs Revision</option>
                     </select>
-
-                    <label for="research-area-filter">Research Area:</label>
-                    <select id="research-area-filter" class="styled-input">
-                        <option value="all">All Areas</option>
-                        <option value="computer-science">Computer Science</option>
-                        <option value="biology">Biology</option>
-                        <option value="medicine">Medicine</option>
-                        <option value="physics">Physics</option>
-                        <option value="economics">Economics</option>
-                    </select>
-
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply Filters</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply</button>
                 </fieldset>
             </form>
         </section>
@@ -123,6 +114,7 @@
             </footer>
         </article>
     </dialog>
+    
 
     <!-- Modal for Assigning Reviewers -->
     <dialog id="assign-reviewer-modal" class="modal">
@@ -148,13 +140,40 @@
                     </ul>
                 </section>
             </section>
-            <footer class="modal-footer">
-                <button id="confirm-assign-btn" class="btn btn-primary"><i class="fas fa-check"></i> Confirm Assignment</button>
-                <button class="btn btn-outline close-modal"><i class="fas fa-times"></i> Cancel</button>
-            </footer>
         </article>
     </dialog>
     
+    <!-- Add this HTML code to your page to create the reviewer profile modal -->
+<dialog id="reviewer-profile-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Reviewer Profile</h2>
+        
+        <div class="profile-details">
+            <div class="profile-section">
+                <h3 id="reviewer-name"></h3>
+                <p><strong>Role:</strong> <span id="reviewer-role"></span></p>
+                <p><strong>Department:</strong> <span id="reviewer-department"></span></p>
+                <p><strong>Academic Role:</strong> <span id="reviewer-academic-role"></span></p>
+                <p><strong>Email:</strong> <span id="reviewer-email"></span></p>
+                <p><strong>Phone:</strong> <span id="reviewer-phone"></span></p>
+            </div>
+            
+            <div class="profile-section">
+                <h3>Research Information</h3>
+                <p><strong>Research Area:</strong> <span id="reviewer-research-area"></span></p>
+                <p><strong>Research Experience:</strong> <span id="reviewer-research-experience"></span> years</p>
+                <p><strong>Qualifications:</strong> <span id="reviewer-qualifications"></span></p>
+                <p><strong>Current Project:</strong> <span id="reviewer-current-project"></span></p>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button id="select-reviewer-btn" class="btn primary-btn">Assign as Reviewer</button>
+        </div>
+    </div>
+</dialog>
+
     <!-- Footer -->
     <footer class="footer">
         <section class="container">

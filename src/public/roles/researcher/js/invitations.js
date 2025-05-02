@@ -43,7 +43,9 @@ document.addEventListener('DOMContentLoaded', function() {
   ? 'http://localhost:3000/api' 
   : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
 
-  const INVITATIONS_ENDPOINT = `${API_BASE_URL}/invitations`;
+  const RECEIVED_INVITATIONS_ENDPOINT = `${API_BASE_URL}/received_invitations`;
+  const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/sent_invitations`; // Assuming this will be added later
+  const INVITATIONS_ENDPOINT = `${API_BASE_URL}/invitations`; // For operations like updating status
 
   // Tab switching logic
   tabs.forEach(tab => {
@@ -69,35 +71,60 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Fetch invitations from API
-  async function fetchInvitations() {
+  // Fetch received invitations from API
+  async function fetchReceivedInvitations() {
     try {
       // Show loading state before fetch
       receivedContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading invitations...</span></div>';
-      sentContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading invitations...</span></div>';
       
-      const response = await fetch(INVITATIONS_ENDPOINT);
+      const response = await fetch(RECEIVED_INVITATIONS_ENDPOINT);
       if (!response.ok) {
-        throw new Error('Failed to fetch invitations');
+        throw new Error('Failed to fetch received invitations');
       }
       
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching invitations:', error);
-      showToast('Error loading invitations. Please try again.', 'error');
-      return { sentInvitations: [], receivedInvitations: [] };
+      console.error('Error fetching received invitations:', error);
+      showToast('Error loading received invitations. Please try again.', 'error');
+      return [];
+    }
+  }
+  
+  // Fetch sent invitations from API (placeholder for future implementation)
+  async function fetchSentInvitations() {
+    try {
+      // Show loading state before fetch
+      sentContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading invitations...</span></div>';
+      
+      // Use a mock response for now until the sent invitations API is implemented
+      // In the future, replace this with: const response = await fetch(SENT_INVITATIONS_ENDPOINT);
+      return [];
+    } catch (error) {
+      console.error('Error fetching sent invitations:', error);
+      showToast('Error loading sent invitations. Please try again.', 'error');
+      return [];
     }
   }
   
   // Initialize and load invitations
   async function initInvitations() {
-    const data = await fetchInvitations();
-    sentInvitations = data.sentInvitations || [];
-    receivedInvitations = data.receivedInvitations || [];
+    receivedInvitations = await fetchReceivedInvitations();
+    sentInvitations = await fetchSentInvitations();
     
     renderReceivedInvitations();
     renderSentInvitations();
+  }
+  
+  // Parse JSON strings from database if needed
+  function parseJsonField(jsonString) {
+    if (!jsonString) return [];
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error('Error parsing JSON field:', error);
+      return [];
+    }
   }
   
   // Render received invitations
@@ -115,12 +142,14 @@ document.addEventListener('DOMContentLoaded', function() {
       noReceivedMessage.classList.add('hidden');
       
       const invitationsHTML = filteredInvites.map(invitation => {
-        const date = new Date(invitation.invitedDate).toLocaleDateString('en-US', { 
+        // Format date
+        const date = new Date(invitation.invited_date).toLocaleDateString('en-US', { 
           year: 'numeric', 
           month: 'short', 
           day: 'numeric' 
         });
         
+        // Status badge
         let statusBadge = '';
         if (invitation.status === 'pending') {
           statusBadge = '<span class="badge badge-pending">Pending</span>';
@@ -130,6 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
           statusBadge = '<span class="badge badge-danger">Declined</span>';
         }
         
+        // Action buttons (only show if pending)
         let actionButtons = '';
         if (invitation.status === 'pending') {
           actionButtons = `
@@ -142,36 +172,46 @@ document.addEventListener('DOMContentLoaded', function() {
           `;
         }
         
+        // Parse skills if they exist (assuming they might be stored as JSON string)
+        const requiredSkills = invitation.key_research_area ? 
+          parseJsonField(invitation.key_research_area) : [];
+        
+        // Parse messages if they exist
+        const messages = invitation.messages ? 
+          parseJsonField(invitation.messages) : [];
+        
         return `
           <div class="invitation-card">
             <div class="invitation-header">
-              <h3 class="invitation-project-title">${invitation.projectTitle}</h3>
+              <h3 class="invitation-project-title">${invitation.projectTitle || 'Project Invitation'}</h3>
               ${statusBadge}
             </div>
             <div class="invitation-body">
               <div class="invitation-sender">
                 <span class="sender-label">From:</span>
-                <a href="#" class="sender-name view-researcher" data-researcher-id="${invitation.invitedBy.email}">
-                  ${invitation.invitedBy.name}
+                <a href="#" class="sender-name view-researcher" data-researcher-id="${invitation.invitedByEmail}">
+                  ${invitation.invitedByName || 'Researcher'}
                 </a>
-                <span class="sender-title">${invitation.invitedBy.title}</span>
-                <span class="sender-institution">${invitation.invitedBy.institution}</span>
+                <span class="sender-title">${invitation.invitedByTitle || ''}</span>
+                <span class="sender-institution">${invitation.invitedByInstitution || ''}</span>
               </div>
               <div class="invitation-info">
                 <div class="info-item">
                   <i class="fas fa-calendar-alt"></i> Invited on ${date}
                 </div>
                 <div class="info-item">
-                  <i class="fas fa-clock"></i> Duration: ${invitation.duration}
+                  <i class="fas fa-clock"></i> Duration: ${invitation.duration || 'Not specified'}
                 </div>
               </div>
-              <p class="invitation-description">${invitation.description}</p>
-              <div class="required-skills">
-                <span class="skills-label">Required Skills:</span>
-                <div class="skills-list">
-                  ${invitation.requiredSkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+              <p class="invitation-description">${invitation.description || 'No description provided.'}</p>
+              ${requiredSkills.length > 0 ? `
+                <div class="required-skills">
+                  <span class="skills-label">Required Skills:</span>
+                  <div class="skills-list">
+                    ${requiredSkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                  </div>
                 </div>
-              </div>
+              ` : ''}
             </div>
             <div class="invitation-footer">
               <button class="btn btn-outline btn-sm view-project-btn" data-project-id="${invitation.projectId}">
@@ -192,95 +232,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Render sent invitations
+  // Render sent invitations (placeholder for future implementation)
   function renderSentInvitations(statusFilter = 'all') {
-    let filteredInvites = sentInvitations;
-    
-    if (statusFilter !== 'all') {
-      filteredInvites = sentInvitations.filter(invite => invite.status === statusFilter);
-    }
-    
-    if (filteredInvites.length === 0) {
+    if (sentInvitations.length === 0) {
       sentContainer.innerHTML = '';
       noSentMessage.classList.remove('hidden');
     } else {
+      // Implementation will be similar to renderReceivedInvitations
+      // but adapted for sent invitations schema
       noSentMessage.classList.add('hidden');
-      
-      const invitationsHTML = filteredInvites.map(invitation => {
-        const date = new Date(invitation.invitedDate).toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric' 
-        });
-        
-        let statusBadge = '';
-        if (invitation.status === 'invited') {
-          statusBadge = '<span class="badge badge-pending">Pending</span>';
-        } else if (invitation.status === 'accepted') {
-          statusBadge = '<span class="badge badge-success">Accepted</span>';
-        } else if (invitation.status === 'declined') {
-          statusBadge = '<span class="badge badge-danger">Declined</span>';
-        }
-        
-        let actionButtons = '';
-        if (invitation.status === 'invited') {
-          actionButtons = `
-            <button class="btn btn-sm btn-danger cancel-invite-btn" data-invitation-id="${invitation.id}">
-              <i class="fas fa-ban mr-1"></i> Cancel
-            </button>
-          `;
-        }
-        
-        // Extract message content if available
-        let messageContent = '';
-        if (invitation.messages && invitation.messages.length > 0) {
-          messageContent = `
-            <div class="invitation-message">
-              <p class="message-text">"${invitation.messages[0].text}"</p>
-            </div>
-          `;
-        }
-        
-        return `
-          <div class="invitation-card">
-            <div class="invitation-header">
-              <h3 class="invitation-project-title">${invitation.projectTitle}</h3>
-              ${statusBadge}
-            </div>
-            <div class="invitation-body">
-              <div class="invitation-recipient">
-                <span class="recipient-label">To:</span>
-                <a href="#" class="recipient-name view-researcher" data-researcher-id="${invitation.invitedCollaborator.id}">
-                  ${invitation.invitedCollaborator.name}
-                </a>
-                <span class="recipient-institution">${invitation.invitedCollaborator.institution}</span>
-              </div>
-              <div class="invitation-info">
-                <div class="info-item">
-                  <i class="fas fa-calendar-alt"></i> Sent on ${date}
-                </div>
-                <div class="info-item">
-                  <i class="fas fa-envelope"></i> ${invitation.invitedCollaborator.email}
-                </div>
-              </div>
-              ${messageContent}
-            </div>
-            <div class="invitation-footer">
-              <button class="btn btn-outline btn-sm view-project-btn" data-project-id="${invitation.projectId}">
-                <i class="fas fa-eye mr-1"></i> View Project
-              </button>
-              <div class="invitation-actions">
-                ${actionButtons}
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      
-      sentContainer.innerHTML = invitationsHTML;
-      
-      // Add event listeners to the newly created buttons
-      attachEventListeners();
+      sentContainer.innerHTML = '<p>Sent invitations feature coming soon.</p>';
     }
   }
 
@@ -332,12 +293,14 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Refresh button handlers
   refreshReceivedBtn.addEventListener('click', async function() {
-    await initInvitations();
+    receivedInvitations = await fetchReceivedInvitations();
+    renderReceivedInvitations();
     showToast('Received invitations refreshed', 'success');
   });
   
   refreshSentBtn.addEventListener('click', async function() {
-    await initInvitations();
+    sentInvitations = await fetchSentInvitations();
+    renderSentInvitations();
     showToast('Sent invitations refreshed', 'success');
   });
   
@@ -418,27 +381,12 @@ document.addEventListener('DOMContentLoaded', function() {
     researcherProfile.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading researcher profile...</span></div>';
     
     // Find the researcher in our data
-    let researcher = null;
-    
-    for (const invite of sentInvitations) {
-      if (invite.invitedCollaborator.id === researcherId) {
-        researcher = invite.invitedCollaborator;
-        break;
-      }
-    }
-    
-    if (!researcher) {
-      // If not found in sent invitations, check received
-      for (const invite of receivedInvitations) {
-        if (invite.invitedBy.email === researcherId) {
-          researcher = invite.invitedBy;
-          break;
-        }
-      }
-    }
+    const researcher = receivedInvitations.find(invitation => 
+      invitation.invitedByEmail === researcherId
+    );
     
     if (researcher) {
-      document.getElementById('researcher-name-title').textContent = researcher.name;
+      document.getElementById('researcher-name-title').textContent = researcher.invitedByName || 'Researcher';
       
       setTimeout(() => {
         researcherProfile.innerHTML = `
@@ -447,25 +395,16 @@ document.addEventListener('DOMContentLoaded', function() {
               <i class="fas fa-user-circle fa-3x"></i>
             </div>
             <div class="researcher-basic-info">
-              <h3 class="researcher-name">${researcher.name}</h3>
-              <p class="researcher-title">${researcher.title || 'Researcher'}</p>
-              <p class="researcher-institution">${researcher.institution}</p>
-              <p class="researcher-contact"><i class="fas fa-envelope"></i> ${researcher.email}</p>
+              <h3 class="researcher-name">${researcher.invitedByName || 'Researcher'}</h3>
+              <p class="researcher-title">${researcher.invitedByTitle || 'Researcher'}</p>
+              <p class="researcher-institution">${researcher.invitedByInstitution || 'Institution not specified'}</p>
+              <p class="researcher-contact"><i class="fas fa-envelope"></i> ${researcher.invitedByEmail}</p>
             </div>
           </div>
           
-          ${researcher.skills ? `
-            <div class="researcher-section">
-              <h4 class="section-title">Skills & Expertise</h4>
-              <div class="skills-list">
-                ${researcher.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-              </div>
-            </div>
-          ` : ''}
-          
           <div class="researcher-section">
             <h4 class="section-title">About</h4>
-            <p>Experienced researcher with expertise in ${researcher.skills ? researcher.skills.join(', ') : 'various fields'}.</p>
+            <p>Researcher at ${researcher.invitedByInstitution || 'their institution'}.</p>
           </div>
           
           <div class="researcher-section">
@@ -493,26 +432,15 @@ document.addEventListener('DOMContentLoaded', function() {
     viewResearcherModal.classList.add('active');
   }
   
-  // Open cancel invitation modal
+  // Open cancel invitation modal (placeholder for future implementation)
   function openCancelModal(invitationId) {
     currentInvitationId = invitationId;
-    
-    // Find the invitation in our data
-    const invitation = sentInvitations.find(inv => inv.id === invitationId);
-    
-    if (invitation) {
-      document.getElementById('cancel-invitation-details').innerHTML = `
-        <div>
-          <p><strong>Invitation to:</strong> ${invitation.invitedCollaborator.name}</p>
-          <p><strong>Project:</strong> ${invitation.projectTitle || invitation.projectId}</p>
-          <p><strong>Sent on:</strong> ${new Date(invitation.invitedDate).toLocaleDateString()}</p>
-        </div>
-      `;
-      
-      cancelInvitationModal.classList.add('active');
-    } else {
-      showToast('Invitation not found', 'error');
-    }
+    cancelInvitationModal.classList.add('active');
+    document.getElementById('cancel-invitation-details').innerHTML = `
+      <div class="alert alert-info">
+        Cancel invitation functionality coming soon.
+      </div>
+    `;
   }
   
   // Open respond to invitation modal
@@ -532,9 +460,9 @@ document.addEventListener('DOMContentLoaded', function() {
       
       document.getElementById('respond-invitation-details').innerHTML = `
         <div>
-          <p><strong>Project:</strong> ${invitation.projectTitle}</p>
-          <p><strong>From:</strong> ${invitation.invitedBy.name}, ${invitation.invitedBy.institution}</p>
-          <p><strong>Description:</strong> ${invitation.description}</p>
+          <p><strong>Project:</strong> ${invitation.projectTitle || 'Research Project'}</p>
+          <p><strong>From:</strong> ${invitation.invitedByName || 'Researcher'}, ${invitation.invitedByInstitution || 'Institution'}</p>
+          <p><strong>Description:</strong> ${invitation.description || 'No description provided.'}</p>
         </div>
       `;
       
@@ -574,7 +502,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Delete invitation from API
+  // Delete invitation from API (placeholder for future implementation)
   async function deleteInvitation(invitationId) {
     try {
       // First try to delete on the server
@@ -659,15 +587,25 @@ document.addEventListener('DOMContentLoaded', function() {
       const index = receivedInvitations.findIndex(inv => inv.id === currentInvitationId);
       if (index !== -1) {
         receivedInvitations[index].status = response;
-        if (!receivedInvitations[index].messages) {
-          receivedInvitations[index].messages = [];
-        }
+        
+        // Update messages if provided
         if (responseMessage) {
-          receivedInvitations[index].messages.push({
+          let messages = [];
+          if (receivedInvitations[index].messages) {
+            try {
+              messages = JSON.parse(receivedInvitations[index].messages);
+            } catch (e) {
+              messages = [];
+            }
+          }
+          
+          messages.push({
             sender: 'you',
             text: responseMessage,
             date: new Date().toISOString()
           });
+          
+          receivedInvitations[index].messages = JSON.stringify(messages);
         }
       }
       
@@ -757,7 +695,6 @@ document.addEventListener('DOMContentLoaded', function() {
       closeAllModals();
     }
   });
-  
   
   // Initialize the invitations
   initInvitations();

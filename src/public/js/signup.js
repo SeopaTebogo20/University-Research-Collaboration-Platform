@@ -153,7 +153,26 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+    form.addEventListener('continue', async function(e){
+        const fullName = document.getElementById('name').value.trim();
+        const cellNumber = document.getElementById('phone').value.trim();
+        const nameIsValid = /^[A-Za-z\s]+$/.test(fullName);
+        const cellIsValid = /^\d{9}$/.test(cellNumber);
+        
+        if(!nameIsValid){
+            e.preventDefault();
+            alert("Please enter a valid name using letters only.");
+            return;
+        }
+        if(!cellIsValid){
+            e.preventDefault();
+            alert("Please enter a valid 9-digit South African cellphone number.");
+            return;
+        }
+        const fullNumber = "+27" + cellNumber;
+
+
+    });
     // Password validation
     const password = document.getElementById('password');
     const lengthReq = document.getElementById('length');
