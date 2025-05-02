@@ -329,7 +329,7 @@ app.post('/api/signup-google', async (req, res) => {
     const { 
       role,
       department,
-      academic_role,
+      academicRole,
       researchArea,
       researchExperience,
       qualifications,
@@ -375,7 +375,7 @@ app.post('/api/signup-google', async (req, res) => {
     
     // Add common fields for all roles - accept empty strings
     userMetadata.department = department || '';
-    userMetadata.academic_role = academic_role || '';
+    userMetadata.academicRole = academicRole || '';
     
     // Add specific fields based on role
     if (role === 'researcher' || role === 'reviewer') {
@@ -604,7 +604,7 @@ app.post('/api/signup', async (req, res) => {
       phone,
       role,
       department,
-      academic_role,
+      academicRole,
       researchArea,
       researchExperience,
       qualifications,
@@ -666,7 +666,7 @@ app.post('/api/signup', async (req, res) => {
     
     // Add common fields for all roles - accept empty strings
     userMetadata.department = department || '';
-    userMetadata.academic_role = academic_role || '';
+    userMetadata.academicRole = academicRole || '';
     
     // Add specific fields based on role
     if (role === 'researcher' || role === 'reviewer') {
