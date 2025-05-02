@@ -309,6 +309,21 @@ body {
     color: var(--text-secondary);
 }
 
+.rating-star.selected i {
+    color: #ffc107 !important;
+}
+
+.rating-star.hovered i {
+    color: #ffc107 !important;
+}
+.fa-star.selected {
+    color: #ffc107 !important;
+}
+
+.fa-star.hovered {
+    color: #ffc107 !important;
+}
+
 /* Modal overlay styles */
 .modal-open {
     overflow: hidden; /* Prevent body scrolling when modal is open */
