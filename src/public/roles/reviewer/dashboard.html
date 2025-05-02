@@ -159,6 +159,27 @@
         .rating-star.hovered {
             color: #ffc107;
         }
+        
+        .rating-star.selected i {
+            color: #ffc107 !important;
+        }
+        
+        .rating-star.hovered i {
+            color: #ffc107 !important;
+        }
+        
+        /* Read-only styling for feedback */
+        #feedback[readonly] {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            cursor: not-allowed;
+        }
+        
+        /* Disabled radio button styling */
+        input[type="radio"]:disabled + label {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -269,7 +290,6 @@
                         <td>Dr. Lisa Morgan</td>
                         <td>April 20, 2025</td>
                         <td><mark class="status-badge status-approved">Approved</mark></td>
-                        <!-- Change the existing view button to include data-proposal -->
                         <td><button class="btn btn-outline view-btn" data-proposal="renewable-energy">View</button></td>
                     </tr>
                 </tbody>

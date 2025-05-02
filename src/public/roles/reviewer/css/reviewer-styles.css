@@ -89,11 +89,6 @@ body {
     background-color: var(--light-purple);
 }
 
-.rating-star.selected i,
-.rating-star.hovered i {
-    color: #ffc107 !important;
-}
-
 /* Main Content */
 .reviewer-dashboard {
     margin-top: 4rem;
@@ -296,16 +291,16 @@ body {
     transform: scale(1.2);
 }
 
-.rating-star.hovered {
-    color: #ffc107;
+.rating-star.hovered i {
+    color: #ffc107 !important;
 }
 
-.rating-star.selected {
-    color: #ffc107;
+.rating-star.selected i {
+    color: #ffc107 !important;
 }
 
 .rating-value {
-    display: none; /* Hidden input to store the actual value */
+    display: none;
 }
 
 .rating-label {
