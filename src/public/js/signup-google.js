@@ -376,11 +376,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             const formData = new FormData(form);
             const userData = {};
             
-            // Only include fields that exist in the database schema - note phone is included but not collected
+            // Only include fields that exist in the database schema
             const validDbFields = [
                 'name', 'email', 'phone', 'role', 
-                'department', 'academicRole', 'researchArea', 
-                'researchExperience', 'qualifications', 'currentProject'
+                'department', 'academic_role', 'research_area', 
+                'research_experience', 'qualifications', 'current_project'
             ];
             
             for (const [key, value] of formData.entries()) {
@@ -398,16 +398,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (!userData.name && googleProfile.name) {
                     userData.name = googleProfile.name;
                 }
-                
-                // Don't include googleId or picture in userData as they're not in DB schema
-                // They're already in the session or token on the server side
             }
             
             // Include selected role or default to researcher
             userData.role = selectedRole;
-            
-            // Note: phone field is intentionally not included here
-            // The server will set it to null
             
             // Log form data for debugging
             console.log("Form data being sent:", userData);
@@ -466,7 +460,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Success - show success message and redirect
                 formStatus.innerHTML = `<div class="success">${result.message || 'Account created successfully!'}</div>`;
                 
-                // Save authentication data - Store user in a consistent way to match auth.js
+                // Save authentication data
                 if (result.user) {
                     localStorage.setItem('supabaseUser', JSON.stringify(result.user));
                     
