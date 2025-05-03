@@ -379,8 +379,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Only include fields that exist in the database schema - note phone is included but not collected
             const validDbFields = [
                 'name', 'email', 'phone', 'role', 
-                'department', 'academicRole', 'researchArea', 
-                'researchExperience', 'qualifications', 'currentProject'
+                'department', 'academic_role', 'research_area', 
+                'research_experience', 'qualifications', 'current_project'
             ];
             
             for (const [key, value] of formData.entries()) {
