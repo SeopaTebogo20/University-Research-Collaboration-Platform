@@ -735,3 +735,57 @@
     }
   }
   
+  /* Status badge styling */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* Pending status style */
+.status-pending {
+  background-color: #FFF3CD;
+  color: #856404;
+  border: 1px solid #FFEEBA;
+}
+
+/* Assigned status style */
+.status-assigned {
+  background-color: #D4EDDA;
+  color: #155724;
+  border: 1px solid #C3E6CB;
+}
+
+/* Optional: Add animation for newly assigned status */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.status-assigned-highlight {
+  animation: pulse 1s ease-in-out 2;
+}
+
+/* For the modal status display */
+.modal-property .status-value {
+  padding: 6px 12px;
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.modal-property .status-value.pending {
+  background-color: #FFF3CD;
+  color: #856404;
+}
+
+.modal-property .status-value.assigned {
+  background-color: #D4EDDA;
+  color: #155724;
+}
