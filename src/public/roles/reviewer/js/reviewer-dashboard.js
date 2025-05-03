@@ -1,8 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Get DOM elements
     const evaluationModal = document.querySelector('.evaluation-modal');
-    const evaluateButtons = document.querySelectorAll('.evaluate-btn');
-    const viewButtons = document.querySelectorAll('.view-btn');
+    const projectDetailsModal = document.createElement('div');
+    projectDetailsModal.className = 'project-details-modal';
+    document.body.appendChild(projectDetailsModal);
+    
     const closeModalButton = document.querySelector('.close-modal');
     const cancelButton = document.querySelector('.cancel-btn');
     const evaluationForm = document.getElementById('evaluation-form');
@@ -12,137 +14,448 @@ document.addEventListener('DOMContentLoaded', function() {
     const refreshButton = document.querySelector('.refresh-btn');
     const statusFilter = document.querySelector('.styled-select');
     const ratingStars = document.querySelectorAll('.rating-star');
+    const proposalsTable = document.querySelector('.proposals-table tbody');
     
     // Track the current proposal ID and rating
     let currentProposalId = '';
     let currentRating = 0;
+    let proposals = [];
+    let evaluations = JSON.parse(localStorage.getItem('evaluations')) || [];
 
-    // Sample proposal data
-    const proposals = {
-        'quantum-computing': {
-            title: 'Novel Approaches to Quantum Computing',
-            author: 'Dr. Sarah Chen',
-            date: 'April 28, 2025'
-        },
-        'ai-medical': {
-            title: 'AI Applications in Medical Diagnostics',
-            author: 'Dr. Michael Johnson',
-            date: 'April 21, 2025'
-        },
-        'sustainable-ag': {
-            title: 'Sustainable Agriculture Techniques',
-            author: 'Dr. Elena Rodriguez',
-            date: 'April 23, 2025'
-        },
-        'climate-change': {
-            title: 'Climate Change Impact on Marine Ecosystems',
-            author: 'Prof. James Wilson',
-            date: 'April 25, 2025'
-        },
-        'renewable-energy': {
-            title: 'Renewable Energy Integration in Urban Infrastructure',
-            author: 'Dr. Lisa Morgan',
-            date: 'April 20, 2025'
+    // API Endpoints
+    const isLocalEnvironment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1';
+    
+    const BASE_URL = isLocalEnvironment
+        ? 'http://localhost:3000'
+        : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net';
+    
+    const API_URL = `${BASE_URL}/api/projects`;
+    const PROPOSALS_API_URL = `${BASE_URL}/api/proposals`;
+
+    // Setup the project details modal
+    function setupProjectDetailsModal() {
+        projectDetailsModal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Project Details</h2>
+                    <span class="close-details-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="project-details">
+                        <h3 id="details-project-title">Project Title</h3>
+                        <div class="details-grid">
+                            <div class="details-item">
+                                <strong>Researcher:</strong>
+                                <span id="details-researcher-name"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>Department:</strong>
+                                <span id="details-department"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>Research Area:</strong>
+                                <span id="details-research-area"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>Experience Level:</strong>
+                                <span id="details-experience-level"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>Start Date:</strong>
+                                <span id="details-start-date"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>End Date:</strong>
+                                <span id="details-end-date"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>Funding Available:</strong>
+                                <span id="details-funding"></span>
+                            </div>
+                            <div class="details-item">
+                                <strong>Created:</strong>
+                                <span id="details-created-at"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="details-section">
+                            <h4>Project Description</h4>
+                            <p id="details-description"></p>
+                        </div>
+                        
+                        <div class="details-section">
+                            <h4>Skills and Expertise</h4>
+                            <p id="details-skills"></p>
+                        </div>
+                        
+                        <div class="details-section">
+                            <h4>Positions Required</h4>
+                            <p id="details-positions"></p>
+                        </div>
+                        
+                        <div class="details-section">
+                            <h4>Technical Requirements</h4>
+                            <p id="details-technical"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline cancel-details-btn">Close</button>
+                    <button type="button" class="btn btn-primary review-btn">Review Project</button>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners for the new modal
+        const closeDetailsButton = projectDetailsModal.querySelector('.close-details-modal');
+        const cancelDetailsButton = projectDetailsModal.querySelector('.cancel-details-btn');
+        const reviewButton = projectDetailsModal.querySelector('.review-btn');
+        
+        closeDetailsButton.addEventListener('click', closeProjectDetailsModal);
+        cancelDetailsButton.addEventListener('click', closeProjectDetailsModal);
+        
+        reviewButton.addEventListener('click', function() {
+            // Close details modal and open evaluation modal
+            closeProjectDetailsModal();
+            openEvaluationModal(currentProposalId);
+        });
+        
+        // Add CSS for the new modal
+        const style = document.createElement('style');
+        style.textContent = `
+            .project-details-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                justify-content: center;
+                align-items: center;
+                overflow-y: auto;
+                padding: 20px;
+            }
+            
+            .project-details-modal .modal-content {
+                background-color: white;
+                border-radius: 8px;
+                width: 80%;
+                max-width: 900px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .project-details-modal .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+                border-bottom: 1px solid #e6e6e6;
+            }
+            
+            .project-details-modal .modal-body {
+                padding: 20px;
+            }
+            
+            .project-details-modal .modal-footer {
+                padding: 15px 20px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                border-top: 1px solid #e6e6e6;
+            }
+            
+            .close-details-modal {
+                font-size: 24px;
+                cursor: pointer;
+            }
+            
+            .details-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 15px;
+                margin: 15px 0;
+            }
+            
+            .details-item {
+                margin-bottom: 10px;
+            }
+            
+            .details-section {
+                margin-top: 20px;
+                border-top: 1px solid #eee;
+                padding-top: 15px;
+            }
+            
+            .details-section h4 {
+                margin-bottom: 10px;
+                color: #555;
+            }
+        `;
+        
+        document.head.appendChild(style);
+    }
+
+    // Function to open the project details modal
+    function openProjectDetailsModal(proposalId) {
+        const proposal = proposals.find(p => p.id === proposalId);
+        if (!proposal) return;
+        
+        currentProposalId = proposalId;
+        
+        // Populate the details modal
+        document.getElementById('details-project-title').textContent = proposal.project_title;
+        document.getElementById('details-researcher-name').textContent = proposal.researcher_name;
+        document.getElementById('details-department').textContent = proposal.department || 'Not specified';
+        document.getElementById('details-research-area').textContent = proposal.key_research_area || 'Not specified';
+        document.getElementById('details-experience-level').textContent = proposal.experience_level || 'Not specified';
+        document.getElementById('details-start-date').textContent = proposal.start_date ? new Date(proposal.start_date).toLocaleDateString() : 'Not specified';
+        document.getElementById('details-end-date').textContent = proposal.end_date ? new Date(proposal.end_date).toLocaleDateString() : 'Not specified';
+        document.getElementById('details-funding').textContent = proposal.funding_available ? 'Yes' : 'No';
+        document.getElementById('details-created-at').textContent = new Date(proposal.created_at).toLocaleString();
+        document.getElementById('details-description').textContent = proposal.description || 'No description provided';
+        document.getElementById('details-skills').textContent = proposal.skills_and_expertise || 'None specified';
+        document.getElementById('details-positions').textContent = proposal.positions_required || 'None specified';
+        document.getElementById('details-technical').textContent = proposal.technical_requirements || 'None specified';
+        
+        // Show the modal
+        projectDetailsModal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+    }
+    
+    // Function to close the project details modal
+    function closeProjectDetailsModal() {
+        projectDetailsModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+
+    // Function to fetch assigned proposals
+    async function fetchAssignedProposals() {
+        try {
+            // First get the list of assigned proposal IDs
+            const proposalsResponse = await fetch(PROPOSALS_API_URL);
+            if (!proposalsResponse.ok) throw new Error('Failed to fetch assigned proposals');
+            const assignedProposals = await proposalsResponse.json();
+            
+            // Then get the full project details for each assigned proposal
+            const projectsResponse = await fetch(API_URL);
+            if (!projectsResponse.ok) throw new Error('Failed to fetch projects');
+            const allProjects = await projectsResponse.json();
+            
+            // Filter projects to only those that are assigned
+            proposals = allProjects.filter(project => 
+                assignedProposals.some(assigned => assigned.project_id === project.id)
+            );
+            
+            renderProposals(proposals);
+            updateReviewStats();
+        } catch (error) {
+            console.error('Error fetching proposals:', error);
+            alert('Error loading proposals. Please try again later.');
         }
-    };
+    }
 
-    // Load evaluations from localStorage or use default
-    let evaluations = JSON.parse(localStorage.getItem('evaluations')) || [
-        {
-            proposalId: "quantum-computing",
-            title: "Novel Approaches to Quantum Computing",
-            author: "Dr. Sarah Chen",
-            date: "April 28, 2025",
-            feedback: "",
-            rating: 0,
-            recommendation: "",
-            status: "pending"
-        },
-        {
-            proposalId: "ai-medical",
-            title: "AI Applications in Medical Diagnostics",
-            author: "Dr. Michael Johnson",
-            date: "April 21, 2025",
-            feedback: "",
-            rating: 0,
-            recommendation: "",
-            status: "pending"
-        },
-        {
-            proposalId: "sustainable-ag",
-            title: "Sustainable Agriculture Techniques",
-            author: "Dr. Elena Rodriguez",
-            date: "April 23, 2025",
-            feedback: "",
-            rating: 0,
-            recommendation: "",
-            status: "pending"
-        },
-        {
-            proposalId: "climate-change",
-            title: "Climate Change Impact on Marine Ecosystems",
-            author: "Prof. James Wilson",
-            date: "April 25, 2025",
-            feedback: "",
-            rating: 0,
-            recommendation: "",
-            status: "pending"
-        },
-        {
-            proposalId: "renewable-energy",
-            title: "Renewable Energy Integration in Urban Infrastructure",
-            author: "Dr. Lisa Morgan",
-            date: "April 20, 2025",
-            feedback: "Excellent proposal with clear methodology and significant potential impact. The research design is robust and well-articulated.",
-            rating: 5,
-            recommendation: "approve",
-            status: "approved"
-        }
-    ];
+    // Function to update review statistics
+    function updateReviewStats() {
+        const pendingReviews = proposals.filter(p => {
+            const evaluation = evaluations.find(e => e.project_id === p.id);
+            return !evaluation || evaluation.status === 'pending';
+        }).length;
+        
+        const completedReviews = evaluations.filter(e => 
+            e.status !== 'pending'
+        ).length;
+        
+        // Update the stats cards
+        document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = pendingReviews;
+        document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = completedReviews;
+    }
 
-    // Initialize the UI with saved evaluations
-    function initializeUI() {
-        evaluations.forEach(evaluation => {
-            if (evaluation.status !== 'pending') {
-                const row = document.querySelector(`.evaluate-btn[data-proposal="${evaluation.proposalId}"]`)?.closest('tr');
-                if (row) {
-                    const statusCell = row.querySelector('.status-badge');
-                    const evaluateBtn = row.querySelector('.evaluate-btn');
-                    
-                    // Update status badge
-                    switch(evaluation.status) {
-                        case 'approved':
-                            statusCell.textContent = 'Approved';
-                            statusCell.className = 'status-badge status-approved';
-                            break;
-                        case 'revision':
-                            statusCell.textContent = 'Needs Revision';
-                            statusCell.className = 'status-badge status-revision';
-                            break;
-                        case 'rejected':
-                            statusCell.textContent = 'Rejected';
-                            statusCell.className = 'status-badge status-rejected';
-                            break;
-                    }
-                    
-                    // Update button to view mode
-                    if (evaluateBtn) {
-                        evaluateBtn.textContent = 'View';
-                        evaluateBtn.className = 'btn btn-outline view-btn';
-                        evaluateBtn.setAttribute('data-proposal', evaluation.proposalId);
-                    }
+    // Function to render proposals in the table
+    function renderProposals(proposals) {
+        proposalsTable.innerHTML = ''; // Clear existing rows
+        
+        proposals.forEach(proposal => {
+            // Find existing evaluation if it exists
+            const evaluation = evaluations.find(e => e.project_id === proposal.id);
+            
+            const row = document.createElement('tr');
+            
+            // Determine status and button text/class
+            let statusText = 'Pending';
+            let statusClass = 'status-pending';
+            let buttonText = 'View Details';
+            let buttonClass = 'btn btn-primary evaluate-btn';
+            
+            if (evaluation) {
+                switch(evaluation.status) {
+                    case 'approved':
+                        statusText = 'Approved';
+                        statusClass = 'status-approved';
+                        buttonText = 'View Details';
+                        buttonClass = 'btn btn-outline view-btn';
+                        break;
+                    case 'revision':
+                        statusText = 'Needs Revision';
+                        statusClass = 'status-revision';
+                        buttonText = 'View Details';
+                        buttonClass = 'btn btn-outline view-btn';
+                        break;
+                    case 'rejected':
+                        statusText = 'Rejected';
+                        statusClass = 'status-rejected';
+                        buttonText = 'View Details';
+                        buttonClass = 'btn btn-outline view-btn';
+                        break;
                 }
             }
+            
+            row.innerHTML = `
+                <td>${proposal.project_title}</td>
+                <td>${proposal.researcher_name}</td>
+                <td>${proposal.key_research_area || 'N/A'}</td>
+                <td>${new Date(proposal.created_at).toLocaleDateString()}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>
+                    <button class="${buttonClass}" data-proposal="${proposal.id}">${buttonText}</button>
+                </td>
+            `;
+            
+            proposalsTable.appendChild(row);
+        });
+        
+        // Reattach event listeners to the new buttons
+        attachEventListeners();
+    }
+    
+    // Function to attach event listeners to buttons
+    function attachEventListeners() {
+        // View details buttons (previously evaluate buttons)
+        document.querySelectorAll('.evaluate-btn, .view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const proposalId = this.getAttribute('data-proposal');
+                openProjectDetailsModal(proposalId);
+            });
         });
     }
 
-    // Function to show modal
+    // Function to open the evaluation modal
+    function openEvaluationModal(proposalId) {
+        currentProposalId = proposalId;
+        
+        const proposal = proposals.find(p => p.id === proposalId);
+        const existingEvaluation = evaluations.find(e => e.project_id === proposalId);
+        
+        proposalTitle.textContent = proposal.project_title;
+        proposalAuthor.textContent = proposal.researcher_name;
+        proposalDate.textContent = new Date(proposal.created_at).toLocaleDateString();
+        
+        // Reset form
+        evaluationForm.reset();
+        resetStarRating();
+        
+        // If there's existing data, populate the form with it
+        if (existingEvaluation) {
+            document.getElementById('feedback').value = existingEvaluation.feedback || '';
+            
+            if (existingEvaluation.rating > 0) {
+                currentRating = existingEvaluation.rating;
+                document.getElementById('rating-value').value = currentRating;
+                
+                // Update stars visual
+                ratingStars.forEach((star, i) => {
+                    const icon = star.querySelector('i');
+                    if (icon) {
+                        if (i < currentRating) {
+                            icon.classList.add('selected');
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                        }
+                    }
+                });
+                
+                document.getElementById('rating-display').textContent = currentRating + '/5';
+            }
+            
+            if (existingEvaluation.recommendation) {
+                const recommendationEl = document.getElementById(existingEvaluation.recommendation);
+                if (recommendationEl) {
+                    recommendationEl.checked = true;
+                }
+            }
+            
+            // If already reviewed, show in view mode
+            if (existingEvaluation.status !== 'pending') {
+                document.getElementById('feedback').readOnly = true;
+                document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
+                    radio.disabled = true;
+                });
+                
+                // Disable star interaction
+                ratingStars.forEach(star => {
+                    star.style.pointerEvents = 'none';
+                });
+                
+                // Change submit button to close button
+                const submitBtn = document.querySelector('.modal-footer .btn-primary');
+                submitBtn.textContent = 'Close';
+                submitBtn.type = 'button';
+                submitBtn.onclick = closeModal;
+                
+                // Hide cancel button
+                document.querySelector('.cancel-btn').style.display = 'none';
+            } else {
+                // Enable form for editing
+                document.getElementById('feedback').readOnly = false;
+                document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
+                    radio.disabled = false;
+                });
+                
+                // Enable star interaction
+                ratingStars.forEach(star => {
+                    star.style.pointerEvents = 'auto';
+                });
+                
+                // Reset submit button
+                const submitBtn = document.querySelector('.modal-footer .btn-primary');
+                submitBtn.textContent = 'Submit Evaluation';
+                submitBtn.type = 'submit';
+                document.querySelector('.cancel-btn').style.display = '';
+            }
+        } else {
+            // New evaluation
+            document.getElementById('feedback').readOnly = false;
+            document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
+                radio.disabled = false;
+            });
+            
+            // Enable star interaction
+            ratingStars.forEach(star => {
+                star.style.pointerEvents = 'auto';
+            });
+            
+            // Reset submit button
+            const submitBtn = document.querySelector('.modal-footer .btn-primary');
+            submitBtn.textContent = 'Submit Evaluation';
+            submitBtn.type = 'submit';
+            document.querySelector('.cancel-btn').style.display = '';
+        }
+        
+        // Show the modal
+        showModal();
+    }
+
+    // Function to show evaluation modal
     function showModal() {
         evaluationModal.style.display = 'flex';
         document.body.classList.add('modal-open');
     }
 
-    // Function to close modal
+    // Function to close evaluation modal
     function closeModal() {
         evaluationModal.style.display = 'none';
         evaluationForm.reset();
@@ -237,185 +550,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('rating-display').textContent = '0/5';
     }
 
-    // Function to show evaluation in view mode
-    function showEvaluation(proposalId) {
-        const evaluation = evaluations.find(e => e.proposalId === proposalId);
-        if (!evaluation) return;
-        
-        proposalTitle.textContent = evaluation.title;
-        proposalAuthor.textContent = evaluation.author;
-        proposalDate.textContent = evaluation.date;
-        
-        // Set feedback (readonly)
-        const feedbackField = document.getElementById('feedback');
-        feedbackField.value = evaluation.feedback || "No feedback available";
-        feedbackField.readOnly = true;
-        
-        // Set rating
-        currentRating = evaluation.rating || 0;
-        document.getElementById('rating-value').value = currentRating;
-        ratingStars.forEach((star, index) => {
-            const icon = star.querySelector('i');
-            if (icon) {
-                if (index < currentRating) {
-                    icon.classList.add('selected');
-                    icon.classList.remove('far');
-                    icon.classList.add('fas');
-                } else {
-                    icon.classList.remove('selected');
-                    icon.classList.remove('fas');
-                    icon.classList.add('far');
-                }
-            }
-            // Disable star interaction in view mode
-            star.style.pointerEvents = 'none';
-        });
-        document.getElementById('rating-display').textContent = currentRating + '/5';
-        
-        // Set recommendation (disabled)
-        if (evaluation.recommendation) {
-            const recommendationEl = document.getElementById(evaluation.recommendation);
-            if (recommendationEl) {
-                recommendationEl.checked = true;
-            }
-            document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
-                radio.disabled = true;
-            });
-        }
-        
-        // Change submit button to close button
-        const submitBtn = document.querySelector('.modal-footer .btn-primary');
-        submitBtn.textContent = 'Close';
-        submitBtn.type = 'button';
-        submitBtn.onclick = closeModal;
-        
-        // Hide cancel button
-        document.querySelector('.cancel-btn').style.display = 'none';
-        
-        showModal();
-    }
-
-    // Initialize star rating system
-    setupStarRating();
-    initializeUI();
-
-    // Open modal when evaluate button is clicked
-    evaluateButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const proposalId = this.getAttribute('data-proposal');
-            currentProposalId = proposalId;
-            
-            // Get existing evaluation data if it exists
-            const existingEvaluation = evaluations.find(e => e.proposalId === proposalId);
-            const proposal = proposals[proposalId];
-            
-            proposalTitle.textContent = proposal.title;
-            proposalAuthor.textContent = proposal.author;
-            proposalDate.textContent = proposal.date;
-            
-            // Reset form in case it was previously used
-            evaluationForm.reset();
-            resetStarRating();
-            
-            // If there's existing data, populate the form with it
-            if (existingEvaluation && existingEvaluation.feedback) {
-                document.getElementById('feedback').value = existingEvaluation.feedback;
-                
-                if (existingEvaluation.rating > 0) {
-                    currentRating = existingEvaluation.rating;
-                    document.getElementById('rating-value').value = currentRating;
-                    
-                    // Update stars visual
-                    ratingStars.forEach((star, i) => {
-                        const icon = star.querySelector('i');
-                        if (icon) {
-                            if (i < currentRating) {
-                                icon.classList.add('selected');
-                                icon.classList.remove('far');
-                                icon.classList.add('fas');
-                            }
-                        }
-                    });
-                    
-                    document.getElementById('rating-display').textContent = currentRating + '/5';
-                }
-                
-                if (existingEvaluation.recommendation) {
-                    const recommendationEl = document.getElementById(existingEvaluation.recommendation);
-                    if (recommendationEl) {
-                        recommendationEl.checked = true;
-                    }
-                }
-            }
-            
-            document.getElementById('feedback').readOnly = false;
-            document.querySelectorAll('input[name="recommendation"]').forEach(radio => {
-                radio.disabled = false;
-            });
-            
-            // Enable star interaction
-            ratingStars.forEach(star => {
-                star.style.pointerEvents = 'auto';
-            });
-            
-            // Reset submit button
-            const submitBtn = document.querySelector('.modal-footer .btn-primary');
-            submitBtn.textContent = 'Submit Evaluation';
-            submitBtn.type = 'submit';
-            document.querySelector('.cancel-btn').style.display = '';
-            
-            // Show the modal
-            showModal();
-        });
-    });
-
-    // Handle view buttons
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const proposalId = this.getAttribute('data-proposal');
-            currentProposalId = proposalId;
-            showEvaluation(proposalId);
-        });
-    });
-    
-    // Update existing evaluate buttons converted to view buttons
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('view-btn')) {
-            const proposalId = e.target.getAttribute('data-proposal');
-            if (proposalId) {
-                currentProposalId = proposalId;
-                showEvaluation(proposalId);
-            }
-        }
-    });
-
-    // Close modal when X button is clicked
-    closeModalButton.addEventListener('click', closeModal);
-
-    // Close modal when Cancel button is clicked
-    cancelButton.addEventListener('click', closeModal);
-
-    // Save form data in case of accidental closure
-    let tempFormData = {};
-    
-    // Monitor for form changes and save to temporary storage
-    evaluationForm.addEventListener('input', function(e) {
-        if (currentProposalId) {
-            tempFormData[currentProposalId] = tempFormData[currentProposalId] || {};
-            
-            if (e.target.id === 'feedback') {
-                tempFormData[currentProposalId].feedback = e.target.value;
-            } else if (e.target.name === 'recommendation') {
-                tempFormData[currentProposalId].recommendation = e.target.value;
-            }
-            
-            // Rating is handled separately via the star rating system
-            
-            // Save to session storage (persists while browser is open)
-            sessionStorage.setItem('tempFormData', JSON.stringify(tempFormData));
-        }
-    });
-
     // Handle form submission
     evaluationForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -433,8 +567,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const evaluationsBackup = JSON.stringify(evaluations);
         
         try {
+            const proposal = proposals.find(p => p.id === currentProposalId);
+            
             // Update evaluations data
-            const evaluationIndex = evaluations.findIndex(e => e.proposalId === currentProposalId);
+            const evaluationIndex = evaluations.findIndex(e => e.project_id === currentProposalId);
             if (evaluationIndex !== -1) {
                 evaluations[evaluationIndex] = {
                     ...evaluations[evaluationIndex],
@@ -445,12 +581,12 @@ document.addEventListener('DOMContentLoaded', function() {
                            recommendation.value === 'revision' ? 'revision' : 'rejected'
                 };
             } else {
-                // If not found, add new evaluation (shouldn't happen in this case)
+                // If not found, add new evaluation
                 evaluations.push({
-                    proposalId: currentProposalId,
-                    title: proposalTitle.textContent,
-                    author: proposalAuthor.textContent,
-                    date: proposalDate.textContent,
+                    project_id: currentProposalId,
+                    title: proposal.project_title,
+                    author: proposal.researcher_name,
+                    date: new Date(proposal.created_at).toLocaleDateString(),
                     feedback,
                     rating: currentRating,
                     recommendation: recommendation.value,
@@ -462,48 +598,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Save to localStorage
             localStorage.setItem('evaluations', JSON.stringify(evaluations));
             
-            // Clear the temporary form data for this proposal
-            if (tempFormData[currentProposalId]) {
-                delete tempFormData[currentProposalId];
-                sessionStorage.setItem('tempFormData', JSON.stringify(tempFormData));
-            }
-            
-            // Show success message with feedback confirmation
+            // Show success message
             const feedbackPreview = feedback.length > 50 ? feedback.substring(0, 50) + '...' : feedback;
             alert(`Evaluation submitted successfully!\n\nFeedback saved: "${feedbackPreview}"\nRating: ${currentRating}/5\nRecommendation: ${recommendation.value}`);
             
-            // Update the UI to reflect the new status
-            const row = document.querySelector(`.evaluate-btn[data-proposal="${currentProposalId}"]`)?.closest('tr');
-            if (row) {
-                const statusCell = row.querySelector('.status-badge');
-                const evalButton = row.querySelector('.evaluate-btn');
-                
-                // Update status
-                const status = evaluations.find(e => e.proposalId === currentProposalId)?.status;
-                if (status) {
-                    // Update status badge
-                    switch(status) {
-                        case 'approved':
-                            statusCell.textContent = 'Approved';
-                            statusCell.className = 'status-badge status-approved';
-                            break;
-                        case 'revision':
-                            statusCell.textContent = 'Needs Revision';
-                            statusCell.className = 'status-badge status-revision';
-                            break;
-                        case 'rejected':
-                            statusCell.textContent = 'Rejected';
-                            statusCell.className = 'status-badge status-rejected';
-                            break;
-                    }
-                    
-                    // Update button
-                    if (evalButton) {
-                        evalButton.textContent = 'View';
-                        evalButton.className = 'btn btn-outline view-btn';
-                    }
-                }
-            }
+            // Refresh the proposals list to reflect changes
+            fetchAssignedProposals();
             
             // Close the modal
             closeModal();
@@ -516,30 +616,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Refresh button functionality with data verification
+    // Close modal when X button is clicked
+    closeModalButton.addEventListener('click', closeModal);
+
+    // Close modal when Cancel button is clicked
+    cancelButton.addEventListener('click', closeModal);
+
+    // Refresh button functionality
     refreshButton.addEventListener('click', function() {
-        // Check if there's saved data first
-        const savedData = localStorage.getItem('evaluations');
-        if (savedData) {
-            try {
-                // Try to parse the data to verify it's valid JSON
-                const parsedData = JSON.parse(savedData);
-                if (Array.isArray(parsedData)) {
-                    // Valid data, reload the page
-                    window.location.reload();
-                } else {
-                    throw new Error("Saved data is not in expected format");
-                }
-            } catch (e) {
-                console.error("Error parsing saved evaluations:", e);
-                alert("There was an issue with the saved evaluation data. Restoring default data.");
-                localStorage.removeItem('evaluations');
-                window.location.reload();
-            }
-        } else {
-            // No saved data, just reload
-            window.location.reload();
-        }
+        fetchAssignedProposals();
     });
 
     // Filter functionality
@@ -563,25 +648,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Check for unsaved form data on page load
-    try {
-        const savedTemp = sessionStorage.getItem('tempFormData');
-        if (savedTemp) {
-            tempFormData = JSON.parse(savedTemp);
-        }
-    } catch (e) {
-        console.error("Error loading temporary form data:", e);
-        sessionStorage.removeItem('tempFormData');
-    }
-    
-    // Window beforeunload event - warn user if they have unsaved changes
-    window.addEventListener('beforeunload', function(e) {
-        // Check if there's any unsaved form data
-        if (Object.keys(tempFormData).length > 0) {
-            // Standard way to show confirmation dialog when leaving page
-            const confirmationMessage = 'You have unsaved evaluation feedback. Are you sure you want to leave?';
-            e.returnValue = confirmationMessage;
-            return confirmationMessage;
-        }
-    });
+    // Initialize the page
+    setupProjectDetailsModal();
+    setupStarRating();
+    fetchAssignedProposals();
 });
