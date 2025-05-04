@@ -482,6 +482,20 @@ document.addEventListener('DOMContentLoaded', function() {
             renderNotifications();
         }
     });
+    // Set up event listeners
+    function setupEventListeners() {
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to log out?')) {
+                // Clear session/local storage
+                localStorage.removeItem('reviewerName');
+                localStorage.removeItem('reviewerToken');
+
+                // Redirect to login
+                window.location.href = '/login';
+            }
+        });
+    }
     
     // Initialize
     notifications = generateMockNotifications();

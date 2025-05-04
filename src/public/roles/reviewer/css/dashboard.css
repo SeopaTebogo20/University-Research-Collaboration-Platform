@@ -863,3 +863,21 @@
     background: var(--text-secondary);
   }
   
+  .logout-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color var(--transition-speed);
+  }
+  
+  .logout-btn i {
+    margin-right: 0.5rem;
+  }
+  
+  .logout-btn:hover {
+    color: var(--danger-color);
+  }

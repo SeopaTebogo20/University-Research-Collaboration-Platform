@@ -1,43 +1,98 @@
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize date display
-    updateCurrentDate();
+    // Initialize reviewer dashboard
+    initializeDashboard();
 
-    // Get reviewer data from localStorage or use defaults
-    const reviewerName = localStorage.getItem('reviewerName') || 'Dr. Smith';
-    document.getElementById('reviewer-name').textContent = reviewerName;
-
-    // Dashboard statistics
-    const dashboardStats = {
-        totalAssigned: localStorage.getItem('totalAssigned') || 12,
-        pendingReviews: localStorage.getItem('pendingReviews') || 5,
-        completedReviews: localStorage.getItem('completedReviews') || 7,
-        avgTime: localStorage.getItem('avgTime') || '3.5 days'
-    };
-
-    // Update dashboard statistics
-    document.getElementById('total-assigned').textContent = dashboardStats.totalAssigned;
-    document.getElementById('pending-reviews').textContent = dashboardStats.pendingReviews;
-    document.getElementById('completed-reviews').textContent = dashboardStats.completedReviews;
-    document.getElementById('avg-time').textContent = dashboardStats.avgTime;
-
+    // Set up event listeners
+    setupEventListeners();
+    
     // Initialize calendar
     initializeCalendar();
+});
 
+// Initialize the dashboard with data and components
+function initializeDashboard() {
+    // Update current date
+    updateCurrentDate();
+    
+    // Load dashboard data
+    loadDashboardData();
+    
     // Initialize charts
     initializeReviewsChart();
     initializeDecisionsChart();
-
-    // Set up event listeners
+    
+    // Set up timeframe buttons
     setupTimeframeButtons();
-    setupCalendarNavigation();
-});
+}
 
 // Update current date display
 function updateCurrentDate() {
     const now = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+}
+
+// Load dashboard data from API or use mock data
+async function loadDashboardData() {
+    try {
+        // First check authentication status and get user info
+        const authResponse = await fetch('/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authResponse.ok || !authData.authenticated) {
+            // Redirect to login if not authenticated
+            window.location.href = '/login';
+            return;
+        }
+        
+        // Get user name from auth data
+        const reviewerName = authData.user?.user_metadata?.name || 
+                           authData.user?.name || 
+                           'Reviewer';
+        
+        // Update reviewer name display
+        document.getElementById('reviewer-name').textContent = reviewerName;
+        
+        // Store reviewer name for future use
+        localStorage.setItem('reviewerName', reviewerName);
+        
+        // Simulate loading other dashboard data (replace with actual API calls)
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        // Update dashboard statistics with mock data
+        updateDashboardStats({
+            totalAssigned: 12,
+            pendingReviews: 5,
+            completedReviews: 7,
+            avgTime: '3.5 days'
+        });
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showToast('Failed to load dashboard data. Please refresh the page.', 'error');
+        
+        // Fallback to stored name if available
+        const storedName = localStorage.getItem('reviewerName');
+        if (storedName) {
+            document.getElementById('reviewer-name').textContent = storedName;
+        }
+        
+        // Use default stats if API fails
+        updateDashboardStats({
+            totalAssigned: 0,
+            pendingReviews: 0,
+            completedReviews: 0,
+            avgTime: '0 days'
+        });
+    }
+}
+
+// Update dashboard statistics
+function updateDashboardStats(stats) {
+    document.getElementById('total-assigned').textContent = stats.totalAssigned;
+    document.getElementById('pending-reviews').textContent = stats.pendingReviews;
+    document.getElementById('completed-reviews').textContent = stats.completedReviews;
+    document.getElementById('avg-time').textContent = stats.avgTime;
 }
 
 // Initialize flatpickr calendar with events
@@ -322,12 +377,86 @@ function navigateCalendar(monthsToAdd) {
     // In a real app, this would update the calendar widget and fetch new events for the month
     // For this demo, we'll just simulate an update
     setTimeout(() => {
-        alert(`Calendar would navigate to ${months[monthIndex]} ${yearNum}`);
+        showToast(`Calendar updated to ${months[monthIndex]} ${yearNum}`, 'info');
     }, 100);
 }
 
-// Chart download functionality (simulated)
-document.querySelector('.chart-download').addEventListener('click', function() {
-    // In a real app, this would generate and download a chart image or data
-    alert('Chart download feature would save the chart as an image or export data as CSV');
-});
+// Set up event listeners
+function setupEventListeners() {
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to log out?')) {
+            // Clear session/local storage
+            localStorage.removeItem('reviewerName');
+            localStorage.removeItem('reviewerToken');
+
+            // Redirect to login
+            window.location.href = '/login';
+        }
+    });
+    
+    // Chart download button
+    document.querySelector('.chart-download').addEventListener('click', function() {
+        // In a real app, this would download the chart as an image
+        showToast('Chart downloaded successfully', 'success');
+    });
+}
+
+// Toast notification function
+function showToast(message, type = 'info', duration = 5000) {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = '';
+    switch(type) {
+        case 'success':
+            icon = '<i class="fas fa-check-circle"></i>';
+            break;
+        case 'error':
+            icon = '<i class="fas fa-exclamation-circle"></i>';
+            break;
+        case 'warning':
+            icon = '<i class="fas fa-exclamation-triangle"></i>';
+            break;
+        default:
+            icon = '<i class="fas fa-info-circle"></i>';
+    }
+    
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('active');
+    }, 10);
+    
+    const timeout = setTimeout(() => {
+        removeToast(toast);
+    }, duration);
+    
+    const closeBtn = toast.querySelector('.toast-close');
+    closeBtn.addEventListener('click', () => {
+        clearTimeout(timeout);
+        removeToast(toast);
+    });
+}
+
+// Remove toast notification
+function removeToast(toast) {
+    toast.classList.remove('active');
+    setTimeout(() => {
+        toast.remove();
+    }, 300);
+}
+
+// Utility function to capitalize first letter
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}

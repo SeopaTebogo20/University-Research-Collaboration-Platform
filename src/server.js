@@ -127,6 +127,70 @@ function storeUserInSession(req, userData, sessionData) {
   console.log('=========================================\n');
 }
 
+app.post('/api/logout', async (req, res) => {
+  try {
+    console.log('\n=== Logging out user ===');
+    console.log('Current session before logout:', {
+      user: req.session.user,
+      tokens: {
+        access_token: !!req.session.access_token,
+        refresh_token: !!req.session.refresh_token
+      }
+    });
+
+    // Get the session from the request
+    const accessToken = req.session.access_token;
+    
+    // Call Supabase to invalidate the session if token exists
+    if (accessToken) {
+      console.log("Attempting to logout user from Supabase");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Supabase logout error:", error);
+        return res.status(400).json({ message: error.message });
+      }
+      
+      console.log("Supabase logout successful");
+    }
+    
+    // Clear session
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Session destruction error:", err);
+        return res.status(500).json({ message: 'Failed to logout' });
+      }
+      console.log("Session destroyed successfully");
+      res.status(200).json({ message: 'Logged out successfully' });
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+    return res.status(500).json({ message: 'An error occurred during logout' });
+  }
+});
+
+// Add this near your other middleware
+app.use((req, res, next) => {
+  // Log session changes
+  const originalSession = JSON.parse(JSON.stringify(req.session));
+  
+  res.on('finish', () => {
+    if (!req.session) return;
+    
+    const newSession = JSON.parse(JSON.stringify(req.session));
+    if (JSON.stringify(originalSession) !== JSON.stringify(newSession)) {
+      console.log('\n=== Session changed during request ===');
+      console.log('Route:', req.method, req.originalUrl);
+      console.log('Session changes:', {
+        before: originalSession,
+        after: newSession
+      });
+    }
+  });
+  
+  next();
+});
+
 // Google Auth Endpoints
 app.get('/auth/google', (req, res) => {
   const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -297,12 +361,6 @@ app.post('/api/signup-google', async (req, res) => {
     // Basic validation
     const errors = {};
     if (!role) errors.role = 'Role is required';
-    
-    if (role === 'researcher') {
-      if (!researchArea) errors.researchArea = 'Research Area is required for researchers';
-      if (!qualifications) errors.qualifications = 'Qualifications are required for researchers';
-      if (!currentProject) errors.currentProject = 'Current Project is required for researchers';
-    }
     
     if (Object.keys(errors).length > 0) {
       return res.status(400).json({ message: 'Validation failed', errors });
