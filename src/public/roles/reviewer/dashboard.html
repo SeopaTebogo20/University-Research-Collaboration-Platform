@@ -308,5 +308,68 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="js/dashboard.js"></script>
+    <script src="../../js/auth.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication status
+            if (!auth.isLoggedIn()) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Get current user from session storage
+            const user = auth.getCurrentUser();
+            
+            // Log user data to console
+            console.log('User data from session storage:', user);
+            
+            // Update UI with user data
+            if (user) {
+                // Set reviewer name
+                const reviewerNameElement = document.getElementById('reviewer-name');
+                if (reviewerNameElement && user.name) {
+                    reviewerNameElement.textContent = user.name;
+                }
+                
+                // Set current date
+                const currentDateElement = document.getElementById('current-date');
+                if (currentDateElement) {
+                    const now = new Date();
+                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    currentDateElement.textContent = now.toLocaleDateString('en-US', options);
+                }
+                
+                // Log additional user details
+                console.log('User Details:', {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    name: user.name,
+                    picture: user.picture
+                });
+                
+                // Example of how you might use the role
+                if (user.role) {
+                    console.log(`User is a ${user.role}`);
+                    // You could add role-specific logic here
+                }
+            } else {
+                console.warn('No user data found in session storage');
+            }
+    
+            // Add logout functionality
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    auth.logout();
+                });
+            }
+            
+            // Rest of your dashboard initialization code
+            // Initialize charts, load data, etc.
+        });
+        </script>
 </body>
 </html>
