@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,6 +19,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    
+    <style>
+        /* Profile picture styles */
+        .profile-container {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+        
+        .profile-picture {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #6D28D9;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-picture:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .welcome-content {
+            position: relative;
+            padding-right: 90px;
+        }
+        
+        .reviewer-department {
+            color: #6B7280;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .profile-picture {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .welcome-content {
+                padding-right: 70px;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -31,14 +76,14 @@
             <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li><a href="proposals.html"><i class="fas fa-clipboard-list"></i> Assigned Proposals</a></li>
             <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+            <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </ul>
     </nav>
 
     <main class="reviewer-dashboard">
         <header class="dashboard-welcome">
             <div class="welcome-content">
-                <h1>Welcome Back, <span id="reviewer-name">Dr. Smith</span></h1>
+                <h1>Welcome Back, <span id="reviewer-name">Reviewer</span></h1>
                 <p class="subtitle">Your review dashboard overview</p>
                 <div class="date-display">
                     <i class="fas fa-calendar-alt"></i>
@@ -166,48 +211,7 @@
                     <button class="btn btn-sm btn-outline">View All</button>
                 </div>
                 <ul class="deadlines-list" id="deadlines-list">
-                    <li class="deadline-item">
-                        <div class="deadline-date">
-                            <span class="day">15</span>
-                            <span class="month">May</span>
-                        </div>
-                        <div class="deadline-info">
-                            <h4>Quantum Computing Proposal Review</h4>
-                            <p>Due in 3 days</p>
-                        </div>
-                        <div class="deadline-status urgent">
-                            <i class="fas fa-exclamation-circle"></i>
-                            Urgent
-                        </div>
-                    </li>
-                    <li class="deadline-item">
-                        <div class="deadline-date">
-                            <span class="day">22</span>
-                            <span class="month">May</span>
-                        </div>
-                        <div class="deadline-info">
-                            <h4>Machine Learning Ethics Study</h4>
-                            <p>Due in 10 days</p>
-                        </div>
-                        <div class="deadline-status upcoming">
-                            <i class="fas fa-clock"></i>
-                            Upcoming
-                        </div>
-                    </li>
-                    <li class="deadline-item">
-                        <div class="deadline-date">
-                            <span class="day">30</span>
-                            <span class="month">May</span>
-                        </div>
-                        <div class="deadline-info">
-                            <h4>Renewable Energy Innovation</h4>
-                            <p>Due in 18 days</p>
-                        </div>
-                        <div class="deadline-status upcoming">
-                            <i class="fas fa-clock"></i>
-                            Upcoming
-                        </div>
-                    </li>
+                    <!-- Dynamically populated -->
                 </ul>
             </div>
         </section>

@@ -1,483 +1,503 @@
-// Admin Messages JavaScript - Updated to match dashboard style
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
-    const messageListElement = document.getElementById('message-list');
-    const emptyStateElement = document.getElementById('empty-state');
-    const messageViewElement = document.getElementById('message-view');
-    const composeFormElement = document.getElementById('compose-form');
-    const messageFolders = document.querySelectorAll('.message-folders li');
-    const composeBtn = document.getElementById('compose-btn');
-    const replyBtn = document.getElementById('reply-btn');
-    const forwardBtn = document.getElementById('forward-btn');
-    const archiveBtn = document.getElementById('archive-btn');
-    const saveDraftBtn = document.getElementById('save-draft-btn');
-    const cancelComposeBtn = document.getElementById('cancel-compose-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-
-    // Message display elements
-    const messageSubject = document.getElementById('message-subject');
-    const messageFrom = document.getElementById('message-from');
-    const messageTo = document.getElementById('message-to');
-    const messageDate = document.getElementById('message-date');
-    const messageBodyText = document.getElementById('message-body-text');
-    const attachmentList = document.getElementById('attachment-list');
-    const messageAttachmentsSection = document.getElementById('message-attachments');
-
-    // Compose form elements
-    const composeToSelect = document.getElementById('compose-to');
-    const composeSubject = document.getElementById('compose-subject');
-    const composeMessage = document.getElementById('compose-message');
-    const composeProposalReference = document.getElementById('compose-proposal-reference');
-
-    // Create toast container
-    const toastContainer = document.createElement('div');
-    toastContainer.id = 'toast-container';
-    document.body.appendChild(toastContainer);
-
-    // Mock Messages Data
-    const mockMessages = [
-        {
-            id: 1,
-            folder: 'inbox',
-            from: {
-                id: 2,
-                name: 'Prof. Michael Chen',
-                email: 'mchen@research.org'
-            },
-            to: {
-                id: 5,
-                name: 'Admin User',
-                email: 'admin@collabnexus.com'
-            },
-            subject: 'Question about proposal review assignment',
-            body: `Hello,
-
-I recently received notifications about three new proposals assigned to me for review. However, one of them appears to be outside my area of expertise (Proposal ID: PRO-2024-089 on Genomic Analysis).
-
-Could you please reassign this to a reviewer with more background in biology or genetics? I'd be happy to take on a different proposal in the computer science or medicine domains instead.
-
-Thank you for your consideration.
-
-Best regards,
-Prof. Michael Chen`,
-            date: '2025-04-26T14:23:10',
-            read: false,
-            attachments: []
+    const todayNotifications = document.getElementById('today-notifications');
+    const yesterdayNotifications = document.getElementById('yesterday-notifications');
+    const earlierNotifications = document.getElementById('earlier-notifications');
+    const searchInput = document.getElementById('search-notifications');
+    const filterTags = document.querySelectorAll('.filter-tag');
+    const emptyState = document.getElementById('empty-notifications');
+    const markAllReadBtn = document.getElementById('mark-all-read');
+    const notificationSettingsBtn = document.getElementById('notifications-settings');
+    const notificationModal = document.querySelector('.notification-modal');
+    const settingsModal = document.querySelector('.settings-modal');
+    const closeModalBtns = document.querySelectorAll('.close-modal');
+    const modalDismissBtn = document.getElementById('modal-dismiss');
+    const modalActionBtn = document.getElementById('modal-action');
+    const cancelSettingsBtn = document.querySelector('.cancel-settings');
+    const notificationSettingsForm = document.getElementById('notification-settings-form');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const paginationInfo = document.getElementById('pagination-info');
+    
+    // State variables
+    let notifications = [];
+    let filteredNotifications = [];
+    let currentPage = 1;
+    let currentFilter = 'all';
+    let currentSearchTerm = '';
+    let itemsPerPage = 10;
+    let currentNotificationId = null;
+    
+    // Load notification settings from localStorage or use defaults
+    const settings = JSON.parse(localStorage.getItem('notificationSettings')) || {
+        email: {
+            newAssignments: true,
+            deadlines: true,
+            feedback: true
         },
-        // ... (keep all other mock messages the same)
-    ];
-
-    // Mock Users Data
-    const mockUsers = [
-        { 
-            id: 1, 
-            name: 'Dr. Sarah Johnson', 
-            email: 'sarah.johnson@university.edu', 
-            role: 'researcher'
-        },
-        // ... (keep all other mock users the same)
-    ];
-
-    // Mock Proposals Data
-    const mockProposals = [
-        {
-            id: 'PRO-2024-087',
-            title: 'Novel Approaches to Antibiotic Resistance',
-            researcher: 'Dr. Sarah Johnson'
-        },
-        // ... (keep all other mock proposals the same)
-    ];
-
-    // Current folder and selected message
-    let currentFolder = 'inbox';
-    let selectedMessageId = null;
-
-    // Initialize the page
-    function init() {
-        loadMessageFolder(currentFolder);
-        setupEventListeners();
-        populateRecipientsList();
-        populateProposalsList();
-    }
-
-    // Load messages for a specific folder
-    function loadMessageFolder(folder) {
-        currentFolder = folder;
-        const folderMessages = mockMessages.filter(message => message.folder === folder);
-        renderMessageList(folderMessages);
-    }
-
-    // Render the message list in the sidebar
-    function renderMessageList(messages) {
-        messageListElement.innerHTML = '';
-        
-        if (messages.length === 0) {
-            const emptyMessage = document.createElement('article');
-            emptyMessage.className = 'empty-folder-message';
-            emptyMessage.innerHTML = `
-                <p>No messages in this folder</p>
-            `;
-            messageListElement.appendChild(emptyMessage);
-            return;
+        system: {
+            all: true,
+            sound: true
         }
+    };
+
+    // Mock notification data
+    function generateMockNotifications() {
+        const now = new Date();
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const lastWeek = new Date(now);
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const twoWeeksAgo = new Date(now);
+        twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
         
-        // Sort messages by date (newest first)
-        const sortedMessages = [...messages].sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        sortedMessages.forEach(message => {
-            const messageItem = document.createElement('article');
-            messageItem.className = `message-item ${message.read ? '' : 'unread'}`;
-            messageItem.dataset.messageId = message.id;
-            
-            const formattedDate = formatDate(message.date);
-            
-            messageItem.innerHTML = `
-                <header class="message-item-header">
-                    <h3>${message.subject}</h3>
-                    ${!message.read ? '<span class="unread-badge">New</span>' : ''}
-                </header>
-                <p class="message-preview">
-                    <strong>${currentFolder === 'sent' || currentFolder === 'drafts' ? 
-                        `To: ${message.to.name || 'No recipient'}` : 
-                        `From: ${message.from.name}`}</strong>
-                </p>
-                <footer class="message-meta">
-                    <time datetime="${message.date}">${formattedDate}</time>
-                    ${message.attachments.length > 0 ? 
-                        '<span class="attachment-indicator"><i class="fas fa-paperclip"></i></span>' : ''}
-                </footer>
-            `;
-            
-            messageListElement.appendChild(messageItem);
-        });
-        
-        // Attach event listeners to the message items
-        attachMessageItemListeners();
+        return [
+            {
+                id: 'n1',
+                title: 'New Proposal Assigned',
+                message: 'You have been assigned a new research proposal "Novel Approaches to Quantum Computing" by Dr. Emily Chen.',
+                timestamp: new Date(now.getTime() - 1000 * 60 * 30), // 30 minutes ago
+                type: 'assignment',
+                unread: true,
+                actionLabel: 'Review Now',
+                actionUrl: 'proposals.html'
+            },
+            {
+                id: 'n2',
+                title: 'Deadline Reminder',
+                message: 'Review deadline for "Machine Learning in Healthcare" is approaching. Please submit your evaluation by tomorrow.',
+                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
+                type: 'deadline',
+                unread: true,
+                actionLabel: 'Complete Review',
+                actionUrl: 'proposals.html'
+            },
+            {
+                id: 'n3',
+                title: 'System Maintenance',
+                message: 'CollabNexus will undergo scheduled maintenance this weekend. The platform may be unavailable from 2 AM to 5 AM EST on Sunday.',
+                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 5), // 5 hours ago
+                type: 'system',
+                unread: false,
+                actionLabel: null,
+                actionUrl: null
+            },
+            {
+                id: 'n4',
+                title: 'Feedback Response',
+                message: 'Dr. Wilson has responded to your feedback on "Advancements in Neural Networks". Click to view the response.',
+                timestamp: yesterday,
+                type: 'feedback',
+                unread: false,
+                actionLabel: 'View Response',
+                actionUrl: 'history.html'
+            },
+            {
+                id: 'n5',
+                title: 'Review Approved',
+                message: 'Your review for "Climate Change Mitigation Strategies" has been approved by the administration.',
+                timestamp: yesterday,
+                type: 'system',
+                unread: false,
+                actionLabel: 'View Details',
+                actionUrl: 'history.html'
+            },
+            {
+                id: 'n6',
+                title: 'New Feature Available',
+                message: 'We\'ve added a new feature to help streamline your review process. Check out the new dashboard analytics!',
+                timestamp: lastWeek,
+                type: 'system',
+                unread: false,
+                actionLabel: 'Explore Feature',
+                actionUrl: 'dashboard.html'
+            },
+            {
+                id: 'n7',
+                title: 'Quarterly Review Performance',
+                message: 'Your quarterly review performance metrics are now available. You completed 12 reviews with an average rating of 4.8/5.',
+                timestamp: lastWeek,
+                type: 'system',
+                unread: false,
+                actionLabel: 'View Metrics',
+                actionUrl: 'profile.html'
+            },
+            {
+                id: 'n8',
+                title: 'Research Conference Invitation',
+                message: 'Based on your expertise, you\'ve been invited to attend the Annual Research Innovation Conference as a panel reviewer.',
+                timestamp: twoWeeksAgo,
+                type: 'system',
+                unread: false,
+                actionLabel: 'RSVP',
+                actionUrl: '#'
+            }
+        ];
     }
 
-    // Set up event listeners
-    function setupEventListeners() {
-        // Message folder navigation
-        messageFolders.forEach(folder => {
-            folder.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Update active folder
-                messageFolders.forEach(f => f.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Extract folder name from href attribute
-                const folderName = this.querySelector('a').getAttribute('href').substring(1);
-                loadMessageFolder(folderName);
-                
-                // Reset view
-                hideMessageView();
-                hideComposeForm();
-                showEmptyState();
-            });
-        });
+    // Format timestamp
+    function formatTimestamp(timestamp) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
         
-        // Compose button
-        composeBtn.addEventListener('click', function() {
-            hideMessageView();
-            hideEmptyState();
-            showComposeForm();
-            resetComposeForm();
-        });
+        const timestampDate = new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate());
         
-        // Reply button
-        replyBtn.addEventListener('click', function() {
-            if (!selectedMessageId) return;
-            
-            const message = mockMessages.find(m => m.id === selectedMessageId);
-            if (!message) return;
-            
-            hideMessageView();
-            hideEmptyState();
-            showComposeForm();
-            
-            // Populate the compose form for reply
-            composeToSelect.value = message.from.id;
-            composeSubject.value = `Re: ${message.subject}`;
-            composeMessage.value = `\n\n\n-------- Original Message --------\nFrom: ${message.from.name}\nDate: ${formatDate(message.date)}\nSubject: ${message.subject}\n\n${message.body}`;
-            
-            // Focus on the message body and place cursor at the beginning
-            composeMessage.focus();
-            composeMessage.setSelectionRange(0, 0);
-        });
+        if (timestamp > today) {
+            // Today, show time
+            return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (timestampDate.getTime() === yesterday.getTime()) {
+            // Yesterday, show "Yesterday at [time]"
+            return `Yesterday at ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        } else {
+            // More than a day ago, show date
+            return timestamp.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+    }
+
+    // Group notifications by date
+    function groupNotificationsByDate(notificationsArray) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
         
-        // Forward button
-        forwardBtn.addEventListener('click', function() {
-            if (!selectedMessageId) return;
-            
-            const message = mockMessages.find(m => m.id === selectedMessageId);
-            if (!message) return;
-            
-            hideMessageView();
-            hideEmptyState();
-            showComposeForm();
-            
-            // Populate the compose form for forward
-            composeToSelect.value = ''; // Clear recipient
-            composeSubject.value = `Fwd: ${message.subject}`;
-            composeMessage.value = `\n\n\n-------- Forwarded Message --------\nFrom: ${message.from.name}\nDate: ${formatDate(message.date)}\nSubject: ${message.subject}\n\n${message.body}`;
-            
-            // Focus on the to field
-            composeToSelect.focus();
-        });
+        const todayNotifs = [];
+        const yesterdayNotifs = [];
+        const earlierNotifs = [];
         
-        // Archive button
-        archiveBtn.addEventListener('click', function() {
-            if (!selectedMessageId) return;
+        notificationsArray.forEach(notification => {
+            const notifDate = new Date(notification.timestamp.getFullYear(), notification.timestamp.getMonth(), notification.timestamp.getDate());
             
-            const messageIndex = mockMessages.findIndex(m => m.id === selectedMessageId);
-            if (messageIndex === -1) return;
-            
-            // Update the message folder to archived
-            mockMessages[messageIndex].folder = 'archived';
-            
-            // Refresh the current folder view
-            loadMessageFolder(currentFolder);
-            
-            // Show empty state
-            hideMessageView();
-            showEmptyState();
-            
-            // Show notification
-            showToast('Message archived successfully', 'success');
-        });
-        
-        // Save draft button
-        saveDraftBtn.addEventListener('click', function() {
-            showToast('Draft saved successfully', 'success');
-        });
-        
-        // Cancel compose button
-        cancelComposeBtn.addEventListener('click', function() {
-            hideComposeForm();
-            showEmptyState();
-        });
-        
-        // Compose form submission
-        composeFormElement.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            showToast('Message sent successfully', 'success');
-            
-            // Reset and hide the compose form
-            resetComposeForm();
-            hideComposeForm();
-            showEmptyState();
-        });
-        
-        // Logout button
-        logoutBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            try {
-                const response = await fetch('/api/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    window.location.href = '/login';
-                } else {
-                    showToast('Logout failed. Please try again.', 'error');
-                }
-            } catch (error) {
-                console.error('Error during logout:', error);
-                showToast('Error during logout. Please try again.', 'error');
+            if (notifDate.getTime() === today.getTime()) {
+                todayNotifs.push(notification);
+            } else if (notifDate.getTime() === yesterday.getTime()) {
+                yesterdayNotifs.push(notification);
+            } else {
+                earlierNotifs.push(notification);
             }
         });
-    }
-    
-    // Attach event listeners to message items
-    function attachMessageItemListeners() {
-        document.querySelectorAll('.message-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const messageId = parseInt(this.dataset.messageId);
-                openMessage(messageId);
-                
-                // Mark as read in the UI
-                this.classList.remove('unread');
-                
-                // Mark as read in the data
-                const message = mockMessages.find(m => m.id === messageId);
-                if (message) {
-                    message.read = true;
-                }
-            });
-        });
-    }
-    
-    // Open a message and display its contents
-    function openMessage(messageId) {
-        selectedMessageId = messageId;
-        const message = mockMessages.find(m => m.id === messageId);
         
-        if (!message) return;
+        return {
+            today: todayNotifs,
+            yesterday: yesterdayNotifs,
+            earlier: earlierNotifs
+        };
+    }
+
+    // Create notification HTML
+    function createNotificationElement(notification) {
+        const notifItem = document.createElement('div');
+        notifItem.className = `notification-item ${notification.unread ? 'unread' : ''}`;
+        notifItem.dataset.id = notification.id;
+        notifItem.dataset.type = notification.type;
         
-        // Populate message view
-        messageSubject.textContent = message.subject;
-        messageFrom.textContent = `${message.from.name} <${message.from.email}>`;
-        messageTo.textContent = `${message.to.name} <${message.to.email}>`;
-        messageDate.textContent = formatDateLong(message.date);
-        messageBodyText.textContent = message.body;
-        
-        // Handle attachments
-        if (message.attachments.length > 0) {
-            messageAttachmentsSection.classList.remove('hidden');
-            attachmentList.innerHTML = '';
-            
-            message.attachments.forEach(attachment => {
-                const attachmentItem = document.createElement('li');
-                attachmentItem.innerHTML = `
-                    <i class="fas fa-file-alt"></i>
-                    <a href="#" class="attachment-link">${attachment.name}</a>
-                    <span class="attachment-size">(${attachment.size})</span>
-                `;
-                attachmentList.appendChild(attachmentItem);
-            });
-        } else {
-            messageAttachmentsSection.classList.add('hidden');
-        }
-        
-        // Show message view and hide other views
-        hideEmptyState();
-        hideComposeForm();
-        showMessageView();
-    }
-    
-    // Populate the recipients select dropdown
-    function populateRecipientsList() {
-        composeToSelect.innerHTML = '';
-        
-        mockUsers.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.id;
-            option.textContent = `${user.name} <${user.email}>`;
-            composeToSelect.appendChild(option);
-        });
-    }
-    
-    // Populate the proposals reference dropdown
-    function populateProposalsList() {
-        composeProposalReference.innerHTML = '<option value="">Select a proposal to reference</option>';
-        
-        mockProposals.forEach(proposal => {
-            const option = document.createElement('option');
-            option.value = proposal.id;
-            option.textContent = `${proposal.id}: ${proposal.title} (${proposal.researcher})`;
-            composeProposalReference.appendChild(option);
-        });
-    }
-    
-    // Reset the compose form
-    function resetComposeForm() {
-        composeToSelect.value = '';
-        composeSubject.value = '';
-        composeMessage.value = '';
-        composeProposalReference.value = '';
-        document.getElementById('compose-file-attachment').value = '';
-    }
-    
-    // Show/Hide View Functions
-    function showMessageView() {
-        messageViewElement.classList.remove('hidden');
-    }
-    
-    function hideMessageView() {
-        messageViewElement.classList.add('hidden');
-    }
-    
-    function showEmptyState() {
-        emptyStateElement.classList.remove('hidden');
-    }
-    
-    function hideEmptyState() {
-        emptyStateElement.classList.add('hidden');
-    }
-    
-    function showComposeForm() {
-        composeFormElement.classList.remove('hidden');
-    }
-    
-    function hideComposeForm() {
-        composeFormElement.classList.add('hidden');
-    }
-    
-    // Toast notification function
-    function showToast(message, type = 'info', duration = 5000) {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        
-        let icon = '';
-        switch(type) {
-            case 'success':
-                icon = '<i class="fas fa-check-circle"></i>';
-                break;
-            case 'error':
-                icon = '<i class="fas fa-exclamation-circle"></i>';
-                break;
-            case 'warning':
-                icon = '<i class="fas fa-exclamation-triangle"></i>';
-                break;
-            default:
-                icon = '<i class="fas fa-info-circle"></i>';
-        }
-        
-        toast.innerHTML = `
-            <div class="toast-icon">${icon}</div>
-            <div class="toast-content">
-                <div class="toast-message">${message}</div>
+        notifItem.innerHTML = `
+            <div class="notification-icon ${notification.type}">
+                <i class="fas ${getIconForType(notification.type)}"></i>
             </div>
-            <button class="toast-close"><i class="fas fa-times"></i></button>
+            <div class="notification-content">
+                <h4 class="notification-title">${notification.title}</h4>
+                <p class="notification-message">${notification.message}</p>
+                <div class="notification-meta">
+                    <span class="notification-timestamp">${formatTimestamp(notification.timestamp)}</span>
+                </div>
+            </div>
         `;
         
-        toastContainer.appendChild(toast);
+        // Add click event to open the notification detail modal
+        notifItem.addEventListener('click', () => openNotificationDetail(notification));
         
-        setTimeout(() => {
-            toast.classList.add('active');
-        }, 10);
+        return notifItem;
+    }
+
+    // Get icon for notification type
+    function getIconForType(type) {
+        switch (type) {
+            case 'assignment':
+                return 'fa-clipboard-list';
+            case 'deadline':
+                return 'fa-clock';
+            case 'feedback':
+                return 'fa-comment-dots';
+            case 'system':
+            default:
+                return 'fa-bell';
+        }
+    }
+
+    // Render notifications by date groups
+    function renderNotifications() {
+        // Clear all containers
+        todayNotifications.innerHTML = '';
+        yesterdayNotifications.innerHTML = '';
+        earlierNotifications.innerHTML = '';
         
-        const timeout = setTimeout(() => {
-            removeToast(toast);
-        }, duration);
+        // Apply filters and search before displaying
+        applyFiltersAndSearch();
         
-        const closeBtn = toast.querySelector('.toast-close');
-        closeBtn.addEventListener('click', () => {
-            clearTimeout(timeout);
-            removeToast(toast);
+        // Get paginated subset
+        const paginatedNotifications = getPaginatedNotifications();
+        
+        // Group by date
+        const groupedNotifs = groupNotificationsByDate(paginatedNotifications);
+        
+        // Hide date sections if empty
+        document.getElementById('today-section').style.display = groupedNotifs.today.length ? 'block' : 'none';
+        document.getElementById('yesterday-section').style.display = groupedNotifs.yesterday.length ? 'block' : 'none';
+        document.getElementById('earlier-section').style.display = groupedNotifs.earlier.length ? 'block' : 'none';
+        
+        // Show empty state if all sections are empty
+        emptyState.style.display = 
+            (groupedNotifs.today.length || groupedNotifs.yesterday.length || groupedNotifs.earlier.length) ? 
+            'none' : 'flex';
+        
+        // Render notifications in each section
+        groupedNotifs.today.forEach(notification => {
+            todayNotifications.appendChild(createNotificationElement(notification));
         });
-    }
-    
-    function removeToast(toast) {
-        toast.classList.remove('active');
-        setTimeout(() => {
-            toastContainer.removeChild(toast);
-        }, 300);
-    }
-    
-    // Utility Functions
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    }
-    
-    function formatDateLong(dateString) {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit'
+        
+        groupedNotifs.yesterday.forEach(notification => {
+            yesterdayNotifications.appendChild(createNotificationElement(notification));
         });
+        
+        groupedNotifs.earlier.forEach(notification => {
+            earlierNotifications.appendChild(createNotificationElement(notification));
+        });
+        
+        // Update pagination
+        updatePagination();
     }
+
+    // Apply filters and search
+    function applyFiltersAndSearch() {
+        filteredNotifications = [...notifications];
+        
+        // Apply type filter
+        if (currentFilter !== 'all') {
+            if (currentFilter === 'unread') {
+                filteredNotifications = filteredNotifications.filter(n => n.unread);
+            } else {
+                filteredNotifications = filteredNotifications.filter(n => n.type === currentFilter);
+            }
+        }
+        
+        // Apply search
+        if (currentSearchTerm) {
+            const searchLower = currentSearchTerm.toLowerCase();
+            filteredNotifications = filteredNotifications.filter(n => 
+                n.title.toLowerCase().includes(searchLower) || 
+                n.message.toLowerCase().includes(searchLower)
+            );
+        }
+        
+        // Reset to page 1 when filters change
+        currentPage = 1;
+    }
+
+    // Get paginated subset of notifications
+    function getPaginatedNotifications() {
+        const startIdx = (currentPage - 1) * itemsPerPage;
+        const endIdx = startIdx + itemsPerPage;
+        return filteredNotifications.slice(startIdx, endIdx);
+    }
+
+    // Update pagination controls and info
+    function updatePagination() {
+        const totalPages = Math.max(1, Math.ceil(filteredNotifications.length / itemsPerPage));
+        
+        paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        
+        prevPageBtn.disabled = currentPage <= 1;
+        nextPageBtn.disabled = currentPage >= totalPages;
+    }
+
+    // Open notification detail modal
+    function openNotificationDetail(notification) {
+        currentNotificationId = notification.id;
+        
+        // Set modal content
+        document.getElementById('modal-notification-title').textContent = notification.title;
+        document.getElementById('modal-notification-time').textContent = formatTimestamp(notification.timestamp);
+        
+        const modalIcon = document.getElementById('modal-notification-icon');
+        modalIcon.className = `notification-icon ${notification.type}`;
+        modalIcon.innerHTML = `<i class="fas ${getIconForType(notification.type)}"></i>`;
+        
+        const detailContent = document.getElementById('modal-notification-content');
+        detailContent.innerHTML = `
+            <p>${notification.message}</p>
+            <p>This notification was sent to you as part of your reviewer responsibilities at CollabNexus Research Hub.</p>
+        `;
+        
+        // Set action button or hide it if no action
+        if (notification.actionLabel && notification.actionUrl) {
+            modalActionBtn.textContent = notification.actionLabel;
+            modalActionBtn.style.display = '';
+            modalActionBtn.onclick = () => {
+                window.location.href = notification.actionUrl;
+            };
+        } else {
+            modalActionBtn.style.display = 'none';
+        }
+        
+        // Mark as read if unread
+        if (notification.unread) {
+            markNotificationAsRead(notification.id);
+        }
+        
+        // Show modal
+        notificationModal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+    }
+
+    // Mark notification as read
+    function markNotificationAsRead(notificationId) {
+        const notifIndex = notifications.findIndex(n => n.id === notificationId);
+        if (notifIndex !== -1 && notifications[notifIndex].unread) {
+            notifications[notifIndex].unread = false;
+            
+            // Update UI
+            const notifElement = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+            if (notifElement) {
+                notifElement.classList.remove('unread');
+            }
+        }
+    }
+
+    // Mark all notifications as read
+    function markAllAsRead() {
+        let hasUnreadNotifications = false;
+        
+        notifications.forEach(notification => {
+            if (notification.unread) {
+                notification.unread = false;
+                hasUnreadNotifications = true;
+            }
+        });
+        
+        if (hasUnreadNotifications) {
+            renderNotifications();
+            alert('All notifications marked as read');
+        }
+    }
+
+    // Close modals
+    function closeModals() {
+        notificationModal.style.display = 'none';
+        settingsModal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+
+    // Apply notification settings
+    function applySettings() {
+        // Update checkbox states
+        document.getElementById('email-new-assignments').checked = settings.email.newAssignments;
+        document.getElementById('email-deadlines').checked = settings.email.deadlines;
+        document.getElementById('email-feedback').checked = settings.email.feedback;
+        document.getElementById('system-all').checked = settings.system.all;
+        document.getElementById('system-sound').checked = settings.system.sound;
+    }
+
+    // Save notification settings
+    function saveSettings() {
+        settings.email.newAssignments = document.getElementById('email-new-assignments').checked;
+        settings.email.deadlines = document.getElementById('email-deadlines').checked;
+        settings.email.feedback = document.getElementById('email-feedback').checked;
+        settings.system.all = document.getElementById('system-all').checked;
+        settings.system.sound = document.getElementById('system-sound').checked;
+        
+        localStorage.setItem('notificationSettings', JSON.stringify(settings));
+    }
+
+    // Event Listeners
     
-    // Initialize the page
-    init();
+    // Search input
+    searchInput.addEventListener('input', function(e) {
+        currentSearchTerm = e.target.value.trim();
+        renderNotifications();
+    });
+    
+    // Filter tags
+    filterTags.forEach(tag => {
+        tag.addEventListener('click', function() {
+            // Remove active class from all filters
+            filterTags.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked filter
+            this.classList.add('active');
+            
+            // Update current filter
+            currentFilter = this.getAttribute('data-filter');
+            
+            // Re-render notifications
+            renderNotifications();
+        });
+    });
+    
+    // Mark all as read button
+    markAllReadBtn.addEventListener('click', markAllAsRead);
+    
+    // Notification settings button
+    notificationSettingsBtn.addEventListener('click', function() {
+        applySettings();
+        settingsModal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+    });
+    
+    // Close modal buttons
+    closeModalBtns.forEach(btn => {
+        btn.addEventListener('click', closeModals);
+    });
+    
+    // Dismiss notification button
+    modalDismissBtn.addEventListener('click', function() {
+        closeModals();
+    });
+    
+    // Cancel settings button
+    cancelSettingsBtn.addEventListener('click', closeModals);
+    
+    // Settings form submission
+    notificationSettingsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveSettings();
+        closeModals();
+        alert('Notification settings saved successfully');
+    });
+    
+    // Pagination buttons
+    prevPageBtn.addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderNotifications();
+        }
+    });
+    
+    nextPageBtn.addEventListener('click', function() {
+        const totalPages = Math.ceil(filteredNotifications.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderNotifications();
+        }
+    });
+    
+        // Set up event listeners
+        function setupEventListeners() {
+            document.getElementById('logout-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to log out?')) {
+                    // Clear session/local storage
+                    localStorage.removeItem('adminName');
+                    localStorage.removeItem('adminToken');
+    
+                    // Replace current history state so user can't go "back"
+                    window.location.replace('../../../login.html');
+                }
+            });
+        }
+    // Initialize
+    notifications = generateMockNotifications();
+    renderNotifications();
 });
