@@ -48,7 +48,7 @@ async function loadDashboardData() {
         const userData = JSON.parse(userJson);
         
         // Get user name from user data
-        const adminName = userData?.name || 'Administrator';
+        const adminName = userData.user_metadata?.name || 'Administrator';
         
         // Update admin name display
         document.getElementById('admin-name').textContent = adminName;
