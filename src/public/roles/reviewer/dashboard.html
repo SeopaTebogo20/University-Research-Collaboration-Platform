@@ -19,52 +19,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
-    
-    <style>
-        /* Profile picture styles */
-        .profile-container {
-            position: absolute;
-            right: 20px;
-            top: 20px;
-        }
-        
-        .profile-picture {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #6D28D9;
-            transition: all 0.3s ease;
-        }
-        
-        .profile-picture:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .welcome-content {
-            position: relative;
-            padding-right: 90px;
-        }
-        
-        .reviewer-department {
-            color: #6B7280;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .profile-picture {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .welcome-content {
-                padding-right: 70px;
-            }
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -309,67 +263,5 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="js/dashboard.js"></script>
     <script src="../../js/auth.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check authentication status
-            if (!auth.isLoggedIn()) {
-                window.location.href = '/login';
-                return;
-            }
-            
-            // Get current user from session storage
-            const user = auth.getCurrentUser();
-            
-            // Log user data to console
-            console.log('User data from session storage:', user);
-            
-            // Update UI with user data
-            if (user) {
-                // Set reviewer name
-                const reviewerNameElement = document.getElementById('reviewer-name');
-                if (reviewerNameElement && user.name) {
-                    reviewerNameElement.textContent = user.name;
-                }
-                
-                // Set current date
-                const currentDateElement = document.getElementById('current-date');
-                if (currentDateElement) {
-                    const now = new Date();
-                    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                    currentDateElement.textContent = now.toLocaleDateString('en-US', options);
-                }
-                
-                // Log additional user details
-                console.log('User Details:', {
-                    id: user.id,
-                    email: user.email,
-                    role: user.role,
-                    name: user.name,
-                    picture: user.picture
-                });
-                
-                // Example of how you might use the role
-                if (user.role) {
-                    console.log(`User is a ${user.role}`);
-                    // You could add role-specific logic here
-                }
-            } else {
-                console.warn('No user data found in session storage');
-            }
-    
-            // Add logout functionality
-            const logoutBtn = document.getElementById('logout-btn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    auth.logout();
-                });
-            }
-            
-            // Rest of your dashboard initialization code
-            // Initialize charts, load data, etc.
-        });
-        </script>
 </body>
 </html>
