@@ -41,20 +41,20 @@ function updateCurrentDate() {
 // Load dashboard data from API or use mock data
 async function loadDashboardData() {
     try {
-        // First check authentication status and get user info
-        const authResponse = await fetch('/api/auth/status');
-        const authData = await authResponse.json();
+        // Get user data directly from session storage
+        const userJson = sessionStorage.getItem('user');
         
-        if (!authResponse.ok || !authData.authenticated) {
+        if (!userJson) {
             // Redirect to login if not authenticated
             window.location.href = '/login';
             return;
         }
         
-        // Get user name from auth data
-        const adminName = authData.user?.user_metadata?.name || 
-                         authData.user?.name || 
-                         'Administrator';
+        // Parse the user data from session storage
+        const userData = JSON.parse(userJson);
+        
+        // Get user name from user data
+        const adminName = userData?.name || 'Administrator';
         
         // Update admin name display
         document.getElementById('admin-name').textContent = adminName;
@@ -75,7 +75,13 @@ async function loadDashboardData() {
         
     } catch (error) {
         console.error('Error loading dashboard data:', error);
-        showToast('Failed to load dashboard data. Please refresh the page.', 'error');
+        
+        // Use window.toast if available, otherwise fall back to alert
+        if (window.toast) {
+            window.toast.error('Failed to load dashboard data. Please refresh the page.');
+        } else {
+            alert('Failed to load dashboard data. Please refresh the page.');
+        }
         
         // Fallback to stored name if available
         const storedName = localStorage.getItem('adminName');
