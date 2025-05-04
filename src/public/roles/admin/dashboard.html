@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - CollabNexus Research Hub</title>
-    <meta name="description" content="Admin dashboard for CollabNexus Research Hub">
+    <meta name="description" content="Advanced dashboard for CollabNexus Research Hub administrators">
     <meta name="author" content="CollabNexus">
     
     <meta property="og:title" content="Admin Dashboard - CollabNexus Research Hub">
-    <meta property="og:description" content="Admin dashboard for CollabNexus Research Hub">
+    <meta property="og:description" content="Advanced dashboard for CollabNexus Research Hub administrators">
     <meta property="og:type" content="website">
     
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/admin-styles.css">
+    <link rel="stylesheet" href="css/admin-styles2.css">
+    <link rel="stylesheet" href="css/proposals1.css">
+    <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
 </head>
 <body>
     <nav class="navbar">
@@ -22,243 +26,479 @@
             CollabNexus
         </a>
         <ul class="nav-links">
-            <li><a href="dashboard.html" class="active"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="proposal.html"><i class="fas fa-file-alt"></i>Manage Proposals</a></li>
+            <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="proposal.html"><i class="fas fa-clipboard-list"></i> Manage Proposals</a></li>
             <li><a href="userManagement.html"><i class="fas fa-users"></i> Manage Users</a></li>
             <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-            <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
+        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </nav>
 
-    <main class="admin-dashboard">
+    <main class="admin-proposal">
         <header class="dashboard-header">
-            <h1>Admin Dashboard</h1>
-            <p>Welcome back, Administrator! Here's an overview of your research hub activity.</p>
+                <h1>Welcome Back, <span id="admin-name">Administrator</span></h1>
+                <p class="subtitle">System overview and key metrics</p>
+                <div class="date-display">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="current-date">Loading date...</span>
+                </div>
         </header>
 
-        <section class="stats-overview">
-            <article class="stat-card">
-                <i class="fas fa-file-alt stat-icon"></i>
-                <h3>Active Proposals</h3>
-                <p class="stat-number">24</p>
-                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 15% from last month</p>
-            </article>
-            <article class="stat-card">
-                <i class="fas fa-users stat-icon"></i>
-                <h3>Registered Users</h3>
-                <p class="stat-number">143</p>
-                <p class="stat-change positive"><i class="fas fa-arrow-up"></i> 8% from last month</p>
-            </article>
-            <article class="stat-card">
-                <i class="fas fa-check-circle stat-icon"></i>
-                <h3>Approved Proposals</h3>
-                <p class="stat-number">18</p>
-                <p class="stat-change neutral"><i class="fas fa-minus"></i> No change</p>
-            </article>
-            <article class="stat-card">
-                <i class="fas fa-comments stat-icon"></i>
-                <h3>New Messages</h3>
-                <p class="stat-number">7</p>
-                <p class="stat-change negative"><i class="fas fa-arrow-down"></i> 3% from last month</p>
-            </article>
+        <section class="dashboard-overview">
+            <div class="overview-card total-users">
+                <div class="card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="card-content">
+                    <h2 id="total-users">0</h2>
+                    <p>Total Users</p>
+                </div>
+                <div class="card-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>8%</span>
+                </div>
+            </div>
+            <div class="overview-card active-proposals">
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h2 id="active-proposals">0</h2>
+                    <p>Active Proposals</p>
+                </div>
+                <div class="card-trend up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12%</span>
+                </div>
+            </div>
+            <div class="overview-card pending-reviews">
+                <div class="card-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="card-content">
+                    <h2 id="pending-reviews">0</h2>
+                    <p>Pending Reviews</p>
+                </div>
+                <div class="card-trend down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>5%</span>
+                </div>
+            </div>
+            <div class="overview-card system-health">
+                <div class="card-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="card-content">
+                    <h2 id="system-health">98%</h2>
+                    <p>System Health</p>
+                </div>
+                <div class="card-trend neutral">
+                    <i class="fas fa-minus"></i>
+                    <span>Stable</span>
+                </div>
+            </div>
         </section>
 
-        <section class="dashboard-content">
-            <article class="dashboard-card recent-proposals">
-                <header class="card-header">
-                    <h2>Recent Proposals</h2>
-                    <a href="proposal.html" class="view-all">View All</a>
-                </header>
-                <table class="dashboard-table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Researcher</th>
-                            <th>Status</th>
-                            <th>Submitted</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Novel Approaches to Quantum Computing</td>
-                            <td>Dr. Sarah Chen</td>
-                            <td><span class="status-badge status-in-review">In Review</span></td>
-                            <td>April 28, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Climate Change Impact on Marine Ecosystems</td>
-                            <td>Prof. James Wilson</td>
-                            <td><span class="status-badge status-approved">Approved</span></td>
-                            <td>April 25, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Sustainable Agriculture Techniques</td>
-                            <td>Dr. Elena Rodriguez</td>
-                            <td><span class="status-badge status-revision">Needs Revision</span></td>
-                            <td>April 23, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>AI Applications in Medical Diagnostics</td>
-                            <td>Dr. Michael Johnson</td>
-                            <td><span class="status-badge status-pending">Pending</span></td>
-                            <td>April 21, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Renewable Energy Storage Solutions</td>
-                            <td>Prof. Anna Kim</td>
-                            <td><span class="status-badge status-approved">Approved</span></td>
-                            <td>April 19, 2025</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </article>
+        <section class="dashboard-charts-container">
+            <div class="chart-container user-activity">
+                <h2 class="chart-title">User Activity</h2>
+                <p class="chart-subtitle">Platform engagement metrics</p>
+                <div class="chart-toolbar">
+                    <div class="chart-timeframe">
+                        <button class="timeframe-btn active" data-period="week">Week</button>
+                        <button class="timeframe-btn" data-period="month">Month</button>
+                        <button class="timeframe-btn" data-period="year">Year</button>
+                    </div>
+                    <button class="chart-download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="userActivityChart"></canvas>
+                </div>
+            </div>
 
-            <article class="dashboard-card recent-users">
-                <header class="card-header">
-                    <h2>Recent Users</h2>
-                    <a href="userManagement.html" class="view-all">View All</a>
-                </header>
-                <table class="dashboard-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Joined</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Dr. Thomas Rivera</td>
-                            <td>Researcher</td>
-                            <td><span class="status-badge status-active">Active</span></td>
-                            <td>April 29, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Prof. Lydia Patel</td>
-                            <td>Reviewer</td>
-                            <td><span class="status-badge status-active">Active</span></td>
-                            <td>April 27, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Dr. Marcus Thompson</td>
-                            <td>Researcher</td>
-                            <td><span class="status-badge status-pending">Pending</span></td>
-                            <td>April 26, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Dr. Sofia Garcia</td>
-                            <td>Reviewer</td>
-                            <td><span class="status-badge status-active">Active</span></td>
-                            <td>April 24, 2025</td>
-                        </tr>
-                        <tr>
-                            <td>Prof. Robert Lee</td>
-                            <td>Researcher</td>
-                            <td><span class="status-badge status-inactive">Inactive</span></td>
-                            <td>April 22, 2025</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </article>
+            <div class="chart-container proposal-stats">
+                <h2 class="chart-title">Proposal Distribution</h2>
+                <p class="chart-subtitle">By research area</p>
+                <div class="chart-wrapper">
+                    <canvas id="proposalDistributionChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color ai-ethics"></span>
+                        <span class="legend-label">AI Ethics</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color climate"></span>
+                        <span class="legend-label">Climate Science</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color healthcare"></span>
+                        <span class="legend-label">Healthcare</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color energy"></span>
+                        <span class="legend-label">Renewable Energy</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color other"></span>
+                        <span class="legend-label">Other</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            <article class="dashboard-card activity-log">
-                <header class="card-header">
-                    <h2>Recent Activity</h2>
-                    <button class="btn-outline refresh-btn"><i class="fas fa-sync-alt"></i> Refresh</button>
-                </header>
-                <ul class="activity-list">
-                    <li class="activity-item">
-                        <i class="fas fa-check-circle activity-icon approve"></i>
-                        <section class="activity-content">
-                            <p class="activity-text">Proposal "<strong>Quantum Computing Applications</strong>" was approved</p>
-                            <p class="activity-time">Today, 14:32</p>
-                        </section>
+        <section class="dashboard-agenda">
+            <div class="agenda-calendar">
+                <div class="calendar-header">
+                    <h2>System Calendar</h2>
+                    <div class="calendar-controls">
+                        <button class="calendar-nav prev">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h3 id="calendar-month">May 2025</h3>
+                        <button class="calendar-nav next">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="calendar-widget" class="calendar-widget"></div>
+            </div>
+            <div class="upcoming-events">
+                <div class="events-header">
+                    <h2>Upcoming Events</h2>
+                    <button class="btn btn-sm btn-outline">View All</button>
+                </div>
+                <ul class="events-list" id="events-list">
+                    <li class="event-item">
+                        <div class="event-date">
+                            <span class="day">12</span>
+                            <span class="month">May</span>
+                        </div>
+                        <div class="event-info">
+                            <h4>Quarterly Review Meeting</h4>
+                            <p>10:00 AM - 12:00 PM</p>
+                        </div>
+                        <div class="event-status important">
+                            <i class="fas fa-star"></i>
+                            Important
+                        </div>
                     </li>
-                    <li class="activity-item">
-                        <i class="fas fa-user-plus activity-icon user"></i>
-                        <section class="activity-content">
-                            <p class="activity-text"><strong>Dr. Thomas Rivera</strong> registered as a new researcher</p>
-                            <p class="activity-time">Today, 11:15</p>
-                        </section>
+                    <li class="event-item">
+                        <div class="event-date">
+                            <span class="day">15</span>
+                            <span class="month">May</span>
+                        </div>
+                        <div class="event-info">
+                            <h4>Research Grant Deadline</h4>
+                            <p>11:59 PM</p>
+                        </div>
+                        <div class="event-status deadline">
+                            <i class="fas fa-clock"></i>
+                            Deadline
+                        </div>
                     </li>
-                    <li class="activity-item">
-                        <i class="fas fa-file-alt activity-icon proposal"></i>
-                        <section class="activity-content">
-                            <p class="activity-text">New proposal "<strong>Novel Approaches to Quantum Computing</strong>" submitted</p>
-                            <p class="activity-time">Today, 09:47</p>
-                        </section>
-                    </li>
-                    <li class="activity-item">
-                        <i class="fas fa-comment activity-icon message"></i>
-                        <section class="activity-content">
-                            <p class="activity-text"><strong>Prof. Anna Kim</strong> sent a message regarding her proposal</p>
-                            <p class="activity-time">Yesterday, 16:23</p>
-                        </section>
-                    </li>
-                    <li class="activity-item">
-                        <i class="fas fa-pen activity-icon edit"></i>
-                        <section class="activity-content">
-                            <p class="activity-text">Proposal "<strong>Sustainable Agriculture Techniques</strong>" was returned for revision</p>
-                            <p class="activity-time">Yesterday, 14:05</p>
-                        </section>
-                    </li>
-                    <li class="activity-item">
-                        <i class="fas fa-user-shield activity-icon role"></i>
-                        <section class="activity-content">
-                            <p class="activity-text"><strong>Prof. Lydia Patel</strong> was assigned as a reviewer</p>
-                            <p class="activity-time">Yesterday, 11:30</p>
-                        </section>
+                    <li class="event-item">
+                        <div class="event-date">
+                            <span class="day">20</span>
+                            <span class="month">May</span>
+                        </div>
+                        <div class="event-info">
+                            <h4>New Reviewer Onboarding</h4>
+                            <p>2:00 PM - 3:30 PM</p>
+                        </div>
+                        <div class="event-status standard">
+                            <i class="fas fa-calendar-check"></i>
+                            Standard
+                        </div>
                     </li>
                 </ul>
-            </article>
+            </div>
+        </section>
+
+        <section class="admin-tools-container">
+            <h2 class="section-title">Quick Access Tools</h2>
+            <div class="admin-tools">
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <h3>Activate Users</h3>
+                    <p>Manage researcher or reviewer accounts</p>
+                    <a href="userManagement.html?action=promote" class="tool-link">Manage User</a>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>Assign Reviews</h3>
+                    <p>Match proposals with qualified reviewers</p>
+                    <a href="proposal.html?action=assign" class="tool-link">Assign Now</a>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <h3>Export Reports</h3>
+                    <p>Generate system activity reports</p>
+                    <a href="#" id="export-report" class="tool-link">Export Data</a>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Send Notifications</h3>
+                    <p>Alert users about important updates</p>
+                    <a href="#" id="send-notification" class="tool-link">Send Now</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-activity">
+            <div class="activity-header">
+                <h2>Recent System Activity</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="activity-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon user">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>New User Registration</h4>
+                        <p>Dr. Maria Chen registered as a researcher</p>
+                        <span class="timeline-date">10 minutes ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon proposal">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>New Proposal Submitted</h4>
+                        <p>"AI Ethics in Healthcare Decision Making" by Dr. James Wilson</p>
+                        <span class="timeline-date">1 hour ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon review">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Review Completed</h4>
+                        <p>Dr. Sarah Johnson completed review of "Quantum Computing Applications"</p>
+                        <span class="timeline-date">3 hours ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon system">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h4>System Maintenance</h4>
+                        <p>Scheduled database optimization completed</p>
+                        <span class="timeline-date">Yesterday</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-performance">
+            <h2 class="section-title">System Performance</h2>
+            <div class="performance-metrics">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3>Server Response Time</h3>
+                        <span class="metric-status good">Good</span>
+                    </div>
+                    <div class="metric-gauge">
+                        <svg viewBox="0 0 120 120" class="gauge">
+                            <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
+                            <circle cx="60" cy="60" r="50" class="gauge-value" style="--gauge-value: 0.15"></circle>
+                            <text x="60" y="62" text-anchor="middle" class="gauge-text">145ms</text>
+                        </svg>
+                    </div>
+                    <p class="metric-info">15% decrease from last week</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3>Database Usage</h3>
+                        <span class="metric-status warning">Warning</span>
+                    </div>
+                    <div class="metric-gauge">
+                        <svg viewBox="0 0 120 120" class="gauge">
+                            <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
+                            <circle cx="60" cy="60" r="50" class="gauge-value" style="--gauge-value: 0.75"></circle>
+                            <text x="60" y="62" text-anchor="middle" class="gauge-text">75%</text>
+                        </svg>
+                    </div>
+                    <p class="metric-info">12% increase from last week</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3>API Uptime</h3>
+                        <span class="metric-status good">Good</span>
+                    </div>
+                    <div class="metric-gauge">
+                        <svg viewBox="0 0 120 120" class="gauge">
+                            <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
+                            <circle cx="60" cy="60" r="50" class="gauge-value" style="--gauge-value: 0.998"></circle>
+                            <text x="60" y="62" text-anchor="middle" class="gauge-text">99.8%</text>
+                        </svg>
+                    </div>
+                    <p class="metric-info">No change from last week</p>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3>Error Rate</h3>
+                        <span class="metric-status good">Good</span>
+                    </div>
+                    <div class="metric-gauge">
+                        <svg viewBox="0 0 120 120" class="gauge">
+                            <circle cx="60" cy="60" r="50" class="gauge-bg"></circle>
+                            <circle cx="60" cy="60" r="50" class="gauge-value" style="--gauge-value: 0.008"></circle>
+                            <text x="60" y="62" text-anchor="middle" class="gauge-text">0.8%</text>
+                        </svg>
+                    </div>
+                    <p class="metric-info">0.2% decrease from last week</p>
+                </div>
+            </div>
         </section>
     </main>
-    
+
     <footer class="footer">
         <section class="container">
-            <section class="footer-content">
+            <nav class="footer-content">
                 <article class="footer-column">
-                    <header class="footer-logo">
+                    <h3 class="footer-logo">
                         <i class="fas fa-book-open book-logo"></i>
                         CollabNexus
-                    </header>
-                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                    </h3>
+                    <p>A platform for collaborative research and knowledge sharing.</p>
                 </article>
                 <article class="footer-column">
-                    <h3>Solutions</h3>
+                    <h3>Admin Resources</h3>
                     <ul class="footer-links">
-                        <li><a href="#">For Researchers</a></li>
-                        <li><a href="#">For Universities</a></li>
-                        <li><a href="#">For Industry</a></li>
-                        <li><a href="#">For Funding Agencies</a></li>
+                        <li><a href="#">Admin Handbook</a></li>
+                        <li><a href="#">API Documentation</a></li>
+                        <li><a href="#">FAQs</a></li>
                     </ul>
                 </article>
                 <article class="footer-column">
-                    <h3>Resources</h3>
+                    <h3>Support</h3>
                     <ul class="footer-links">
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Research Guides</a></li>
-                        <li><a href="#">Webinars</a></li>
-                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Technical Support</a></li>
+                        <li><a href="#">System Status</a></li>
+                        <li><a href="#">Report Issue</a></li>
                     </ul>
                 </article>
                 <article class="footer-column">
-                    <h3>Company</h3>
+                    <h3>Legal</h3>
                     <ul class="footer-links">
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Terms of Service</a></li>
                         <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Data Protection</a></li>
                     </ul>
                 </article>
-            </section>
-            <section class="footer-bottom">
-                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
-            </section>
+            </nav>
+            <p class="footer-bottom">© 2025 CollabNexus Research Hub. All rights reserved.</p>
         </section>
     </footer>
 
-    <script src="js/admin-dashboard.js"></script>
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Send System Notification</h2>
+            <form id="notification-form">
+                <div class="form-group">
+                    <label for="notification-title">Title</label>
+                    <input type="text" id="notification-title" placeholder="Enter notification title" required>
+                </div>
+                <div class="form-group">
+                    <label for="notification-message">Message</label>
+                    <textarea id="notification-message" placeholder="Enter notification message" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="notification-type">Notification Type</label>
+                    <select id="notification-type" required>
+                        <option value="info">Information</option>
+                        <option value="warning">Warning</option>
+                        <option value="important">Important</option>
+                        <option value="success">Success</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notification-recipients">Recipients</label>
+                    <select id="notification-recipients" required>
+                        <option value="all">All Users</option>
+                        <option value="researchers">Researchers Only</option>
+                        <option value="reviewers">Reviewers Only</option>
+                        <option value="admins">Administrators Only</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline cancel-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Notification</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Export Report Modal -->
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Export System Report</h2>
+            <form id="export-form">
+                <div class="form-group">
+                    <label for="report-type">Report Type</label>
+                    <select id="report-type" required>
+                        <option value="user-activity">User Activity</option>
+                        <option value="proposals">Research Proposals</option>
+                        <option value="reviews">Review Metrics</option>
+                        <option value="system">System Performance</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date-range">Date Range</label>
+                    <select id="date-range" required>
+                        <option value="week">Past Week</option>
+                        <option value="month" selected>Past Month</option>
+                        <option value="quarter">Past Quarter</option>
+                        <option value="year">Past Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="form-group date-picker-group" style="display:none;">
+                    <label for="start-date">Start Date</label>
+                    <input type="text" id="start-date" class="date-picker" placeholder="Select start date">
+                    <label for="end-date">End Date</label>
+                    <input type="text" id="end-date" class="date-picker" placeholder="Select end date">
+                </div>
+                <div class="form-group">
+                    <label for="file-format">Format</label>
+                    <select id="file-format" required>
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">Excel (XLSX)</option>
+                        <option value="pdf">PDF</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline cancel-btn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="js/dashboard.js"></script>
 </body>
 </html>
