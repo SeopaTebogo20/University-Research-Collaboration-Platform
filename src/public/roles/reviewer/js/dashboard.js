@@ -36,25 +36,20 @@ function updateCurrentDate() {
 async function loadDashboardData() {
     try {
         // First check authentication status and get user info
-        const authResponse = await fetch('/api/auth/status');
-        const authData = await authResponse.json();
+        // Get user data directly from session storage
+        const userJson = sessionStorage.getItem('user');
         
-        if (!authResponse.ok || !authData.authenticated) {
-            // Redirect to login if not authenticated
-            window.location.href = '/login';
-            return;
-        }
+        // Parse the user data from session storage
+        const userData = JSON.parse(userJson);
         
-        // Get user name from auth data
-        const reviewerName = authData.user?.user_metadata?.name || 
-                           authData.user?.name || 
-                           'Reviewer';
+        // Get user name from user data
+        const reviewerName = userData.user_metadata?.name || 'Administrator';
         
-        // Update reviewer name display
+        // Update admin name display
         document.getElementById('reviewer-name').textContent = reviewerName;
         
-        // Store reviewer name for future use
-        localStorage.setItem('reviewerName', reviewerName);
+        // Store admin name for future use
+        localStorage.setItem('reviewerName', adminName);
         
         // Simulate loading other dashboard data (replace with actual API calls)
         await new Promise(resolve => setTimeout(resolve, 600));
