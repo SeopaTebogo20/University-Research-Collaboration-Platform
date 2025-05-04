@@ -44,12 +44,6 @@ async function loadDashboardData() {
         // Get user data directly from session storage
         const userJson = sessionStorage.getItem('user');
         
-        if (!userJson) {
-            // Redirect to login if not authenticated
-            window.location.href = '/login';
-            return;
-        }
-        
         // Parse the user data from session storage
         const userData = JSON.parse(userJson);
         
