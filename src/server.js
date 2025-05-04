@@ -125,9 +125,6 @@ function getDashboardUrlByRole(role) {
   }
 }
 
-// In your server.js, update the Google callback route to ensure it returns the user data
-// that can be stored in sessionStorage on the client side:
-
 // Replace your existing Google Auth Callback with this updated version
 app.get('/auth/google/callback', async (req, res) => {
   console.log(`[${new Date().toISOString()}] Google callback received with code: ${req.query.code ? 'present' : 'missing'}`);
@@ -261,17 +258,6 @@ app.get('/auth/google/callback', async (req, res) => {
     const redirectTo = req.session.redirectAfterLogin || dashboardUrl;
     delete req.session.redirectAfterLogin;
     
-    // Create a token with user data that can be stored in sessionStorage
-    const userToken = jwt.sign({
-      id: sessionData.user.id,
-      email: sessionData.user.email,
-      role: userRole,
-      name: sessionData.user.user_metadata?.name || '',
-      picture: sessionData.user.user_metadata?.picture || '',
-      access_token: sessionData.session.access_token,
-      refresh_token: sessionData.session.refresh_token
-    }, process.env.SESSION_SECRET, { expiresIn: '1h' });
-    
     // Ensure session is saved before redirect
     req.session.save((err) => {
       if (err) {
@@ -279,7 +265,7 @@ app.get('/auth/google/callback', async (req, res) => {
       }
       
       console.log(`[${new Date().toISOString()}] Redirecting user to: ${redirectTo} based on role: ${userRole}`);
-      return res.redirect(`${redirectTo}?token=${userToken}`);
+      return res.redirect(redirectTo);
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Google auth error: ${error.message}`);
