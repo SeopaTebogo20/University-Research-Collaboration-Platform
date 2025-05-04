@@ -40,9 +40,29 @@ function updateCurrentDate() {
 
 // Load dashboard data from API or use mock data
 async function loadDashboardData() {
-    // In a real app, this would fetch from an API
     try {
-        // Simulate API call with setTimeout
+        // First check authentication status and get user info
+        const authResponse = await fetch('/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authResponse.ok || !authData.authenticated) {
+            // Redirect to login if not authenticated
+            window.location.href = '/login';
+            return;
+        }
+        
+        // Get user name from auth data
+        const adminName = authData.user?.user_metadata?.name || 
+                         authData.user?.name || 
+                         'Administrator';
+        
+        // Update admin name display
+        document.getElementById('admin-name').textContent = adminName;
+        
+        // Store admin name for future use
+        localStorage.setItem('adminName', adminName);
+        
+        // Simulate loading other dashboard data (replace with actual API calls)
         await new Promise(resolve => setTimeout(resolve, 600));
         
         // Update dashboard statistics with mock data
@@ -53,13 +73,15 @@ async function loadDashboardData() {
             systemHealth: 98
         });
         
-        // Update admin name from localStorage or session
-        const adminName = localStorage.getItem('adminName') || 'Administrator';
-        document.getElementById('admin-name').textContent = adminName;
-        
     } catch (error) {
         console.error('Error loading dashboard data:', error);
         showToast('Failed to load dashboard data. Please refresh the page.', 'error');
+        
+        // Fallback to stored name if available
+        const storedName = localStorage.getItem('adminName');
+        if (storedName) {
+            document.getElementById('admin-name').textContent = storedName;
+        }
     }
 }
 
@@ -504,12 +526,10 @@ function setupEventListeners() {
             localStorage.removeItem('adminName');
             localStorage.removeItem('adminToken');
 
-            // Replace current history state so user can't go "back"
-            window.location.replace('../../../login.html');
+            // Redirect to login
+            window.location.href = '/login';
         }
     });
-
-
     
     // Send notification button
     document.getElementById('send-notification').addEventListener('click', function(e) {

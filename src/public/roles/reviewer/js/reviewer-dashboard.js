@@ -647,7 +647,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-
     // Initialize the page
     setupProjectDetailsModal();
     setupStarRating();
