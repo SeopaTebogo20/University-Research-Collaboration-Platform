@@ -44,17 +44,11 @@ async function loadDashboardData() {
         // Get user data directly from session storage
         const userJson = sessionStorage.getItem('user');
         
-        if (!userJson) {
-            // Redirect to login if not authenticated
-            window.location.href = '/login';
-            return;
-        }
-        
         // Parse the user data from session storage
         const userData = JSON.parse(userJson);
         
         // Get user name from user data
-        const adminName = userData?.name || 'Administrator';
+        const adminName = userData.user_metadata?.name || 'Administrator';
         
         // Update admin name display
         document.getElementById('admin-name').textContent = adminName;
