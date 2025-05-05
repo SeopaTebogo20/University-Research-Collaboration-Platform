@@ -42,13 +42,13 @@ function updateCurrentDate() {
 async function loadDashboardData() {
     try {
         // Get user data directly from session storage
-        const userJson = sessionStorage.getItem('user');
+        const userData = sessionStorage.getItem('user');
         
         // Parse the user data from session storage
-        const userData = JSON.parse(userJson);
+        const userJson = JSON.parse(userData);
         
         // Get user name from user data
-        const adminName = userData.user_metadata?.name || 'Administrator';
+        const adminName = userJson?.name || 'Administrator';
         
         // Update admin name display
         document.getElementById('admin-name').textContent = adminName;
@@ -121,7 +121,7 @@ function initializeUserActivityChart() {
     const ctx = document.getElementById('userActivityChart').getContext('2d');
     
     // Sample data - in a real app, this would come from an API
-    const userData = {
+    const userJson = {
         labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
         datasets: [
             {
@@ -147,7 +147,7 @@ function initializeUserActivityChart() {
     
     const userActivityChart = new Chart(ctx, {
         type: 'line',
-        data: userData,
+        data: userJson,
         options: {
             responsive: true,
             maintainAspectRatio: false,

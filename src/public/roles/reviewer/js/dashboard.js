@@ -35,21 +35,19 @@ function updateCurrentDate() {
 // Load dashboard data from API or use mock data
 async function loadDashboardData() {
     try {
-        // First check authentication status and get user info
         // Get user data directly from session storage
-        const userJson = sessionStorage.getItem('user');
+        const userData = sessionStorage.getItem('user');
         
         // Parse the user data from session storage
-        const userData = JSON.parse(userJson);
+        const userJson = JSON.parse(userData);
+        // Get user name from auth data
+        const reviewerName = userJson?.name || 'Reviewer';
         
-        // Get user name from user data
-        const reviewerName = userData.user_metadata?.name || 'Administrator';
-        
-        // Update admin name display
+        // Update reviewer name display
         document.getElementById('reviewer-name').textContent = reviewerName;
         
-        // Store admin name for future use
-        localStorage.setItem('reviewerName', adminName);
+        // Store reviewer name for future use
+        localStorage.setItem('reviewerName', reviewerName);
         
         // Simulate loading other dashboard data (replace with actual API calls)
         await new Promise(resolve => setTimeout(resolve, 600));
