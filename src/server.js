@@ -7,6 +7,7 @@ const { createClient } = require('@supabase/supabase-js');
 const axios = require('axios'); // You'll need to install axios
 const projectsRouter = require('./public/roles/routes/projects-api'); 
 const invitationsRouter = require('./public/roles/routes/invitations-api'); 
+const invitationSentRouter = require('./public/roles/routes/project_invitations-api');
 const invitationRouter = require('./public/roles/routes/received_invitations-api'); 
 const proposalRouter = require('./public/roles/routes/assigned-proposals-api'); 
 const usersRouter = require('./public/roles/routes/users-api');
@@ -68,6 +69,7 @@ app.use(session({
 // Routes
 app.use('/api/projects', projectsRouter);
 app.use('/api/invitations', invitationsRouter);
+app.use('/api/project_invitations', invitationSentRouter);
 app.use('/api/received_invitations', invitationRouter);
 app.use('/api/proposals', proposalRouter);
 app.use('/api/users', usersRouter);
