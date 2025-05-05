@@ -1,93 +1,409 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Researcher Dashboard - CollabNexus Research Hub</title>
-    <meta name="description" content="Sign in to CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
-    <meta name="author" content="CollabNexus">
-    
-    <meta property="og:title" content="Sign In - CollabNexus Research Hub">
-    <meta property="og:description" content="Sign in to CollabNexus Research Hub - Connect with researchers who share your passion and complement your expertise">
-    <meta property="og:type" content="website">
-    
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Researcher Dashboard - CollabNexus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <header class="logo">
-              <i class="fas fa-book-open book-logo"></i>
-              CollabNexus
-                <ul class="nav-links">
-                  <li><a href="projects.html"><i class="fas fa-flask"></i> Projects</a></li>
-                  <li><a href="collaborations.html"><i class="fas fa-users"></i> Collaborations</a></li>
-                  <li><a href="invitations.html"><i class="fas fa-envelope"></i> Invitations</a></li>
-                  <li><a href="messaging.html"><i class="fas fa-comment-alt"></i> Messages</a></li>
-                  <li><a href="profile.html"><i class="fas fa-user-circle"></i> Profile</a></li>
-                </ul>
-                <aside class="auth-buttons">
-                  <button id="logout-btn" class="btn btn-outline"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </aside>
-                <button id="mobile-menu-button" class="mobile-menu">
-                  <i class="fas fa-bars"></i>
-                </button>
-          </header>          
-    </nav>
-      
-    <main class="login-container">
-        <h2> Welcome Admin</h2>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h1 class="brand-name">CollabNexus</h1>
+            </div>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="projects.html" class="nav-link">
+                    <i class="fas fa-folder-open"></i>
+                    <span>My Projects</span>
+                </a>
+                <a href="invitations.html" class="nav-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Invitations</span>
+                </a>
+        </header>
 
-    </main>
-    
-    <!-- Footer -->
-    <footer class="footer">
-        <section class="container">
-            <section class="footer-content">
-                <article class="footer-column">
-                    <header class="footer-logo">
-                          <i class="fas fa-book-open book-logo"></i>
-                          CollabNexus
-                    </header>
-                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
-                </article>
-                <article class="footer-column">
-                    <h3>Solutions</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">For Researchers</a></li>
-                        <li><a href="#">For Universities</a></li>
-                        <li><a href="#">For Industry</a></li>
-                        <li><a href="#">For Funding Agencies</a></li>
-                    </ul>
-                </article>
-                <article class="footer-column">
-                    <h3>Resources</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Research Guides</a></li>
-                        <li><a href="#">Webinars</a></li>
-                        <li><a href="#">Case Studies</a></li>
-                    </ul>
-                </article>
-                <article class="footer-column">
-                    <h3>Company</h3>
-                    <ul class="footer-links">
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </article>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Banner -->
+            <section class="welcome-banner">
+                <div class="welcome-text">
+                    <h1>Welcome Back, Reviewer</h1>
+                    <p>Here's an overview of your research activities and upcoming events</p>
+                    <div class="date-display">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="current-date">Sunday, May 4, 2025</span>
+                    </div>
+                </div>
             </section>
-            <section class="footer-bottom">
-                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
+
+            <!-- Key Metrics -->
+            <section class="metrics-overview">
+                <div class="metric-card">
+                    <div class="metric-icon projects">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h2 class="metric-value">14</h2>
+                        <p class="metric-label">Active Projects</p>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> 3 more than last month
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon collaborators">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h2 class="metric-value">27</h2>
+                        <p class="metric-label">Collaborators</p>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> 5 new this month
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon publications">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h2 class="metric-value">8</h2>
+                        <p class="metric-label">Publications This Year</p>
+                        <div class="metric-trend up">
+                            <i class="fas fa-arrow-up"></i> 2 more than last year
+                        </div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon invitations">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="metric-info">
+                        <h2 class="metric-value">5</h2>
+                        <p class="metric-label">Pending Invitations</p>
+                        <div class="metric-trend stable">
+                            <i class="fas fa-minus"></i> No change
+                        </div>
+                    </div>
+                </div>
             </section>
-        </section>
-    </footer>
-    <script src="../../js/auth.js"></script>
+
+            <!-- Charts Section -->
+            <section class="dashboard-charts">
+                <div class="chart-card large">
+                    <div class="chart-header">
+                        <h3>Research Activity</h3>
+                        <p>Publications, citations, and research outputs</p>
+                        <div class="chart-actions">
+                            <div class="timeframe-selector">
+                                <button class="timeframe-btn active" data-period="week">Week</button>
+                                <button class="timeframe-btn" data-period="month">Month</button>
+                                <button class="timeframe-btn" data-period="year">Year</button>
+                            </div>
+                            <button class="chart-download">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color publications"></span>
+                                <span>Publications</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color citations"></span>
+                                <span>Citations</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color presentations"></span>
+                                <span>Presentations</span>
+                            </div>
+                        </div>
+                        <canvas id="researchActivityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Research Areas</h3>
+                        <p>Distribution of your research focus</p>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="researchAreasChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar and Goals Section -->
+            <section class="calendar-goals-section">
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <h3>Research Calendar</h3>
+                        <p>Track important research events and deadlines</p>
+                    </div>
+                    <div id="research-calendar"></div>
+                    <div class="upcoming-events">
+                        <h4>Upcoming Events</h4>
+                        <div class="event-list">
+                            <div class="event-item">
+                                <div class="event-date">
+                                    <span class="day">15</span>
+                                    <span class="month">May</span>
+                                </div>
+                                <div class="event-details">
+                                    <h5>Quantum Computing Conference</h5>
+                                    <p><i class="fas fa-map-marker-alt"></i> San Francisco, CA</p>
+                                </div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-date">
+                                    <span class="day">21</span>
+                                    <span class="month">May</span>
+                                </div>
+                                <div class="event-details">
+                                    <h5>Grant Proposal Deadline</h5>
+                                    <p><i class="fas fa-clock"></i> 11:59 PM EST</p>
+                                </div>
+                            </div>
+                            <div class="event-item">
+                                <div class="event-date">
+                                    <span class="day">4</span>
+                                    <span class="month">Jun</span>
+                                </div>
+                                <div class="event-details">
+                                    <h5>Research Presentation</h5>
+                                    <p><i class="fas fa-users"></i> Department Meeting</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="goals-card">
+                    <div class="goals-header">
+                        <h3>Research Goals</h3>
+                        <p>Track your progress toward key objectives</p>
+                    </div>
+                    <div class="goals-list">
+                        <div class="goal-item">
+                            <div class="goal-info">
+                                <h4>Publish Journal Articles</h4>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 60%;"></div>
+                                    </div>
+                                    <div class="progress-text">6 / 10</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="goal-item">
+                            <div class="goal-info">
+                                <h4>Submit Grant Proposals</h4>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 75%;"></div>
+                                    </div>
+                                    <div class="progress-text">3 / 4</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="goal-item">
+                            <div class="goal-info">
+                                <h4>Conference Presentations</h4>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 33%;"></div>
+                                    </div>
+                                    <div class="progress-text">2 / 6</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="goal-item">
+                            <div class="goal-info">
+                                <h4>Mentor Graduate Students</h4>
+                                <div class="goal-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 100%;"></div>
+                                    </div>
+                                    <div class="progress-text">4 / 4</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Project Status Section -->
+            <section class="project-status-section">
+                <div class="section-header">
+                    <h3>Project Status</h3>
+                    <a href="projects.html" class="view-all-link">View all projects <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="project-cards">
+                    <div class="project-status-card">
+                        <div class="status-header">
+                            <h4>Quantum Computing Research</h4>
+                            <span class="status-badge active">Active</span>
+                        </div>
+                        <div class="status-details">
+                            <div class="status-row">
+                                <span class="status-label">Timeline:</span>
+                                <span class="status-value">Jan 2025 - Dec 2026</span>
+                            </div>
+                            <div class="status-row">
+                                <span class="status-label">Team:</span>
+                                <span class="status-value">8 Collaborators</span>
+                            </div>
+                            <div class="status-row">
+                                <span class="status-label">Funding:</span>
+                                <span class="status-value">$240,000</span>
+                            </div>
+                        </div>
+                        <div class="completion-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span>35%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 35%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-status-card">
+                        <div class="status-header">
+                            <h4>AI Ethics Framework</h4>
+                            <span class="status-badge active">Active</span>
+                        </div>
+                        <div class="status-details">
+                            <div class="status-row">
+                                <span class="status-label">Timeline:</span>
+                                <span class="status-value">Mar 2025 - Oct 2025</span>
+                            </div>
+                            <div class="status-row">
+                                <span class="status-label">Team:</span>
+                                <span class="status-value">5 Collaborators</span>
+                            </div>
+                            <div class="status-row">
+                                <span class="status-label">Funding:</span>
+                                <span class="status-value">$120,000</span>
+                            </div>
+                        </div>
+                        <div class="completion-progress">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span>68%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 68%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-status-card">
+                        <div class="status-header">
+                            <h4>Sustainable Energy Solutions</h4>
+                            <span class="status-badge pending">Pending Review</span>
+                        </div>
+                        <div class="status-details">
+                            <div class="status-row">
+                                <span class="status-label">Timeline:</span>
+                                <span class="status-value">Proposed: Jul 2025 - Jul 2027</span>
+                            </div>
+                            <div class="status-row">
+                                <span class="status-label">Team:</span>
+                                <span class="status-value">Proposed: 6 Collaborators</span>
+                            </div>
+                            <div class="status-row">
+                                <span class="status-label">Funding:</span>
+                                <span class="status-value">Requested: $350,000</span>
+                            </div>
+                        </div>
+                        <div class="proposal-status">
+                            <div class="status-step completed">
+                                <div class="status-dot"></div>
+                                <span>Submitted</span>
+                            </div>
+                            <div class="status-step completed">
+                                <div class="status-dot"></div>
+                                <span>Initial Review</span>
+                            </div>
+                            <div class="status-step active">
+                                <div class="status-dot"></div>
+                                <span>Committee Review</span>
+                            </div>
+                            <div class="status-step">
+                                <div class="status-dot"></div>
+                                <span>Final Decision</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand-logo">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h2>CollabNexus</h2>
+                </div>
+
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h3>Research Resources</h3>
+                        <ul>
+                            <li><a href="#">Resource Library</a></li>
+                            <li><a href="#">Research Guidelines</a></li>
+                            <li><a href="#">Grant Opportunities</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Support</h3>
+                        <ul>
+                            <li><a href="#">Help Center</a></li>
+                            <li><a href="#">Contact Support</a></li>
+                            <li><a href="#">Report Issue</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h3>Legal</h3>
+                        <ul>
+                            <li><a href="#">Terms of Service</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Data Protection</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <p>© 2025 CollabNexus Research Hub. All rights reserved.</p>
+            </div>
+        </footer>
+
+        <!-- Toast Container -->
+        <div id="toast-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="js/dashboard.js"></script>
 </body>
 </html>

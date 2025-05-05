@@ -30,13 +30,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         switch (normalizedRole) {
             case 'admin':
-                return './roles/admin/dashboard.html';
+                return '/roles/admin/dashboard.html';
             case 'reviewer':
-                return './roles/reviewer/dashboard.html';
+                return '/roles/reviewer/dashboard.html';
             case 'researcher':
-                return './roles/researcher/dashboard.html';
-            default:
-                return './roles/researcher/dashboard.html';
+                return '/roles/researcher/dashboard.html';
         }
     }
     
@@ -66,10 +64,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (googleProfile) {
                 // Display profile information to user
                 displayGoogleProfile(googleProfile);
-                
-                // Debug Google profile data
-                console.log("Google Profile Full Data:", googleProfile);
-                
                 return googleProfile;
             } else {
                 throw new Error('No profile data returned from server');
@@ -121,114 +115,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
-    // Helper functions for validation - based on signup.js
-    function showError(input, message) {
-        const errorOutput = form.querySelector(`output[for="${input.id}"]`);
-        if (errorOutput) {
-            errorOutput.textContent = message;
-            errorOutput.style.display = 'block';
-        } else {
-            // Create error element if it doesn't exist
-            const errorElement = document.createElement('output');
-            errorElement.setAttribute('for', input.id);
-            errorElement.className = 'error-message';
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-            input.parentNode.insertBefore(errorElement, input.nextSibling);
-        }
-        input.classList.add('error');
-    }
-    
-    function clearError(input) {
-        const errorOutput = form.querySelector(`output[for="${input.id}"]`);
-        if (errorOutput) {
-            errorOutput.textContent = '';
-            errorOutput.style.display = 'none';
-        }
-        input.classList.remove('error');
-    }
-    
-    function validateSouthAfricanPhone(phone) {
-        // Empty is not valid but will be caught by required attribute
-        if (!phone) return { valid: true, message: '' };
-        
-        // Check for +27 format
-        if (phone.startsWith('+27')) {
-            // +27 should be followed by 9 digits
-            if (phone.length !== 12) {
-                return { valid: false, message: 'Phone number must be +27 followed by 9 digits' };
-            }
-            
-            // Check if the digit after +27 is 6, 7 or 8
-            const thirdDigit = phone.charAt(3);
-            if (!['6', '7', '8'].includes(thirdDigit)) {
-                return { valid: false, message: 'After +27, number must start with 6, 7, or 8' };
-            }
-            
-            return { valid: true, message: '' };
-        } 
-        // Check for 0 format (must be 10 digits starting with 06, 07, or 08)
-        else if (phone.startsWith('0')) {
-            if (phone.length !== 10) {
-                return { valid: false, message: 'Phone number must be 10 digits' };
-            }
-            
-            // Check if starts with 06, 07 or 08
-            const secondDigit = phone.charAt(1);
-            if (!['6', '7', '8'].includes(secondDigit)) {
-                return { valid: false, message: 'Number must start with 06, 07, or 08' };
-            }
-            
-            return { valid: true, message: '' };
-        } 
-        else {
-            return { valid: false, message: 'Must start with +27 or 0' };
-        }
-    }
-    
-    function validateWitsEmail(input, email) {
-        if (!email) return true; // Empty will be caught by required attribute
-        
-        // Must match pattern: digits@students.wits.ac.za
-        const witsEmailRegex = /^(\d+)@students\.wits\.ac\.za$/;
-        
-        if (!witsEmailRegex.test(email)) {
-            showError(input, 'Email must be in format: studentnumber@students.wits.ac.za');
-            return false;
-        } else {
-            clearError(input);
-            return true;
-        }
-    }
-    
-    // Handle role change to update required fields
-    function updateRequiredFields() {
-        const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
-        const roleFields = document.querySelectorAll(`[data-role]`);
-        
-        roleFields.forEach(field => {
-            const roles = field.getAttribute('data-role').split(' ');
-            const inputs = field.querySelectorAll('input, select, textarea');
-            
-            if (roles.includes(selectedRole)) {
-                field.style.display = 'block';
-                inputs.forEach(input => input.setAttribute('required', ''));
-            } else {
-                field.style.display = 'none';
-                inputs.forEach(input => {
-                    input.removeAttribute('required');
-                    // Clear the value to avoid sending irrelevant data
-                    input.value = '';
-                });
-            }
-        });
-    }
-    
-    // Add event listeners to role inputs
-    roleInputs.forEach(input => {
-        input.addEventListener('change', updateRequiredFields);
-    });
-    
     // Handle step navigation
     function showStep(stepIndex) {
         steps.forEach((step, index) => {
@@ -239,60 +125,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Update button visibility
         if (prevBtn) prevBtn.style.display = currentStep === 0 ? 'none' : 'inline-block';
         if (nextBtn) nextBtn.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-block';
-        
-        // If we're on a step with role-specific fields, update them
-        if (document.querySelector('.form-step.active').querySelectorAll('[data-role]').length > 0) {
-            updateRequiredFields();
-        }
     }
     
     // Next button click
     if (nextBtn) {
         nextBtn.addEventListener('click', function() {
-            // Get current step
-            const currentStepEl = document.querySelector('.form-step.active');
+            const roleFields = document.querySelectorAll(`[data-role]`);
+            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
             
-            // Basic validation for current step
-            const inputs = currentStepEl.querySelectorAll('input[required], select[required], textarea[required]');
-            let isValid = true;
-            
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    isValid = false;
-                    showError(input, 'This field is required');
-                } else {
-                    // Additional validation for specific field types
-                    if (input.id === 'email' && !input.readOnly) {
-                        if (!validateWitsEmail(input, input.value.trim())) {
-                            isValid = false;
-                        }
-                    } else if (input.type === 'tel' || input.id.includes('phone') || input.id.includes('contact')) {
-                        const phoneValid = validateSouthAfricanPhone(input.value.trim());
-                        if (!phoneValid.valid) {
-                            showError(input, phoneValid.message);
-                            isValid = false;
-                        }
-                    } else if (input.id.includes('name')) {
-                        // Name validation - only letters, spaces, hyphens, and apostrophes
-                        const value = input.value.trim();
-                        if (/[^a-zA-Z\s\-']/.test(value)) {
-                            showError(input, 'Only letters, spaces, hyphens and apostrophes are allowed');
-                            isValid = false;
+            // Show/hide fields based on selected role
+            roleFields.forEach(field => {
+                const roles = field.getAttribute('data-role').split(' ');
+                if (roles.includes(selectedRole)) {
+                    field.style.display = 'block';
+                    const inputs = field.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => {
+                        if (roles.includes(selectedRole)) {
+                            input.setAttribute('required', '');
                         } else {
-                            clearError(input);
+                            input.removeAttribute('required');
                         }
-                    } else {
-                        clearError(input);
-                    }
+                    });
+                } else {
+                    field.style.display = 'none';
+                    // Remove required attribute from hidden fields
+                    const inputs = field.querySelectorAll('input, select, textarea');
+                    inputs.forEach(input => input.removeAttribute('required'));
                 }
             });
             
-            if (!isValid) {
-                return;
-            }
-            
             showStep(currentStep + 1);
-            window.scrollTo(0, 0); // Scroll to top
         });
     }
     
@@ -300,7 +162,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (prevBtn) {
         prevBtn.addEventListener('click', function() {
             showStep(currentStep - 1);
-            window.scrollTo(0, 0); // Scroll to top
         });
     }
     
@@ -314,44 +175,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             // Basic validation
             let isValid = true;
-            
-            // Get selected role
             const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'researcher';
-            
-            // Get all visible required fields
-            const activeStep = document.querySelector('.form-step.active');
-            const visibleGroups = Array.from(activeStep.querySelectorAll('.form-group'))
-                .filter(group => {
-                    // Get the data-role if it exists
-                    const dataRole = group.getAttribute('data-role');
-                    // If no data-role, always validate
-                    if (!dataRole) return true;
-                    // If has data-role, only validate if it matches selected role
-                    return dataRole.split(' ').includes(selectedRole);
-                });
-            
-            const requiredFields = [];
-            visibleGroups.forEach(group => {
-                // Only collect required fields from visible groups
-                group.querySelectorAll('input[required], select[required], textarea[required]').forEach(field => {
-                    requiredFields.push(field);
-                });
-            });
+            const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
             
             requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    showError(field, `${field.name || field.id} is required`);
-                    isValid = false;
-                } else if (field.type === 'tel' || field.id.includes('phone') || field.id.includes('contact')) {
-                    const phoneValid = validateSouthAfricanPhone(field.value.trim());
-                    if (!phoneValid.valid) {
-                        showError(field, phoneValid.message);
-                        isValid = false;
-                    }
-                } else if (field.id.includes('name')) {
-                    // Name validation
-                    if (/[^a-zA-Z\s\-']/.test(field.value)) {
-                        showError(field, 'Only letters, spaces, hyphens and apostrophes are allowed');
+                // Only validate fields that are currently displayed
+                const fieldGroup = field.closest('.form-group');
+                if (!fieldGroup || getComputedStyle(fieldGroup).display !== 'none') {
+                    if (!field.value.trim()) {
+                        const errorOutput = form.querySelector(`output[for="${field.id}"]`);
+                        if (errorOutput) {
+                            errorOutput.textContent = `${field.name || field.id} is required`;
+                        }
                         isValid = false;
                     }
                 }
@@ -360,7 +195,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Check terms agreement
             const termsCheck = document.getElementById('termsAgree');
             if (termsCheck && !termsCheck.checked) {
-                showError(termsCheck, 'You must agree to the terms and conditions');
+                const errorOutput = form.querySelector('output[for="termsAgree"]');
+                if (errorOutput) {
+                    errorOutput.textContent = 'You must agree to the terms and conditions';
+                }
                 isValid = false;
             }
             
@@ -372,45 +210,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Show loading status
             formStatus.innerHTML = `<div class="info">Processing your information...</div>`;
             
-            // Gather form data from all steps - only include database-compatible fields
+            // Gather form data
             const formData = new FormData(form);
             const userData = {};
             
-            // Only include fields that exist in the database schema - note phone is included but not collected
-            const validDbFields = [
-                'name', 'email', 'phone', 'role', 
-                'department', 'academic_role', 'research_area', 
-                'research_experience', 'qualifications', 'current_project'
-            ];
-            
             for (const [key, value] of formData.entries()) {
-                // Only include valid database fields
-                if (validDbFields.includes(key)) {
-                    userData[key] = value;
-                }
+                userData[key] = value;
             }
-            
-            // Add required fields from Google profile if not already in form
-            if (googleProfile) {
-                if (!userData.email && googleProfile.email) {
-                    userData.email = googleProfile.email;
-                }
-                if (!userData.name && googleProfile.name) {
-                    userData.name = googleProfile.name;
-                }
-                
-                // Don't include googleId or picture in userData as they're not in DB schema
-                // They're already in the session or token on the server side
-            }
-            
-            // Include selected role or default to researcher
-            userData.role = selectedRole;
-            
-            // Note: phone field is intentionally not included here
-            // The server will set it to null
-            
-            // Log form data for debugging
-            console.log("Form data being sent:", userData);
             
             try {
                 // Construct URL with token if available
@@ -436,16 +242,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         // Handle validation errors
                         if (result.errors) {
                             Object.entries(result.errors).forEach(([field, message]) => {
-                                const fieldElement = document.getElementById(field);
-                                if (fieldElement) {
-                                    showError(fieldElement, message);
-                                    
-                                    // If field is in a hidden step, show that step
-                                    const fieldStep = fieldElement.closest('.form-step');
-                                    if (fieldStep && !fieldStep.classList.contains('active')) {
-                                        document.querySelector('.form-step.active').classList.remove('active');
-                                        fieldStep.classList.add('active');
-                                    }
+                                const errorOutput = form.querySelector(`output[for="${field}"]`);
+                                if (errorOutput) {
+                                    errorOutput.textContent = message;
                                 }
                             });
                         }
@@ -469,14 +268,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 // Save authentication data - Store user in a consistent way to match auth.js
                 if (result.user) {
                     localStorage.setItem('supabaseUser', JSON.stringify(result.user));
-                    
-                    // Also store session or token if provided
-                    if (result.session) {
-                        localStorage.setItem('supabaseSession', JSON.stringify(result.session));
-                    }
-                    if (result.token) {
-                        localStorage.setItem('authToken', result.token);
-                    }
                 }
                 
                 // Get the user's role to redirect to the appropriate dashboard
@@ -513,6 +304,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error('Error during initialization:', error);
     }
     
-    // Initialize step visibility and update required fields
+    // Initialize step visibility
     showStep(0);
 });

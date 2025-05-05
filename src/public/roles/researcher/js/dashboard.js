@@ -1,856 +1,540 @@
-// Dashboard.js - JavaScript for the Researcher Dashboard
 
 document.addEventListener('DOMContentLoaded', function() {
-  // DOM Elements
-  const userName = document.getElementById('user-name');
-  const logoutBtn = document.getElementById('logout-btn');
-  const calendarGrid = document.querySelector('.calendar-grid');
-  const calendarMonth = document.querySelector('.calendar-month');
-  const prevMonthBtn = document.getElementById('prev-month');
-  const nextMonthBtn = document.getElementById('next-month');
-  
-  // Modal elements
-  const createProjectBtn = document.getElementById('create-project-btn');
-  const createProjectModal = document.getElementById('create-project-modal');
-  const closeCreateProjectModal = document.getElementById('close-create-project-modal');
-  const cancelCreateProject = document.getElementById('cancel-create-project');
-  const submitCreateProject = document.getElementById('submit-create-project');
-  
-  const projectDetailsModal = document.getElementById('project-details-modal');
-  const closeProjectDetailsModal = document.getElementById('close-project-details-modal');
-  const projectDetailsContent = document.getElementById('project-details-content');
-  const projectDetailsTitle = document.getElementById('project-details-title');
-  const projectTeamList = document.getElementById('project-team-list');
-  const projectComments = document.getElementById('project-comments');
-  
-  const deleteConfirmationModal = document.getElementById('delete-confirmation-modal');
-  const closeDeleteModal = document.getElementById('close-delete-modal');
-  const cancelDelete = document.getElementById('cancel-delete');
-  const confirmDelete = document.getElementById('confirm-delete');
-  const deleteProjectName = document.getElementById('delete-project-name');
-  
-  const findCollaboratorsBtn = document.getElementById('find-collaborators-btn');
-  const collaboratorSearchModal = document.getElementById('collaborator-search-modal');
-  const closeCollaboratorSearchModal = document.getElementById('close-collaborator-search-modal');
-  const collaboratorsResults = document.getElementById('collaborators-results');
-  
-  const inviteCollaboratorModal = document.getElementById('invite-collaborator-modal');
-  const closeInviteModal = document.getElementById('close-invite-modal');
-  const cancelInvite = document.getElementById('cancel-invite');
-  const sendInvite = document.getElementById('send-invite');
-  const inviteCollaboratorInfo = document.getElementById('invite-collaborator-info');
-  const inviteProject = document.getElementById('invite-project');
-  
-  const toastContainer = document.getElementById('toast-container');
-  
-  // Project actions
-  const projectActions = document.querySelectorAll('.project-action');
-  const projectActionsSecondary = document.querySelectorAll('.project-action-secondary');
-  
-  // Notification actions
-  const notificationActions = document.querySelectorAll('.notification-actions button');
-  
-  // Invitation actions
-  const invitationActions = document.querySelectorAll('.invitation-action');
-  
-  // Edit/Delete project buttons
-  const editProjectBtn = document.getElementById('edit-project-btn');
-  const deleteProjectBtn = document.getElementById('delete-project-btn');
-  
-  // Current date for calendar
-  let currentDate = new Date();
-  
-  // Session management variables
-  let authCheckInterval;
-  const AUTH_CHECK_INTERVAL = 300000; // 5 minutes
-  
-  // Initialize the dashboard
-  async function initDashboard() {
-      try {
-          // First check authentication
-          const user = await checkAuth();
-          if (!user) return;
-          
-          // Load user info
-          userName.textContent = user.user_metadata?.name || 'Researcher';
-          
-          // Initialize components
-          generateCalendar(currentDate);
-          setupEventListeners();
-          startSessionMonitor();
-          
-          // Load initial data
-          await loadProjects();
-          
-      } catch (error) {
-          console.error('Dashboard initialization error:', error);
-          showToast('Error initializing dashboard', 'error');
-          window.location.href = '/login';
-      }
-  }
-  
-  // Enhanced authentication check
-  async function checkAuth() {
-      try {
-          const response = await fetch('/api/auth/status', {
-              credentials: 'include' // Ensure cookies are sent
-          });
-          
-          if (!response.ok) throw new Error('Auth check failed');
-          
-          const data = await response.json();
-          if (!data.authenticated) {
-              window.location.href = '/login';
-              return null;
-          }
-          return data.user;
-      } catch (error) {
-          console.error('Auth check error:', error);
-          window.location.href = '/login';
-          return null;
-      }
-  }
-  
-  // Start monitoring session
-  function startSessionMonitor() {
-      // Clear any existing interval
-      if (authCheckInterval) clearInterval(authCheckInterval);
-      
-      // Set up new interval
-      authCheckInterval = setInterval(async () => {
-          const isAuthenticated = await checkAuth();
-          if (!isAuthenticated) {
-              clearInterval(authCheckInterval);
-          }
-      }, AUTH_CHECK_INTERVAL);
-  }
-  
-  // Load projects from API
-  async function loadProjects() {
-      try {
-          // In a real implementation, you would fetch from your API
-          // const response = await fetch('/api/projects');
-          // const projects = await response.json();
-          
-          // Using mock data for now
-          return mockProjects;
-      } catch (error) {
-          console.error('Error loading projects:', error);
-          showToast('Error loading projects', 'error');
-          return [];
-      }
-  }
-  
-  // Toast notification function
-  function showToast(message, type = 'info', duration = 5000) {
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      
-      let icon = '';
-      switch(type) {
-          case 'success':
-              icon = '<i class="fas fa-check-circle"></i>';
-              break;
-          case 'error':
-              icon = '<i class="fas fa-exclamation-circle"></i>';
-              break;
-          case 'warning':
-              icon = '<i class="fas fa-exclamation-triangle"></i>';
-              break;
-          default:
-              icon = '<i class="fas fa-info-circle"></i>';
-      }
-      
-      toast.innerHTML = `
-          <div class="toast-icon">${icon}</div>
-          <div class="toast-content">
-              <div class="toast-message">${message}</div>
-          </div>
-          <button class="toast-close"><i class="fas fa-times"></i></button>
-      `;
-      
-      toastContainer.appendChild(toast);
-      
-      // Add active class after a small delay to trigger animation
-      setTimeout(() => {
-          toast.classList.add('active');
-      }, 10);
-      
-      // Remove toast after duration
-      const timeout = setTimeout(() => {
-          removeToast(toast);
-      }, duration);
-      
-      // Close button handler
-      const closeBtn = toast.querySelector('.toast-close');
-      closeBtn.addEventListener('click', () => {
-          clearTimeout(timeout);
-          removeToast(toast);
-      });
-  }
-  
-  function removeToast(toast) {
-      toast.classList.remove('active');
-      // Remove from DOM after animation completes
-      setTimeout(() => {
-          toastContainer.removeChild(toast);
-      }, 300);
-  }
-  
-  // Calendar functionality
-  function generateCalendar(date) {
-      // Clear previous calendar days
-      const dayElements = document.querySelectorAll('.calendar-day');
-      dayElements.forEach(day => day.remove());
-      
-      // Update month display
-      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                          'July', 'August', 'September', 'October', 'November', 'December'];
-      calendarMonth.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-      
-      // Get first day of month and last day
-      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-      const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      
-      // Add empty days for start of month
-      const startDayOfWeek = firstDay.getDay();
-      for (let i = 0; i < startDayOfWeek; i++) {
-          const emptyDay = document.createElement('div');
-          emptyDay.className = 'calendar-day';
-          calendarGrid.appendChild(emptyDay);
-      }
-      
-      // Add days of the month
-      const today = new Date();
-      
-      // Sample events (dates with events)
-      const eventsOnDays = [5, 12, 18, 25];
-      
-      for (let i = 1; i <= lastDay.getDate(); i++) {
-          const dayElement = document.createElement('div');
-          dayElement.className = 'calendar-day';
-          dayElement.textContent = i;
-          
-          // Check if this is today
-          if (date.getMonth() === today.getMonth() && 
-              date.getFullYear() === today.getFullYear() && 
-              i === today.getDate()) {
-              dayElement.classList.add('today');
-          }
-          
-          // Check if this day has an event
-          if (eventsOnDays.includes(i)) {
-              dayElement.classList.add('has-event');
-          }
-          
-          // Add click event
-          dayElement.addEventListener('click', () => {
-              // Remove active class from all days
-              document.querySelectorAll('.calendar-day').forEach(day => {
-                  day.classList.remove('active');
-              });
-              
-              // Add active class to clicked day
-              dayElement.classList.add('active');
-              
-              // Show events for this day (sample implementation)
-              if (eventsOnDays.includes(i)) {
-                  showToast(`${monthNames[date.getMonth()]} ${i}: Project meeting at 10:00 AM`, 'info');
-              }
-          });
-          
-          calendarGrid.appendChild(dayElement);
-      }
-  }
-  
-  // Mock project data
-  const mockProjects = [
-      {
-          id: 1,
-          title: "Gene Expression Analysis in Cancer Cells",
-          description: "Investigating the effects of novel drug compounds on gene expression patterns in various cancer cell lines using RNA sequencing and bioinformatics analysis.",
-          startDate: "2025-01-15",
-          endDate: "2025-07-30",
-          researchArea: "biology",
-          fundingAvailable: true,
-          progress: {
-              overall: 65,
-              dataCollection: 90,
-              analysis: 50,
-              documentation: 40
-          },
-          collaborators: [
-              { id: 1, name: "John Doe", initials: "JD", color: "#4F46E5", role: "Lead Researcher" },
-              { id: 2, name: "Alice Smith", initials: "AS", color: "#10B981", role: "Data Analyst" },
-              { id: 3, name: "Mark Kim", initials: "MK", color: "#F59E0B", role: "Lab Technician" },
-              { id: 4, name: "Lisa Wong", initials: "LW", color: "#EF4444", role: "Research Assistant" }
-          ],
-          comments: [
-              {
-                  id: 1, 
-                  author: "John Doe", 
-                  date: "2025-04-10", 
-                  content: "Weekly update: We've completed the RNA extraction for all cell lines and will begin sequencing next week."
-              },
-              {
-                  id: 2, 
-                  author: "Alice Smith", 
-                  date: "2025-04-12", 
-                  content: "I've prepared the initial data processing pipeline. We should discuss the normalization method at our next meeting."
-              }
-          ]
-      },
-      {
-          id: 2,
-          title: "Climate Change Impact on Marine Ecosystems",
-          description: "Analyzing the effects of rising ocean temperatures and acidity levels on coral reef biodiversity and ecosystem function through field studies and remote sensing.",
-          startDate: "2025-03-10",
-          endDate: "2025-12-15",
-          researchArea: "earth_science",
-          fundingAvailable: false,
-          progress: {
-              overall: 30,
-              dataCollection: 45,
-              analysis: 20,
-              documentation: 15
-          },
-          collaborators: [
-              { id: 5, name: "Rebecca Lee", initials: "RL", color: "#8B5CF6", role: "Lead Researcher" },
-              { id: 6, name: "Kevin Miller", initials: "KM", color: "#10B981", role: "Field Researcher" },
-              { id: 7, name: "Paul Thompson", initials: "PT", color: "#3B82F6", role: "Data Analyst" }
-          ],
-          comments: [
-              {
-                  id: 3, 
-                  author: "Rebecca Lee", 
-                  date: "2025-04-05", 
-                  content: "The first round of field samples has been collected. Initial observations show concerning coral bleaching in the north section."
-              },
-              {
-                  id: 4, 
-                  author: "Paul Thompson", 
-                  date: "2025-04-08", 
-                  content: "Satellite data from the past 5 years has been processed. I'll have the visualization ready by Friday."
-              }
-          ]
-      }
-  ];
-  
-  // Mock collaborator data
-  const mockCollaborators = [
-      {
-          id: 101,
-          name: "Dr. Emily Chen",
-          title: "Associate Professor",
-          institution: "Stanford University",
-          department: "Biology",
-          expertise: ["Molecular Biology", "Genetics", "CRISPR", "Cell Culture"],
-          field: "biology",
-          publications: 28,
-          projects: 5,
-          avatar: "EC"
-      },
-      {
-          id: 102,
-          name: "Prof. Michael Rodriguez",
-          title: "Full Professor",
-          institution: "MIT",
-          department: "Computer Science",
-          expertise: ["Machine Learning", "Bioinformatics", "Data Mining", "Algorithm Design"],
-          field: "computer-science",
-          publications: 45,
-          projects: 8,
-          avatar: "MR"
-      },
-      {
-          id: 103,
-          name: "Dr. Sarah Williams",
-          title: "Research Scientist",
-          institution: "Harvard Medical School",
-          department: "Oncology",
-          expertise: ["Cancer Research", "Immunotherapy", "Drug Development", "Clinical Trials"],
-          field: "medicine",
-          publications: 32,
-          projects: 7,
-          avatar: "SW"
-      },
-      {
-          id: 104,
-          name: "Dr. James Kumar",
-          title: "Assistant Professor",
-          institution: "Berkeley",
-          department: "Chemistry",
-          expertise: ["Organic Chemistry", "Material Science", "Spectroscopy", "Drug Design"],
-          field: "chemistry",
-          publications: 19,
-          projects: 4,
-          avatar: "JK"
-      },
-      {
-          id: 105,
-          name: "Prof. Alexandra Davis",
-          title: "Department Chair",
-          institution: "CalTech",
-          department: "Physics",
-          expertise: ["Quantum Mechanics", "Theoretical Physics", "Computational Physics"],
-          field: "physics",
-          publications: 52,
-          projects: 12,
-          avatar: "AD"
-      },
-      {
-          id: 106,
-          name: "Dr. Robert Kim",
-          title: "Research Lead",
-          institution: "National Institute of Health",
-          department: "Biomedical Engineering",
-          expertise: ["Medical Devices", "Prosthetics", "Biomechanics", "Tissue Engineering"],
-          field: "engineering",
-          publications: 27,
-          projects: 9,
-          avatar: "RK"
-      }
-  ];
-  
-  // Populate the project details modal
-  function populateProjectDetails(projectId) {
-      const project = mockProjects.find(p => p.id === projectId);
-      
-      if (!project) {
-          showToast('Project not found', 'error');
-          return;
-      }
-      
-      // Set the modal title
-      projectDetailsTitle.textContent = project.title;
-      
-      // Format dates for display
-      const startDate = new Date(project.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      const endDate = new Date(project.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      
-      // Populate project details content
-      projectDetailsContent.innerHTML = `
-          <div class="project-details">
-              <div class="project-details-grid">
-                  <div class="project-detail-item">
-                      <div class="project-detail-label">Research Area</div>
-                      <div class="project-detail-value">${formatResearchArea(project.researchArea)}</div>
-                  </div>
-                  <div class="project-detail-item">
-                      <div class="project-detail-label">Start Date</div>
-                      <div class="project-detail-value">${startDate}</div>
-                  </div>
-                  <div class="project-detail-item">
-                      <div class="project-detail-label">End Date</div>
-                      <div class="project-detail-value">${endDate}</div>
-                  </div>
-                  <div class="project-detail-item">
-                      <div class="project-detail-label">Funding Available</div>
-                      <div class="project-detail-value">${project.fundingAvailable ? 'Yes' : 'No'}</div>
-                  </div>
-              </div>
-              
-              <div class="project-description">
-                  <h3>Project Description</h3>
-                  <p>${project.description}</p>
-              </div>
-              
-              <div class="project-progress">
-                  <h3>Project Progress</h3>
-                  
-                  <div class="progress-item">
-                      <div class="progress-label">
-                          <span>Overall Progress</span>
-                          <span>${project.progress.overall}%</span>
-                      </div>
-                      <div class="progress-bar">
-                          <div class="progress-value" style="width: ${project.progress.overall}%; background-color: var(--progress-blue);"></div>
-                      </div>
-                  </div>
-                  
-                  <div class="progress-item">
-                      <div class="progress-label">
-                          <span>Data Collection</span>
-                          <span>${project.progress.dataCollection}%</span>
-                      </div>
-                      <div class="progress-bar">
-                          <div class="progress-value" style="width: ${project.progress.dataCollection}%; background-color: var(--progress-green);"></div>
-                      </div>
-                  </div>
-                  
-                  <div class="progress-item">
-                      <div class="progress-label">
-                          <span>Analysis</span>
-                          <span>${project.progress.analysis}%</span>
-                      </div>
-                      <div class="progress-bar">
-                          <div class="progress-value" style="width: ${project.progress.analysis}%; background-color: var(--progress-yellow);"></div>
-                      </div>
-                  </div>
-                  
-                  <div class="progress-item">
-                      <div class="progress-label">
-                          <span>Documentation</span>
-                          <span>${project.progress.documentation}%</span>
-                      </div>
-                      <div class="progress-bar">
-                          <div class="progress-value" style="width: ${project.progress.documentation}%; background-color: var(--progress-purple);"></div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      `;
-      
-      // Populate team members
-      projectTeamList.innerHTML = '';
-      project.collaborators.forEach(collaborator => {
-          const teamMember = document.createElement('div');
-          teamMember.className = 'team-member';
-          teamMember.innerHTML = `
-              <div class="team-avatar" style="background-color: ${collaborator.color};">${collaborator.initials}</div>
-              <div class="team-name">${collaborator.name}</div>
-              <div class="team-role">${collaborator.role}</div>
-          `;
-          projectTeamList.appendChild(teamMember);
-      });
-      
-      // Populate comments
-      projectComments.innerHTML = '';
-      if (project.comments && project.comments.length > 0) {
-          project.comments.forEach(comment => {
-              const commentElement = document.createElement('div');
-              commentElement.className = 'comment';
-              commentElement.innerHTML = `
-                  <div class="comment-header">
-                      <div class="comment-author">${comment.author}</div>
-                      <div class="comment-date">${comment.date}</div>
-                  </div>
-                  <div class="comment-content">${comment.content}</div>
-              `;
-              projectComments.appendChild(commentElement);
-          });
-      } else {
-          projectComments.innerHTML = '<p>No comments yet.</p>';
-      }
-      
-      // Set data attribute for delete button
-      deleteProjectBtn.setAttribute('data-project-id', project.id);
-      
-      // Show the modal
-      projectDetailsModal.classList.add('active');
-  }
-  
-  // Format research area
-  function formatResearchArea(area) {
-      const areas = {
-          'biology': 'Biology & Life Sciences',
-          'chemistry': 'Chemistry',
-          'physics': 'Physics',
-          'computer_science': 'Computer Science',
-          'engineering': 'Engineering',
-          'earth_science': 'Earth Science & Environmental Studies',
-          'medicine': 'Medicine & Health Sciences',
-          'mathematics': 'Mathematics',
-          'social_science': 'Social Sciences',
-          'humanities': 'Humanities',
-          'interdisciplinary': 'Interdisciplinary Studies'
-      };
-      
-      return areas[area] || area;
-  }
-  
-  // Populate the collaborator search results
-  function populateCollaboratorResults(collaborators = mockCollaborators) {
-      collaboratorsResults.innerHTML = '';
-      
-      if (collaborators.length === 0) {
-          collaboratorsResults.innerHTML = '<p class="text-center">No collaborators found matching your criteria.</p>';
-          return;
-      }
-      
-      collaborators.forEach(collaborator => {
-          const card = document.createElement('div');
-          card.className = 'collaborator-card';
-          
-          card.innerHTML = `
-              <div class="collaborator-header">
-                  <div class="collaborator-avatar">${collaborator.avatar}</div>
-                  <div class="collaborator-name">${collaborator.name}</div>
-                  <div class="collaborator-title">${collaborator.title}</div>
-              </div>
-              <div class="collaborator-body">
-                  <div class="collaborator-info">
-                      <div class="collaborator-info-label">Institution</div>
-                      <div class="collaborator-info-value">${collaborator.institution}</div>
-                  </div>
-                  <div class="collaborator-info">
-                      <div class="collaborator-info-label">Department</div>
-                      <div class="collaborator-info-value">${collaborator.department}</div>
-                  </div>
-                  <div class="collaborator-info">
-                      <div class="collaborator-info-label">Publications</div>
-                      <div class="collaborator-info-value">${collaborator.publications}</div>
-                  </div>
-                  <div class="collaborator-skills">
-                      ${collaborator.expertise.map(skill => `<span class="collaborator-skill">${skill}</span>`).join('')}
-                  </div>
-              </div>
-              <div class="collaborator-footer">
-                  <button class="collaborator-action collaborator-view" data-collaborator-id="${collaborator.id}">View Profile</button>
-                  <button class="collaborator-action collaborator-invite" data-collaborator-id="${collaborator.id}">Invite</button>
-              </div>
-          `;
-          
-          collaboratorsResults.appendChild(card);
-      });
-      
-      // Add event listeners to the newly created buttons
-      document.querySelectorAll('.collaborator-view').forEach(button => {
-          button.addEventListener('click', function() {
-              const collaboratorId = parseInt(this.getAttribute('data-collaborator-id'));
-              showToast(`Viewing profile for collaborator ID: ${collaboratorId}`, 'info');
-              // Here you would implement opening the collaborator profile
-          });
-      });
-      
-      document.querySelectorAll('.collaborator-invite').forEach(button => {
-          button.addEventListener('click', function() {
-              const collaboratorId = parseInt(this.getAttribute('data-collaborator-id'));
-              openInviteModal(collaboratorId);
-          });
-      });
-  }
-  
-  // Open invite collaborator modal
-  function openInviteModal(collaboratorId) {
-      const collaborator = mockCollaborators.find(c => c.id === collaboratorId);
-      
-      if (!collaborator) {
-          showToast('Collaborator not found', 'error');
-          return;
-      }
-      
-      // Populate collaborator info
-      inviteCollaboratorInfo.innerHTML = `
-          <div class="invite-collaborator-header">
-              <div class="invite-collaborator-avatar">${collaborator.avatar}</div>
-              <div>
-                  <div class="invite-collaborator-name">${collaborator.name}</div>
-                  <div class="invite-collaborator-title">${collaborator.title} at ${collaborator.institution}</div>
-              </div>
-          </div>
-      `;
-      
-      // Populate project dropdown
-      inviteProject.innerHTML = '<option value="">Select a project</option>';
-      mockProjects.forEach(project => {
-          inviteProject.innerHTML += `<option value="${project.id}">${project.title}</option>`;
-      });
-      
-      // Show modal
-      collaboratorSearchModal.classList.remove('active');
-      inviteCollaboratorModal.classList.add('active');
-  }
-  
-  // Setup all event listeners
-  function setupEventListeners() {
-      // Logout functionality
-      logoutBtn.addEventListener('click', async () => {
-          try {
-              const response = await fetch('/api/logout', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json'
-                  },
-                  credentials: 'include'
-              });
-              
-              if (response.ok) {
-                  clearInterval(authCheckInterval);
-                  window.location.href = '/login';
-              } else {
-                  console.error('Logout failed');
-                  showToast('Logout failed. Please try again.', 'error');
-              }
-          } catch (error) {
-              console.error('Error during logout:', error);
-              showToast('Error during logout. Please try again.', 'error');
-          }
-      });
-      
-      // Calendar navigation
-      prevMonthBtn.addEventListener('click', () => {
-          currentDate.setMonth(currentDate.getMonth() - 1);
-          generateCalendar(currentDate);
-      });
-      
-      nextMonthBtn.addEventListener('click', () => {
-          currentDate.setMonth(currentDate.getMonth() + 1);
-          generateCalendar(currentDate);
-      });
-      
-      // Create Project Modal
-      createProjectBtn.addEventListener('click', () => {
-          createProjectModal.classList.add('active');
-      });
-      
-      closeCreateProjectModal.addEventListener('click', () => {
-          createProjectModal.classList.remove('active');
-      });
-      
-      cancelCreateProject.addEventListener('click', () => {
-          createProjectModal.classList.remove('active');
-      });
-      
-      submitCreateProject.addEventListener('click', () => {
-          createProjectModal.classList.remove('active');
-          showToast('Project created successfully!', 'success');
-      });
-      
-      // Project Details Modal
-      projectActions.forEach(button => {
-          button.addEventListener('click', function() {
-              const projectId = parseInt(this.getAttribute('data-project-id'));
-              populateProjectDetails(projectId);
-          });
-      });
-      
-      closeProjectDetailsModal.addEventListener('click', () => {
-          projectDetailsModal.classList.remove('active');
-      });
-      
-      // Secondary project actions (invite)
-      projectActionsSecondary.forEach(button => {
-          button.addEventListener('click', function() {
-              const projectId = parseInt(this.getAttribute('data-project-id'));
-              showToast(`Opening invite dialog for project ID: ${projectId}`, 'info');
-          });
-      });
-      
-      // Delete Project
-      deleteProjectBtn.addEventListener('click', function() {
-          const projectId = parseInt(this.getAttribute('data-project-id'));
-          const project = mockProjects.find(p => p.id === projectId);
-          
-          if (project) {
-              deleteProjectName.textContent = project.title;
-              projectDetailsModal.classList.remove('active');
-              deleteConfirmationModal.classList.add('active');
-          }
-      });
-      
-      closeDeleteModal.addEventListener('click', () => {
-          deleteConfirmationModal.classList.remove('active');
-      });
-      
-      cancelDelete.addEventListener('click', () => {
-          deleteConfirmationModal.classList.remove('active');
-      });
-      
-      confirmDelete.addEventListener('click', () => {
-          deleteConfirmationModal.classList.remove('active');
-          showToast('Project deleted successfully!', 'success');
-      });
-      
-      // Find Collaborators
-      findCollaboratorsBtn.addEventListener('click', () => {
-          populateCollaboratorResults();
-          collaboratorSearchModal.classList.add('active');
-      });
-      
-      closeCollaboratorSearchModal.addEventListener('click', () => {
-          collaboratorSearchModal.classList.remove('active');
-      });
-      
-      // Invite Collaborator Modal
-      closeInviteModal.addEventListener('click', () => {
-          inviteCollaboratorModal.classList.remove('active');
-      });
-      
-      cancelInvite.addEventListener('click', () => {
-          inviteCollaboratorModal.classList.remove('active');
-      });
-      
-      sendInvite.addEventListener('click', () => {
-          inviteCollaboratorModal.classList.remove('active');
-          showToast('Invitation sent successfully!', 'success');
-      });
-      
-      // Notification actions
-      notificationActions.forEach(button => {
-          button.addEventListener('click', function() {
-              const action = this.getAttribute('data-action');
-              
-              if (action === 'dismiss') {
-                  const notificationId = this.getAttribute('data-notification-id');
-                  const notification = this.closest('.notification-item');
-                  notification.style.height = notification.offsetHeight + 'px';
-                  
-                  // Trigger reflow
-                  notification.offsetHeight;
-                  
-                  // Add class for animation
-                  notification.classList.add('dismissing');
-                  
-                  // Remove after animation completes
-                  setTimeout(() => {
-                      notification.remove();
-                      showToast('Notification dismissed', 'info');
-                  }, 300);
-              } else if (action === 'view-comment') {
-                  const commentId = this.getAttribute('data-comment-id');
-                  showToast(`Viewing comment ID: ${commentId}`, 'info');
-              } else if (action === 'view-details') {
-                  const grantId = this.getAttribute('data-grant-id');
-                  showToast(`Viewing grant details ID: ${grantId}`, 'info');
-              } else if (action === 'start-task') {
-                  const taskId = this.getAttribute('data-task-id');
-                  showToast(`Starting task ID: ${taskId}`, 'info');
-              } else if (action === 'remind-later') {
-                  const notificationId = this.getAttribute('data-notification-id');
-                  showToast('You will be reminded again tomorrow', 'info');
-              }
-          });
-      });
-      
-      // Invitation actions
-      invitationActions.forEach(button => {
-          button.addEventListener('click', function() {
-              const invitationId = this.getAttribute('data-invitation-id');
-              const action = this.classList.contains('accept') ? 'accept' : 'decline';
-              
-              if (action === 'accept') {
-                  showToast(`Invitation ${invitationId} accepted`, 'success');
-              } else {
-                  showToast(`Invitation ${invitationId} declined`, 'info');
-              }
-              
-              // Remove invitation card
-              const invitationCard = this.closest('.invitation-card');
-              invitationCard.style.height = invitationCard.offsetHeight + 'px';
-              
-              // Trigger reflow
-              invitationCard.offsetHeight;
-              
-              // Add class for animation
-              invitationCard.classList.add('dismissing');
-              
-              // Remove after animation completes
-              setTimeout(() => {
-                  invitationCard.remove();
-              }, 300);
-          });
-      });
-      
-      // Mobile menu toggle
-      const mobileMenuBtn = document.getElementById('mobile-menu-button');
-      const navLinks = document.querySelector('.nav-links');
-      
-      mobileMenuBtn.addEventListener('click', () => {
-          navLinks.classList.toggle('active');
-      });
-  }
-  
-  // Initialize the dashboard
-  initDashboard();
+    // Initialize researcher dashboard
+    initializeDashboard();
+
+    // Set up event listeners
+    setupEventListeners();
 });
+
+// Initialize the dashboard with data and components
+function initializeDashboard() {
+    // Update current date
+    updateCurrentDate();
+    
+    // Initialize charts
+    initializeResearchActivityChart();
+    initializeResearchAreasChart();
+    
+    // Initialize calendar
+    initializeResearchCalendar();
+    
+    // Set up timeframe buttons
+    setupTimeframeButtons();
+    
+    // Load dashboard data
+    loadDashboardData();
+    
+    // Add fade-in animations
+    addAnimations();
+}
+
+// Update current date display
+function updateCurrentDate() {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+}
+
+// Load dashboard data from API or use mock data
+async function loadDashboardData() {
+    try {
+        // Simulate API call with setTimeout
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        // Update dashboard statistics with mock data
+        animateMetricCounters({
+            activeProjects: 14,
+            collaborators: 27,
+            publications: 8,
+            pendingInvitations: 5
+        });
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showToast('Failed to load dashboard data. Please refresh the page.', 'error');
+    }
+}
+
+// Animate metric counters from 0 to target value
+function animateMetricCounters(data) {
+    // Find all metric values
+    const metricElements = document.querySelectorAll('.metric-value');
+    
+    metricElements.forEach(element => {
+        // Get the value from the element
+        const targetValue = parseInt(element.textContent);
+        if (isNaN(targetValue)) return;
+        
+        animateCounter(element, targetValue);
+    });
+}
+
+// Animate counter from 0 to target value
+function animateCounter(element, targetValue) {
+    const duration = 1500;
+    const startTime = performance.now();
+    const startValue = 0;
+    
+    function updateCounter(currentTime) {
+        const elapsedTime = currentTime - startTime;
+        if (elapsedTime < duration) {
+            const progress = elapsedTime / duration;
+            const currentValue = Math.floor(progress * targetValue);
+            element.textContent = currentValue;
+            requestAnimationFrame(updateCounter);
+        } else {
+            element.textContent = targetValue;
+        }
+    }
+    
+    requestAnimationFrame(updateCounter);
+}
+
+// Initialize research activity chart
+function initializeResearchActivityChart() {
+    const ctx = document.getElementById('researchActivityChart');
+    if (!ctx) return;
+    
+    // Sample data - in a real app, this would come from an API
+    const activityData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        datasets: [
+            {
+                label: 'Publications',
+                data: [1, 0, 2, 0, 1, 0, 0, 1, 1, 0, 2, 0],
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Citations',
+                data: [5, 8, 6, 9, 12, 10, 13, 15, 18, 21, 25, 28],
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Presentations',
+                data: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1],
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true
+            }
+        ]
+    };
+    
+    const activityChart = new Chart(ctx, {
+        type: 'line',
+        data: activityData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1F2937',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 10,
+                    displayColors: true,
+                    titleFont: {
+                        family: "'Inter', sans-serif",
+                        size: 14
+                    },
+                    bodyFont: {
+                        family: "'Inter', sans-serif",
+                        size: 12
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Inter', sans-serif",
+                            size: 12
+                        },
+                        color: '#4b5563'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 30,
+                    ticks: {
+                        stepSize: 5,
+                        font: {
+                            family: "'Inter', sans-serif",
+                            size: 12
+                        },
+                        color: '#4b5563'
+                    },
+                    grid: {
+                        color: 'rgba(229, 231, 235, 0.5)'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Store chart reference for later use
+    window.activityChart = activityChart;
+}
+
+// Initialize research areas chart
+function initializeResearchAreasChart() {
+    const ctx = document.getElementById('researchAreasChart');
+    if (!ctx) return;
+    
+    // Sample data - in a real app, this would come from an API
+    const researchData = {
+        labels: ['Quantum Computing', 'AI Ethics', 'Climate Science', 'Genomics', 'Renewable Energy'],
+        datasets: [
+            {
+                data: [35, 25, 20, 15, 5],
+                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }
+        ]
+    };
+    
+    const researchAreasChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: researchData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            family: "'Inter', sans-serif",
+                            size: 12
+                        },
+                        color: '#4b5563',
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1F2937',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 10,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            return `${tooltipItem.label}: ${tooltipItem.formattedValue}%`;
+                        }
+                    },
+                    titleFont: {
+                        family: "'Inter', sans-serif",
+                        size: 14
+                    },
+                    bodyFont: {
+                        family: "'Inter', sans-serif",
+                        size: 12
+                    }
+                }
+            }
+        }
+    });
+    
+    // Store chart reference for later use
+    window.researchAreasChart = researchAreasChart;
+}
+
+// Initialize research calendar
+function initializeResearchCalendar() {
+    const calendarEl = document.getElementById('research-calendar');
+    if (!calendarEl) return;
+    
+    // Initialize flatpickr calendar with events
+    const calendar = flatpickr(calendarEl, {
+        inline: true,
+        dateFormat: 'Y-m-d',
+        minDate: 'today',
+        maxDate: new Date().fp_incr(180), // 6 months ahead
+        locale: {
+            firstDayOfWeek: 1 // Start week on Monday
+        },
+        onMonthChange: function(selectedDates, dateStr, instance) {
+            // Handle month change if needed
+        },
+        onYearChange: function(selectedDates, dateStr, instance) {
+            // Handle year change if needed
+        },
+        onDayCreate: function(dObj, dStr, fp, dayElem) {
+            // Add event markers to specific days
+            const dateStr = dayElem.dateObj.toISOString().split('T')[0];
+            
+            // Sample events data - in a real app, this would come from an API
+            const events = [
+                { date: '2025-05-15', type: 'conference' },
+                { date: '2025-05-21', type: 'deadline' },
+                { date: '2025-06-04', type: 'presentation' },
+                { date: '2025-05-10', type: 'meeting' },
+                { date: '2025-06-15', type: 'deadline' }
+            ];
+            
+            const event = events.find(event => event.date === dateStr);
+            
+            if (event) {
+                const eventMarker = document.createElement('span');
+                eventMarker.classList.add('event-marker', event.type);
+                
+                // Style the event marker based on type
+                let markerColor = '#6366f1'; // Default color
+                switch (event.type) {
+                    case 'conference':
+                        markerColor = '#6366f1'; // Primary color
+                        break;
+                    case 'deadline':
+                        markerColor = '#ef4444'; // Error color
+                        break;
+                    case 'presentation':
+                        markerColor = '#10b981'; // Success color
+                        break;
+                    case 'meeting':
+                        markerColor = '#f59e0b'; // Warning color
+                        break;
+                }
+                
+                // Apply event marker styling
+                eventMarker.style.cssText = `
+                    display: block;
+                    width: 5px;
+                    height: 5px;
+                    border-radius: 50%;
+                    background-color: ${markerColor};
+                    position: absolute;
+                    bottom: 2px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                `;
+                
+                dayElem.appendChild(eventMarker);
+            }
+        }
+    });
+    
+    // Store calendar reference for later use
+    window.researchCalendar = calendar;
+}
+
+// Set up timeframe buttons for the research activity chart
+function setupTimeframeButtons() {
+    const timeframeButtons = document.querySelectorAll('.timeframe-btn');
+    
+    timeframeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            timeframeButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Update chart data based on selected timeframe
+            updateChartData(this.getAttribute('data-period'));
+        });
+    });
+}
+
+// Update chart data based on selected timeframe
+function updateChartData(period) {
+    // In a real app, this would fetch new data from an API
+    // For this demo, we'll use predefined data sets
+    
+    if (!window.activityChart) return;
+    
+    let publicationsData, citationsData, presentationsData, labels;
+    
+    switch(period) {
+        case 'week':
+            labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            publicationsData = [0, 0, 1, 0, 0, 0, 0];
+            citationsData = [2, 3, 2, 4, 3, 1, 2];
+            presentationsData = [0, 0, 0, 1, 0, 0, 0];
+            break;
+        case 'month':
+            labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+            publicationsData = [0, 1, 0, 1];
+            citationsData = [8, 10, 7, 12];
+            presentationsData = [0, 1, 0, 1];
+            break;
+        case 'year':
+            // Use the existing yearly data
+            labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            publicationsData = [1, 0, 2, 0, 1, 0, 0, 1, 1, 0, 2, 0];
+            citationsData = [5, 8, 6, 9, 12, 10, 13, 15, 18, 21, 25, 28];
+            presentationsData = [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1];
+            break;
+        default:
+            return;
+    }
+    
+    // Update chart data
+    window.activityChart.data.labels = labels;
+    window.activityChart.data.datasets[0].data = publicationsData;
+    window.activityChart.data.datasets[1].data = citationsData;
+    window.activityChart.data.datasets[2].data = presentationsData;
+    window.activityChart.update();
+}
+
+// Set up event listeners
+function setupEventListeners() {
+    // Chart download button
+    const chartDownloadBtn = document.querySelector('.chart-download');
+    if (chartDownloadBtn) {
+        chartDownloadBtn.addEventListener('click', function() {
+            // In a real app, this would download the chart as an image
+            showToast('Chart data downloaded as CSV', 'success');
+        });
+    }
+    
+    // Notifications button
+    const notificationsBtn = document.querySelector('.notifications-btn');
+    if (notificationsBtn) {
+        notificationsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showToast('You have 3 new notifications', 'info');
+            // In a real app, this would open a notifications panel
+        });
+    }
+    
+    // Profile button
+    const profileBtn = document.querySelector('.profile-btn');
+    if (profileBtn) {
+        profileBtn.addEventListener('click', function(e) {
+            // This would navigate to the profile page
+            // For demo, we'll just show a toast
+            if (e.target.tagName !== 'A') {
+                e.preventDefault();
+                showToast('Navigating to profile page...', 'info');
+            }
+        });
+    }
+    
+    // Navigation links highlighting
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (this.getAttribute('href') === '#') {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                navLinks.forEach(navLink => navLink.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+            }
+        });
+    });
+}
+
+// Add animations to elements
+function addAnimations() {
+    const animateElements = [
+        '.welcome-banner', 
+        '.metrics-overview',
+        '.dashboard-charts',
+        '.calendar-goals-section',
+        '.project-status-section'
+    ];
+    
+    animateElements.forEach((selector, index) => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            element.classList.add('fade-in');
+            element.style.animationDelay = `${index * 0.1}s`;
+        });
+    });
+}
+
+// Toast notification function
+function showToast(message, type = 'info', duration = 5000) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `toast ${type}`;
+    
+    let icon = '';
+    switch(type) {
+        case 'success':
+            icon = '<i class="fas fa-check-circle"></i>';
+            break;
+        case 'error':
+            icon = '<i class="fas fa-exclamation-circle"></i>';
+            break;
+        case 'warning':
+            icon = '<i class="fas fa-exclamation-triangle"></i>';
+            break;
+        default:
+            icon = '<i class="fas fa-info-circle"></i>';
+    }
+    
+    notification.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">
+            <div class="toast-message">${message}</div>
+        </div>
+        <button class="toast-close"><i class="fas fa-times"></i></button>
+    `;
+    
+    // Add to document
+    const toastContainer = document.getElementById('toast-container');
+    if (toastContainer) {
+        toastContainer.appendChild(notification);
+        
+        // Allow DOM to update before adding active class for animation
+        setTimeout(() => {
+            notification.classList.add('active');
+        }, 10);
+        
+        const timeout = setTimeout(() => {
+            removeToast(notification);
+        }, duration);
+        
+        const closeBtn = notification.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => {
+            clearTimeout(timeout);
+            removeToast(notification);
+        });
+    }
+}
+
+// Remove toast notification
+function removeToast(toast) {
+    toast.classList.remove('active');
+    toast.classList.add('notification-hiding');
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 300);
+}
+
+// Utility function to format dates
+function formatDate(date) {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(date).toLocaleDateString('en-US', options);
+}
+
+// Utility function to capitalize first letter
+function capitalizeFirstLetter(string) {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
