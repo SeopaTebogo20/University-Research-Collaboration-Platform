@@ -1,0 +1,30 @@
+Sprint 1 Meeting Minutes
+
+Date: 14 April 2025
+Time: 14:00
+Meeting Type: Sprint Planning
+Attendees: Development Team & Client
+
+1. Purpose of the Meeting
+To discuss and finalize the project requirements and technical setup for the upcoming sprint with the client.
+
+2. Application Requirements
+The client specified the following main functional requirements for the application for sprint 2:
+        (a) A researcher should create and publish a project. The following data should be required: Project Title,
+                Description, Research Goals, Key research areas, skills and expertise needed, Experience(Beginner/Intermediate/Expert)
+                ,Positions needed, Technical Requirements,Funding information, Start and End dates.
+        Verify that all fields are entered.
+        (b) A researcher should edit Project data.
+        (c) A researcher should delete listing.
+        (d) A researcher should Invite collaborators. 
+        (e) A researcher should Manage Invitations.
+        (f) A researcher should Respond to invitations.
+
+3. Client Feedback
+The client warned against not reading the rubric very well and the team promised to check the rubric to avoid losing marks on 
+simple mistakes.
+
+
+
+
+
