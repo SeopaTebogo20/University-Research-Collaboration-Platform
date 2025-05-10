@@ -1,0 +1,46 @@
+Sprint Retrospective
+
+Date: 15 April 2025
+Time: 09:30
+Meeting Type: Sprint Retrospective
+Attendees: Development Team
+
+1. Purpose of the Meeting
+To discuss the problems we had on the last sprint, especially the ones that lost us marks on the first sprint. We wanted to aslo plan
+how we were going to fix them.
+
+2. Problems raised by Client
+
+  Requirement Engineering:
+  We can't assign work and not have documentation proving that or assign work to a group and not show what was exactly given to who.
+
+  Scrum Methodology:
+  We didn't have proof that we had meetings, we only had minutes. We should also have all meetings (Sprint Planning, Daily scrum, Sprint
+  Review, Sprint Retrospective, Backlog Refinement).
+
+  Continuous Integration:
+  Releases
+  Issue tracker
+  Stand Alone Build
+  Coverage Statuses
+
+  Test Driven Development:
+  Acceptance Test
+  User Acceptance Test
+  Jest(need to show Code Coverage)
+
+  Project Polish:
+  We had Errors in our verification. Phone numbers and emails were not being verified at all.
+
+
+3.How to fix the problems:
+  Scrum Methodology: Use discord for formal communications
+  Project Polish: Fix error handling/verification
+  Continuous Integration: Check issue tracking and start using it.
+  Requirement Engineering: We'll write in brackets who was assigned what user story/ functionality
+  if we assigned something to multiple members.
+  
+
+
+  
+  
