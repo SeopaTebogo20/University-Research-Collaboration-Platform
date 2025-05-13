@@ -7,37 +7,32 @@
     <title>Researcher Dashboard - CollabNexus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="css/milestones2.css">
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="brand">
-                <div class="brand-logo">
-                    <i class="fas fa-flask"></i>
-                </div>
-                <h1 class="brand-name">CollabNexus</h1>
-            </div>
-            <nav class="main-nav">
-                <a href="dashboard.html" class="nav-link active">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="projects.html" class="nav-link">
-                    <i class="fas fa-folder-open"></i>
-                    <span>My Projects</span>
-                </a>
-                <a href="invitations.html" class="nav-link">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Invitations</span>
-                </a>
-        </header>
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <a href="dashboard.html" class="logo">
+                <i class="fas fa-book-open book-logo"></i>
+                CollabNexus
+            </a>
+            <ul class="nav-links">
+                <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
+                <li><a href="projects.html"><i class="fas fa-users"></i> My Projects</a></li>
+                <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
+                <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+            </ul>
+            <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </nav>
+
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Welcome Banner -->
-            <section class="welcome-banner">
+            <section class="proposal-header">
                 <div class="welcome-text">
                     <h1>Welcome Back, Reviewer</h1>
                     <p>Here's an overview of your research activities and upcoming events</p>
@@ -356,47 +351,56 @@
         </main>
 
         <!-- Footer -->
-        <footer class="app-footer">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <div class="brand-logo">
-                        <i class="fas fa-flask"></i>
-                    </div>
-                    <h2>CollabNexus</h2>
-                </div>
-
-                <div class="footer-links">
-                    <div class="footer-section">
-                        <h3>Research Resources</h3>
-                        <ul>
-                            <li><a href="#">Resource Library</a></li>
-                            <li><a href="#">Research Guidelines</a></li>
-                            <li><a href="#">Grant Opportunities</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Support</h3>
-                        <ul>
-                            <li><a href="#">Help Center</a></li>
-                            <li><a href="#">Contact Support</a></li>
-                            <li><a href="#">Report Issue</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-section">
-                        <h3>Legal</h3>
-                        <ul>
-                            <li><a href="#">Terms of Service</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Data Protection</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-copyright">
-                <p>© 2025 CollabNexus Research Hub. All rights reserved.</p>
-            </div>
+        <!-- Footer -->
+        <footer class="footer">
+            <section class="container">
+            <section class="footer-content">
+                <article class="footer-column">
+                <header class="footer-logo">
+                    <i class="fas fa-book-open book-logo"></i>
+                    CollabNexus
+                </header>
+                <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                </article>
+                <article class="footer-column">
+                <h3>Solutions</h3>
+                <nav>
+                    <ul class="footer-links">
+                    <li><a href="#">For Researchers</a></li>
+                    <li><a href="#">For Universities</a></li>
+                    <li><a href="#">For Industry</a></li>
+                    <li><a href="#">For Funding Agencies</a></li>
+                    </ul>
+                </nav>
+                </article>
+                <article class="footer-column">
+                <h3>Resources</h3>
+                <nav>
+                    <ul class="footer-links">
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Research Guides</a></li>
+                    <li><a href="#">Webinars</a></li>
+                    <li><a href="#">Case Studies</a></li>
+                    </ul>
+                </nav>
+                </article>
+                <article class="footer-column">
+                <h3>Company</h3>
+                <nav>
+                    <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </nav>
+                </article>
+            </section>
+            <section class="footer-bottom">
+                <small>&copy; 2025 CollabNexus Research Hub. All rights reserved.</small>
+            </section>
+            </section>
         </footer>
-
         <!-- Toast Container -->
         <div id="toast-container"></div>
     </div>
