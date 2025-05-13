@@ -1,471 +1,503 @@
-
-// Store for contacts and messages
-let contacts = [];
-let activeContact = null;
-let conversations = {};
-
-// DOM Elements
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize the page
-  loadContacts();
+  // DOM Elements
+  const todayNotifications = document.getElementById('today-notifications');
+  const yesterdayNotifications = document.getElementById('yesterday-notifications');
+  const earlierNotifications = document.getElementById('earlier-notifications');
+  const searchInput = document.getElementById('search-notifications');
+  const filterTags = document.querySelectorAll('.filter-tag');
+  const emptyState = document.getElementById('empty-notifications');
+  const markAllReadBtn = document.getElementById('mark-all-read');
+  const notificationSettingsBtn = document.getElementById('notifications-settings');
+  const notificationModal = document.querySelector('.notification-modal');
+  const settingsModal = document.querySelector('.settings-modal');
+  const closeModalBtns = document.querySelectorAll('.close-modal');
+  const modalDismissBtn = document.getElementById('modal-dismiss');
+  const modalActionBtn = document.getElementById('modal-action');
+  const cancelSettingsBtn = document.querySelector('.cancel-settings');
+  const notificationSettingsForm = document.getElementById('notification-settings-form');
+  const prevPageBtn = document.getElementById('prev-page');
+  const nextPageBtn = document.getElementById('next-page');
+  const paginationInfo = document.getElementById('pagination-info');
   
+  // State variables
+  let notifications = [];
+  let filteredNotifications = [];
+  let currentPage = 1;
+  let currentFilter = 'all';
+  let currentSearchTerm = '';
+  let itemsPerPage = 10;
+  let currentNotificationId = null;
+  
+  // Load notification settings from localStorage or use defaults
+  const settings = JSON.parse(localStorage.getItem('notificationSettings')) || {
+      email: {
+          newAssignments: true,
+          deadlines: true,
+          feedback: true
+      },
+      system: {
+          all: true,
+          sound: true
+      }
+  };
+
+  // Mock notification data
+  function generateMockNotifications() {
+      const now = new Date();
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const lastWeek = new Date(now);
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      const twoWeeksAgo = new Date(now);
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      
+      return [
+          {
+              id: 'n1',
+              title: 'New Proposal Assigned',
+              message: 'You have been assigned a new research proposal "Novel Approaches to Quantum Computing" by Dr. Emily Chen.',
+              timestamp: new Date(now.getTime() - 1000 * 60 * 30), // 30 minutes ago
+              type: 'assignment',
+              unread: true,
+              actionLabel: 'Review Now',
+              actionUrl: 'proposals.html'
+          },
+          {
+              id: 'n2',
+              title: 'Deadline Reminder',
+              message: 'Review deadline for "Machine Learning in Healthcare" is approaching. Please submit your evaluation by tomorrow.',
+              timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
+              type: 'deadline',
+              unread: true,
+              actionLabel: 'Complete Review',
+              actionUrl: 'proposals.html'
+          },
+          {
+              id: 'n3',
+              title: 'System Maintenance',
+              message: 'CollabNexus will undergo scheduled maintenance this weekend. The platform may be unavailable from 2 AM to 5 AM EST on Sunday.',
+              timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 5), // 5 hours ago
+              type: 'system',
+              unread: false,
+              actionLabel: null,
+              actionUrl: null
+          },
+          {
+              id: 'n4',
+              title: 'Feedback Response',
+              message: 'Dr. Wilson has responded to your feedback on "Advancements in Neural Networks". Click to view the response.',
+              timestamp: yesterday,
+              type: 'feedback',
+              unread: false,
+              actionLabel: 'View Response',
+              actionUrl: 'history.html'
+          },
+          {
+              id: 'n5',
+              title: 'Review Approved',
+              message: 'Your review for "Climate Change Mitigation Strategies" has been approved by the administration.',
+              timestamp: yesterday,
+              type: 'system',
+              unread: false,
+              actionLabel: 'View Details',
+              actionUrl: 'history.html'
+          },
+          {
+              id: 'n6',
+              title: 'New Feature Available',
+              message: 'We\'ve added a new feature to help streamline your review process. Check out the new dashboard analytics!',
+              timestamp: lastWeek,
+              type: 'system',
+              unread: false,
+              actionLabel: 'Explore Feature',
+              actionUrl: 'dashboard.html'
+          },
+          {
+              id: 'n7',
+              title: 'Quarterly Review Performance',
+              message: 'Your quarterly review performance metrics are now available. You completed 12 reviews with an average rating of 4.8/5.',
+              timestamp: lastWeek,
+              type: 'system',
+              unread: false,
+              actionLabel: 'View Metrics',
+              actionUrl: 'profile.html'
+          },
+          {
+              id: 'n8',
+              title: 'Research Conference Invitation',
+              message: 'Based on your expertise, you\'ve been invited to attend the Annual Research Innovation Conference as a panel reviewer.',
+              timestamp: twoWeeksAgo,
+              type: 'system',
+              unread: false,
+              actionLabel: 'RSVP',
+              actionUrl: '#'
+          }
+      ];
+  }
+
+  // Format timestamp
+  function formatTimestamp(timestamp) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const timestampDate = new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate());
+      
+      if (timestamp > today) {
+          // Today, show time
+          return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } else if (timestampDate.getTime() === yesterday.getTime()) {
+          // Yesterday, show "Yesterday at [time]"
+          return `Yesterday at ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      } else {
+          // More than a day ago, show date
+          return timestamp.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+  }
+
+  // Group notifications by date
+  function groupNotificationsByDate(notificationsArray) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const todayNotifs = [];
+      const yesterdayNotifs = [];
+      const earlierNotifs = [];
+      
+      notificationsArray.forEach(notification => {
+          const notifDate = new Date(notification.timestamp.getFullYear(), notification.timestamp.getMonth(), notification.timestamp.getDate());
+          
+          if (notifDate.getTime() === today.getTime()) {
+              todayNotifs.push(notification);
+          } else if (notifDate.getTime() === yesterday.getTime()) {
+              yesterdayNotifs.push(notification);
+          } else {
+              earlierNotifs.push(notification);
+          }
+      });
+      
+      return {
+          today: todayNotifs,
+          yesterday: yesterdayNotifs,
+          earlier: earlierNotifs
+      };
+  }
+
+  // Create notification HTML
+  function createNotificationElement(notification) {
+      const notifItem = document.createElement('div');
+      notifItem.className = `notification-item ${notification.unread ? 'unread' : ''}`;
+      notifItem.dataset.id = notification.id;
+      notifItem.dataset.type = notification.type;
+      
+      notifItem.innerHTML = `
+          <div class="notification-icon ${notification.type}">
+              <i class="fas ${getIconForType(notification.type)}"></i>
+          </div>
+          <div class="notification-content">
+              <h4 class="notification-title">${notification.title}</h4>
+              <p class="notification-message">${notification.message}</p>
+              <div class="notification-meta">
+                  <span class="notification-timestamp">${formatTimestamp(notification.timestamp)}</span>
+              </div>
+          </div>
+      `;
+      
+      // Add click event to open the notification detail modal
+      notifItem.addEventListener('click', () => openNotificationDetail(notification));
+      
+      return notifItem;
+  }
+
+  // Get icon for notification type
+  function getIconForType(type) {
+      switch (type) {
+          case 'assignment':
+              return 'fa-clipboard-list';
+          case 'deadline':
+              return 'fa-clock';
+          case 'feedback':
+              return 'fa-comment-dots';
+          case 'system':
+          default:
+              return 'fa-bell';
+      }
+  }
+
+  // Render notifications by date groups
+  function renderNotifications() {
+      // Clear all containers
+      todayNotifications.innerHTML = '';
+      yesterdayNotifications.innerHTML = '';
+      earlierNotifications.innerHTML = '';
+      
+      // Apply filters and search before displaying
+      applyFiltersAndSearch();
+      
+      // Get paginated subset
+      const paginatedNotifications = getPaginatedNotifications();
+      
+      // Group by date
+      const groupedNotifs = groupNotificationsByDate(paginatedNotifications);
+      
+      // Hide date sections if empty
+      document.getElementById('today-section').style.display = groupedNotifs.today.length ? 'block' : 'none';
+      document.getElementById('yesterday-section').style.display = groupedNotifs.yesterday.length ? 'block' : 'none';
+      document.getElementById('earlier-section').style.display = groupedNotifs.earlier.length ? 'block' : 'none';
+      
+      // Show empty state if all sections are empty
+      emptyState.style.display = 
+          (groupedNotifs.today.length || groupedNotifs.yesterday.length || groupedNotifs.earlier.length) ? 
+          'none' : 'flex';
+      
+      // Render notifications in each section
+      groupedNotifs.today.forEach(notification => {
+          todayNotifications.appendChild(createNotificationElement(notification));
+      });
+      
+      groupedNotifs.yesterday.forEach(notification => {
+          yesterdayNotifications.appendChild(createNotificationElement(notification));
+      });
+      
+      groupedNotifs.earlier.forEach(notification => {
+          earlierNotifications.appendChild(createNotificationElement(notification));
+      });
+      
+      // Update pagination
+      updatePagination();
+  }
+
+  // Apply filters and search
+  function applyFiltersAndSearch() {
+      filteredNotifications = [...notifications];
+      
+      // Apply type filter
+      if (currentFilter !== 'all') {
+          if (currentFilter === 'unread') {
+              filteredNotifications = filteredNotifications.filter(n => n.unread);
+          } else {
+              filteredNotifications = filteredNotifications.filter(n => n.type === currentFilter);
+          }
+      }
+      
+      // Apply search
+      if (currentSearchTerm) {
+          const searchLower = currentSearchTerm.toLowerCase();
+          filteredNotifications = filteredNotifications.filter(n => 
+              n.title.toLowerCase().includes(searchLower) || 
+              n.message.toLowerCase().includes(searchLower)
+          );
+      }
+      
+      // Reset to page 1 when filters change
+      currentPage = 1;
+  }
+
+  // Get paginated subset of notifications
+  function getPaginatedNotifications() {
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const endIdx = startIdx + itemsPerPage;
+      return filteredNotifications.slice(startIdx, endIdx);
+  }
+
+  // Update pagination controls and info
+  function updatePagination() {
+      const totalPages = Math.max(1, Math.ceil(filteredNotifications.length / itemsPerPage));
+      
+      paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      
+      prevPageBtn.disabled = currentPage <= 1;
+      nextPageBtn.disabled = currentPage >= totalPages;
+  }
+
+  // Open notification detail modal
+  function openNotificationDetail(notification) {
+      currentNotificationId = notification.id;
+      
+      // Set modal content
+      document.getElementById('modal-notification-title').textContent = notification.title;
+      document.getElementById('modal-notification-time').textContent = formatTimestamp(notification.timestamp);
+      
+      const modalIcon = document.getElementById('modal-notification-icon');
+      modalIcon.className = `notification-icon ${notification.type}`;
+      modalIcon.innerHTML = `<i class="fas ${getIconForType(notification.type)}"></i>`;
+      
+      const detailContent = document.getElementById('modal-notification-content');
+      detailContent.innerHTML = `
+          <p>${notification.message}</p>
+          <p>This notification was sent to you as part of your reviewer responsibilities at CollabNexus Research Hub.</p>
+      `;
+      
+      // Set action button or hide it if no action
+      if (notification.actionLabel && notification.actionUrl) {
+          modalActionBtn.textContent = notification.actionLabel;
+          modalActionBtn.style.display = '';
+          modalActionBtn.onclick = () => {
+              window.location.href = notification.actionUrl;
+          };
+      } else {
+          modalActionBtn.style.display = 'none';
+      }
+      
+      // Mark as read if unread
+      if (notification.unread) {
+          markNotificationAsRead(notification.id);
+      }
+      
+      // Show modal
+      notificationModal.style.display = 'flex';
+      document.body.classList.add('modal-open');
+  }
+
+  // Mark notification as read
+  function markNotificationAsRead(notificationId) {
+      const notifIndex = notifications.findIndex(n => n.id === notificationId);
+      if (notifIndex !== -1 && notifications[notifIndex].unread) {
+          notifications[notifIndex].unread = false;
+          
+          // Update UI
+          const notifElement = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+          if (notifElement) {
+              notifElement.classList.remove('unread');
+          }
+      }
+  }
+
+  // Mark all notifications as read
+  function markAllAsRead() {
+      let hasUnreadNotifications = false;
+      
+      notifications.forEach(notification => {
+          if (notification.unread) {
+              notification.unread = false;
+              hasUnreadNotifications = true;
+          }
+      });
+      
+      if (hasUnreadNotifications) {
+          renderNotifications();
+          alert('All notifications marked as read');
+      }
+  }
+
+  // Close modals
+  function closeModals() {
+      notificationModal.style.display = 'none';
+      settingsModal.style.display = 'none';
+      document.body.classList.remove('modal-open');
+  }
+
+  // Apply notification settings
+  function applySettings() {
+      // Update checkbox states
+      document.getElementById('email-new-assignments').checked = settings.email.newAssignments;
+      document.getElementById('email-deadlines').checked = settings.email.deadlines;
+      document.getElementById('email-feedback').checked = settings.email.feedback;
+      document.getElementById('system-all').checked = settings.system.all;
+      document.getElementById('system-sound').checked = settings.system.sound;
+  }
+
+  // Save notification settings
+  function saveSettings() {
+      settings.email.newAssignments = document.getElementById('email-new-assignments').checked;
+      settings.email.deadlines = document.getElementById('email-deadlines').checked;
+      settings.email.feedback = document.getElementById('email-feedback').checked;
+      settings.system.all = document.getElementById('system-all').checked;
+      settings.system.sound = document.getElementById('system-sound').checked;
+      
+      localStorage.setItem('notificationSettings', JSON.stringify(settings));
+  }
+
   // Event Listeners
-  document.getElementById('send-message').addEventListener('click', sendMessage);
-  document.getElementById('message-input').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
   
   // Search input
-  const searchInput = document.querySelector('.contacts-search-input');
-  searchInput.addEventListener('input', function() {
-    filterContacts(this.value);
+  searchInput.addEventListener('input', function(e) {
+      currentSearchTerm = e.target.value.trim();
+      renderNotifications();
   });
-});
-
-// Load contacts
-async function loadContacts() {
-  try {
-    // In a real application, this would fetch from an API
-    // For demo, we'll use mock data
-    const mockContacts = [
-      {
-        id: "c1",
-        name: "Dr. Emily Chen",
-        avatar: "EC",
-        lastMessage: "I'll review your manuscript draft this weekend.",
-        lastMessageTime: "10:30 AM",
-        unreadCount: 2,
-        online: true
-      },
-      {
-        id: "c2",
-        name: "Prof. Michael Rodriguez",
-        avatar: "MR",
-        lastMessage: "The findings from the coral reef study are promising.",
-        lastMessageTime: "Yesterday",
-        unreadCount: 0,
-        online: false
-      },
-      {
-        id: "c3",
-        name: "Dr. Sarah Kim",
-        avatar: "SK",
-        lastMessage: "I'll send you the neural network architecture diagram tomorrow.",
-        lastMessageTime: "Apr 15",
-        unreadCount: 0,
-        online: true
-      },
-      {
-        id: "c4",
-        name: "Dr. James Wilson",
-        avatar: "JW",
-        lastMessage: "Let's schedule a meeting to discuss the AI ethics paper.",
-        lastMessageTime: "Apr 14",
-        unreadCount: 5,
-        online: false
-      },
-      {
-        id: "c5",
-        name: "Dr. Lisa Martinez",
-        avatar: "LM",
-        lastMessage: "The gene sequencing results have arrived.",
-        lastMessageTime: "Apr 12",
-        unreadCount: 0,
-        online: true
+  
+  // Filter tags
+  filterTags.forEach(tag => {
+      tag.addEventListener('click', function() {
+          // Remove active class from all filters
+          filterTags.forEach(t => t.classList.remove('active'));
+          
+          // Add active class to clicked filter
+          this.classList.add('active');
+          
+          // Update current filter
+          currentFilter = this.getAttribute('data-filter');
+          
+          // Re-render notifications
+          renderNotifications();
+      });
+  });
+  
+  // Mark all as read button
+  markAllReadBtn.addEventListener('click', markAllAsRead);
+  
+  // Notification settings button
+  notificationSettingsBtn.addEventListener('click', function() {
+      applySettings();
+      settingsModal.style.display = 'flex';
+      document.body.classList.add('modal-open');
+  });
+  
+  // Close modal buttons
+  closeModalBtns.forEach(btn => {
+      btn.addEventListener('click', closeModals);
+  });
+  
+  // Dismiss notification button
+  modalDismissBtn.addEventListener('click', function() {
+      closeModals();
+  });
+  
+  // Cancel settings button
+  cancelSettingsBtn.addEventListener('click', closeModals);
+  
+  // Settings form submission
+  notificationSettingsForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      saveSettings();
+      closeModals();
+      alert('Notification settings saved successfully');
+  });
+  
+  // Pagination buttons
+  prevPageBtn.addEventListener('click', function() {
+      if (currentPage > 1) {
+          currentPage--;
+          renderNotifications();
       }
-    ];
-    
-    // Generate mock conversations
-    mockContacts.forEach(contact => {
-      conversations[contact.id] = generateMockConversation(contact);
-    });
-    
-    contacts = mockContacts;
-    renderContacts();
-  } catch (error) {
-    console.error('Error loading contacts:', error);
-    showToast('error', 'Error', 'Failed to load contacts. Please try again.');
-  }
-}
-
-// Generate a mock conversation
-function generateMockConversation(contact) {
-  const conversation = [];
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  // Create a date for messages from a couple of days ago
-  const twoDaysAgo = new Date(today);
-  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-  
-  // Add a date marker
-  conversation.push({
-    type: 'date',
-    date: formatDate(twoDaysAgo)
   });
   
-  // Add messages from two days ago
-  conversation.push({
-    id: `msg-${contact.id}-1`,
-    sender: 'them',
-    content: "Hi there! I've been looking at the research proposal you sent and I have some thoughts.",
-    time: `${formatTime(twoDaysAgo.setHours(9, 30))}`
+  nextPageBtn.addEventListener('click', function() {
+      const totalPages = Math.ceil(filteredNotifications.length / itemsPerPage);
+      if (currentPage < totalPages) {
+          currentPage++;
+          renderNotifications();
+      }
   });
   
-  conversation.push({
-    id: `msg-${contact.id}-2`,
-    sender: 'me',
-    content: "Great! I'd love to hear your feedback on it.",
-    time: `${formatTime(twoDaysAgo.setHours(9, 45))}`
-  });
+      // Set up event listeners
+      function setupEventListeners() {
+          document.getElementById('logout-btn').addEventListener('click', function(e) {
+              e.preventDefault();
+              if (confirm('Are you sure you want to log out?')) {
+                  // Clear session/local storage
+                  localStorage.removeItem('adminName');
+                  localStorage.removeItem('adminToken');
   
-  conversation.push({
-    id: `msg-${contact.id}-3`,
-    sender: 'them',
-    content: "The methodology section looks solid, but I think we could strengthen the literature review. I'll send you some papers that might be helpful.",
-    time: `${formatTime(twoDaysAgo.setHours(10, 0))}`
-  });
-  
-  // Add a date marker for yesterday
-  conversation.push({
-    type: 'date',
-    date: formatDate(yesterday)
-  });
-  
-  conversation.push({
-    id: `msg-${contact.id}-4`,
-    sender: 'them',
-    content: "I've attached those papers I mentioned. The one by Johnson et al. is particularly relevant to our research questions.",
-    time: `${formatTime(yesterday.setHours(14, 15))}`
-  });
-  
-  conversation.push({
-    id: `msg-${contact.id}-5`,
-    sender: 'me',
-    content: "Thanks for sending these! I'll review them and incorporate the relevant findings into our literature review. Do you think we should consider adding a section on methodological limitations?",
-    time: `${formatTime(yesterday.setHours(15, 0))}`
-  });
-  
-  // Add a date marker for today
-  conversation.push({
-    type: 'date',
-    date: "Today"
-  });
-  
-  conversation.push({
-    id: `msg-${contact.id}-6`,
-    sender: 'them',
-    content: contact.lastMessage,
-    time: contact.lastMessageTime
-  });
-  
-  return conversation;
-}
-
-// Render contacts
-function renderContacts(filtered = null) {
-  const contactsList = document.getElementById('contacts-list');
-  contactsList.innerHTML = '';
-  
-  const contactsToRender = filtered || contacts;
-  
-  if (contactsToRender.length === 0) {
-    contactsList.innerHTML = `
-      <div class="p-4 text-center text-gray-500">
-        No contacts found.
-      </div>
-    `;
-    return;
-  }
-  
-  contactsToRender.forEach(contact => {
-    const contactItem = document.createElement('div');
-    contactItem.className = `contact-item ${activeContact && activeContact.id === contact.id ? 'active' : ''}`;
-    contactItem.setAttribute('data-id', contact.id);
-    contactItem.innerHTML = `
-      <div class="contact-avatar" style="background-color: var(--research-${contact.online ? 'primary' : 'dark'});">
-        ${contact.avatar}
-      </div>
-      <div class="contact-info">
-        <div class="contact-name">${contact.name}</div>
-        <div class="contact-last-message">${contact.lastMessage}</div>
-      </div>
-      <div class="contact-meta">
-        <div class="contact-time">${contact.lastMessageTime}</div>
-        ${contact.unreadCount > 0 ? `<div class="contact-unread">${contact.unreadCount}</div>` : ''}
-      </div>
-    `;
-    
-    contactsList.appendChild(contactItem);
-    
-    // Add event listener for selecting contact
-    contactItem.addEventListener('click', () => {
-      selectContact(contact);
-    });
-  });
-}
-
-// Filter contacts
-function filterContacts(query) {
-  if (!query) {
-    renderContacts();
-    return;
-  }
-  
-  const filteredContacts = contacts.filter(contact => 
-    contact.name.toLowerCase().includes(query.toLowerCase()) ||
-    contact.lastMessage.toLowerCase().includes(query.toLowerCase())
-  );
-  
-  renderContacts(filteredContacts);
-}
-
-// Select contact and load conversation
-function selectContact(contact) {
-  // Update active contact
-  if (activeContact) {
-    document.querySelector(`.contact-item[data-id="${activeContact.id}"]`).classList.remove('active');
-  }
-  
-  activeContact = contact;
-  document.querySelector(`.contact-item[data-id="${contact.id}"]`).classList.add('active');
-  
-  // Reset unread count
-  if (contact.unreadCount > 0) {
-    contact.unreadCount = 0;
-    document.querySelector(`.contact-item[data-id="${contact.id}"] .contact-unread`)?.remove();
-  }
-  
-  // Update chat header
-  document.getElementById('chat-avatar').innerHTML = contact.avatar;
-  document.getElementById('chat-name').textContent = contact.name;
-  document.getElementById('chat-status').textContent = contact.online ? 'Online' : 'Offline';
-  
-  // Show message input area
-  document.getElementById('message-input-area').style.display = 'flex';
-  
-  // Load conversation
-  loadConversation(contact.id);
-}
-
-// Load conversation
-function loadConversation(contactId) {
-  const messagesContainer = document.getElementById('messages-container');
-  messagesContainer.innerHTML = '';
-  
-  // Hide empty state
-  document.getElementById('empty-chat-state').style.display = 'none';
-  
-  // Get conversation
-  const conversation = conversations[contactId];
-  
-  conversation.forEach(item => {
-    if (item.type === 'date') {
-      // Render date marker
-      const dateMarker = document.createElement('div');
-      dateMarker.className = 'message-date';
-      dateMarker.textContent = item.date;
-      messagesContainer.appendChild(dateMarker);
-    } else {
-      // Render message
-      const messageElement = document.createElement('div');
-      messageElement.className = `message ${item.sender === 'me' ? 'sent' : 'received'}`;
-      messageElement.innerHTML = `
-        <div class="message-content">${item.content}</div>
-        <div class="message-time">${item.time}</div>
-      `;
-      messagesContainer.appendChild(messageElement);
-    }
-  });
-  
-  // Scroll to bottom
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// Send message
-function sendMessage() {
-  if (!activeContact) return;
-  
-  const messageInput = document.getElementById('message-input');
-  const messageContent = messageInput.value.trim();
-  
-  if (!messageContent) return;
-  
-  // Clear input
-  messageInput.value = '';
-  
-  // Generate message object
-  const now = new Date();
-  const message = {
-    id: `msg-${activeContact.id}-${Date.now()}`,
-    sender: 'me',
-    content: messageContent,
-    time: formatTime(now)
-  };
-  
-  // Add message to conversation
-  const conversation = conversations[activeContact.id];
-  
-  // Check if we need to add a date marker
-  const lastItem = conversation[conversation.length - 1];
-  if (lastItem.type === 'date' && lastItem.date !== 'Today') {
-    conversation.push({
-      type: 'date',
-      date: 'Today'
-    });
-  }
-  
-  conversation.push(message);
-  
-  // Update contact's last message
-  activeContact.lastMessage = messageContent;
-  activeContact.lastMessageTime = 'Just now';
-  
-  // Re-render contacts
-  renderContacts();
-  
-  // Re-render conversation
-  loadConversation(activeContact.id);
-  
-  // Simulate reply after a delay (for demo purposes)
-  setTimeout(() => {
-    simulateReply(activeContact.id);
-  }, 3000);
-}
-
-// Simulate reply (for demo purposes)
-function simulateReply(contactId) {
-  // Generate a random reply
-  const replies = [
-    "That sounds interesting. Let's discuss it further in our next meeting.",
-    "I agree with your approach. Let me know if you need any additional resources.",
-    "Thanks for the update. I'll review the materials and get back to you soon.",
-    "Great progress! Keep up the good work, and let me know if you encounter any challenges.",
-    "I have a few questions about this. Could we schedule a quick call later this week?"
-  ];
-  
-  const randomReply = replies[Math.floor(Math.random() * replies.length)];
-  
-  // Generate message object
-  const now = new Date();
-  const message = {
-    id: `msg-${contactId}-${Date.now()}`,
-    sender: 'them',
-    content: randomReply,
-    time: formatTime(now)
-  };
-  
-  // Add message to conversation
-  conversations[contactId].push(message);
-  
-  // Update contact's last message
-  const contact = contacts.find(c => c.id === contactId);
-  if (contact) {
-    contact.lastMessage = randomReply;
-    contact.lastMessageTime = 'Just now';
-    
-    // If not the active contact, increment unread count
-    if (!activeContact || activeContact.id !== contactId) {
-      contact.unreadCount = (contact.unreadCount || 0) + 1;
-    }
-    
-    // Re-render contacts
-    renderContacts();
-    
-    // Re-render conversation if it's the active contact
-    if (activeContact && activeContact.id === contactId) {
-      loadConversation(contactId);
-    } else {
-      // Show notification
-      showToast('info', 'New Message', `${contact.name} just sent you a message.`);
-    }
-  }
-}
-
-// Helper functions
-function formatDate(date) {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  if (date.toDateString() === today.toDateString()) {
-    return 'Today';
-  } else if (date.toDateString() === yesterday.toDateString()) {
-    return 'Yesterday';
-  } else {
-    const options = { month: 'short', day: 'numeric', year: 'numeric' };
-    return date.toLocaleDateString(undefined, options);
-  }
-}
-
-function formatTime(date) {
-  if (typeof date === 'string') return date;
-  
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const formattedHours = hours % 12 || 12;
-  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-  
-  return `${formattedHours}:${formattedMinutes} ${ampm}`;
-}
-
-// Toast notification function
-function showToast(type, title, message) {
-  const toastContainer = document.querySelector('.toast-container');
-  
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `
-    <div class="toast-icon">
-      <i class="fas ${getToastIcon(type)}"></i>
-    </div>
-    <div class="toast-content">
-      <h3 class="toast-title">${title}</h3>
-      <p class="toast-message">${message}</p>
-    </div>
-    <button class="toast-close">&times;</button>
-  `;
-  
-  toastContainer.appendChild(toast);
-  
-  // Activate toast with a slight delay for animation
-  setTimeout(() => {
-    toast.classList.add('active');
-  }, 10);
-  
-  // Set up event listener for close button
-  toast.querySelector('.toast-close').addEventListener('click', () => {
-    toast.classList.remove('active');
-    setTimeout(() => {
-      toast.remove();
-    }, 300); // Wait for animation to complete
-  });
-  
-  // Auto-remove toast after 5 seconds
-  setTimeout(() => {
-    if (toast.parentNode) { // Check if toast is still in the DOM
-      toast.classList.remove('active');
-      setTimeout(() => {
-        if (toast.parentNode) { // Check again before removing
-          toast.remove();
-        }
-      }, 300);
-    }
-  }, 5000);
-}
-
-// Get icon class for toast type
-function getToastIcon(type) {
-  switch (type) {
-    case 'success': return 'fa-check-circle';
-    case 'error': return 'fa-times-circle';
-    case 'warning': return 'fa-exclamation-triangle';
-    case 'info': return 'fa-info-circle';
-    default: return 'fa-info-circle';
-  }
-}
+                  // Replace current history state so user can't go "back"
+                  window.location.replace('../../../login.html');
+              }
+          });
+      }
+  // Initialize
+  notifications = generateMockNotifications();
+  renderNotifications();
+});

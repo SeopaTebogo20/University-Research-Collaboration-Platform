@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - CollabNexus Research Hub</title>
+    <meta name="description" content="Reviewer notifications for CollabNexus Research Hub">
+    <meta name="author" content="CollabNexus">
+    
+    <meta property="og:title" content="Notifications - CollabNexus Research Hub">
+    <meta property="og:description" content="Notifications center for CollabNexus Research Hub">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="css/messages.css">
+    <link rel="stylesheet" href="css/milestones.css">
+    <link rel="stylesheet" href="css/milestones2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+          <a href="dashboard.html" class="logo">
+              <i class="fas fa-book-open book-logo"></i>
+              CollabNexus
+          </a>
+          <ul class="nav-links">
+              <li><a href="dashboard.html" ><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+              <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
+              <li><a href="projects.html"><i class="fas fa-users"></i> My Projects</a></li>
+              <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
+              <li><a href="messages.html" class="active"><i class="fas fa-envelope"></i> Messages</a></li>
+          </ul>
+          <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </nav>
+
+    <main class="admin-proposal">
+        <header class="proposal-header">
+            <h1>Notifications</h1>
+            <p>Stay updated on important information related to your review activities</p>
+        </header>
+
+        <div class="notifications-wrapper">
+            <aside class="notifications-sidebar">
+                <div class="notifications-controls">
+                    <h2>Filter Notifications</h2>
+                    <div class="search-container">
+                        <input type="text" id="search-notifications" placeholder="Search notifications...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div class="filter-tags">
+                        <button class="filter-tag active" data-filter="all">All</button>
+                        <button class="filter-tag" data-filter="unread">Unread</button>
+                        <button class="filter-tag" data-filter="assignments">Assignments</button>
+                        <button class="filter-tag" data-filter="deadlines">Deadlines</button>
+                        <button class="filter-tag" data-filter="system">System</button>
+                    </div>
+                </div>
+                <div class="notifications-actions">
+                    <button class="btn btn-outline" id="mark-all-read">
+                        <i class="fas fa-check-double"></i> Mark All Read
+                    </button>
+                    <button class="btn btn-outline" id="notifications-settings">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+            </aside>
+            
+            <section class="notifications-content">
+                <div class="date-section" id="today-section">
+                    <h3 class="date-heading">Today</h3>
+                    <div class="notifications-list" id="today-notifications">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="date-section" id="yesterday-section">
+                    <h3 class="date-heading">Yesterday</h3>
+                    <div class="notifications-list" id="yesterday-notifications">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="date-section" id="earlier-section">
+                    <h3 class="date-heading">Earlier</h3>
+                    <div class="notifications-list" id="earlier-notifications">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="empty-state" id="empty-notifications" style="display: none;">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <h3>No Notifications Found</h3>
+                    <p>You're all caught up! No notifications match your current filters.</p>
+                </div>
+                
+                <div class="pagination">
+                    <button class="pagination-btn" id="prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span class="pagination-info" id="pagination-info">Page 1 of 1</span>
+                    <button class="pagination-btn" id="next-page" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Notification Detail Modal -->
+    <div class="modal notification-modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="notification-modal-title">Notification Details</h2>
+                <button class="close-modal" aria-label="Close modal">×</button>
+            </header>
+            <div class="modal-body">
+                <div class="notification-detail-header">
+                    <div class="notification-icon" id="modal-notification-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="notification-meta">
+                        <h3 id="modal-notification-title">Notification Title</h3>
+                        <p class="notification-timestamp" id="modal-notification-time">Time</p>
+                    </div>
+                </div>
+                <div class="notification-detail-content" id="modal-notification-content">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="notification-actions">
+                    <button class="btn btn-outline" id="modal-dismiss">Dismiss</button>
+                    <button class="btn btn-primary" id="modal-action">Take Action</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Settings Modal -->
+    <div class="modal settings-modal">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Notification Settings</h2>
+                <button class="close-modal" aria-label="Close modal">×</button>
+            </header>
+            <div class="modal-body">
+                <form id="notification-settings-form">
+                    <div class="settings-section">
+                        <h3>Email Notifications</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label for="email-new-assignments">New Assignments</label>
+                                <p class="setting-description">Receive emails when new proposals are assigned to you</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle">
+                                    <input type="checkbox" id="email-new-assignments" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label for="email-deadlines">Deadline Reminders</label>
+                                <p class="setting-description">Receive email reminders about upcoming deadlines</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle">
+                                    <input type="checkbox" id="email-deadlines" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label for="email-feedback">Feedback Responses</label>
+                                <p class="setting-description">Receive emails when researchers respond to your feedback</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle">
+                                    <input type="checkbox" id="email-feedback" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3>System Notifications</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label for="system-all">Enable All Notifications</label>
+                                <p class="setting-description">Enable or disable all in-app notifications</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle">
+                                    <input type="checkbox" id="system-all" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <label for="system-sound">Notification Sounds</label>
+                                <p class="setting-description">Play a sound when you receive a new notification</p>
+                            </div>
+                            <div class="setting-control">
+                                <label class="toggle">
+                                    <input type="checkbox" id="system-sound" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline cancel-settings">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <section class="container">
+        <section class="footer-content">
+          <article class="footer-column">
+            <header class="footer-logo">
+              <i class="fas fa-book-open book-logo"></i>
+              CollabNexus
+            </header>
+            <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+          </article>
+          <article class="footer-column">
+            <h3>Solutions</h3>
+            <nav>
+              <ul class="footer-links">
+                <li><a href="#">For Researchers</a></li>
+                <li><a href="#">For Universities</a></li>
+                <li><a href="#">For Industry</a></li>
+                <li><a href="#">For Funding Agencies</a></li>
+              </ul>
+            </nav>
+          </article>
+          <article class="footer-column">
+            <h3>Resources</h3>
+            <nav>
+              <ul class="footer-links">
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Research Guides</a></li>
+                <li><a href="#">Webinars</a></li>
+                <li><a href="#">Case Studies</a></li>
+              </ul>
+            </nav>
+          </article>
+          <article class="footer-column">
+            <h3>Company</h3>
+            <nav>
+              <ul class="footer-links">
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Careers</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+              </ul>
+            </nav>
+          </article>
+        </section>
+        <section class="footer-bottom">
+          <small>&copy; 2025 CollabNexus Research Hub. All rights reserved.</small>
+        </section>
+      </section>
+    </footer>
+
+    <script src="js/messages.js"></script>
+    <script src="../../js/auth.js"></script>
+</body>
+</html>
