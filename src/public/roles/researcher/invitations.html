@@ -4,57 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invitations - CollabNexus</title>
-  <link rel="stylesheet" href="css/projectStyle.css">
   <link rel="stylesheet" href="css/invitations.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between h-20">
-          <div class="flex items-center">
-            <a href="dashboard.html" class="flex-shrink-0 flex items-center">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+          <a href="dashboard.html" class="logo">
               <i class="fas fa-book-open book-logo"></i>
-              <span class="font-playfair text-xl font-bold text-research-dark">
-                CollabNexus
-              </span>
-            </a>
-            <div class="hidden sm:ml-10 sm:flex sm:space-x-8">
-              <a href="/researcher" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Dashboard
-              </a>
-              <a href="/projects" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Projects
-              </a>
-              <a href="/collaborations" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Collaborators
-              </a>
-              <a href="/invitations" class="border-research-primary text-research-primary hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Invitations
-              </a>
-              <a href="/messaging" class="border-transparent text-gray-500 hover:border-research-accent hover:text-research-accent inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                Messages
-              </a>
-            </div>
-          </div>
-          <div class="hidden md:flex items-center space-x-4">
-            <button id="logout-btn" class="text-research-accent border-research-accent hover:bg-research-light hover:text-research-accent px-4 py-2 rounded border">
-              Logout
-            </button>
-          </div>
-          <div class="flex items-center md:hidden">
-            <button id="mobile-menu-button" class="text-gray-500 hover:text-research-accent">
-              <i class="fas fa-bars"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <main class="page-container">
-    <section class="page-header">
+              CollabNexus
+          </a>
+          <ul class="nav-links">
+              <li><a href="dashboard.html" ><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+              <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
+              <li><a href="projects.html"><i class="fas fa-project-diagram"></i> My Projects</a></li>
+              <li><a href="invitations.html" class="active"><i class="fas fa-users"></i> Invitations</a></li>
+              <li><a href="funding.html"><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
+              <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+          </ul>
+          <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </nav>
+  <main class="admin-proposal">
+    <section class="proposal-header">
       <div class="page-title-container">
         <h1 class="page-title">Research Invitations</h1>
         <p class="page-subtitle">Manage project invitations you've sent and received from other researchers.</p>
@@ -284,7 +257,7 @@
     </section>
   </footer>
   <script src="js/main.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="../../js/auth.js"></script>
   <script src="js/invitations.js"></script>
 </body>
 </html>

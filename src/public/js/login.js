@@ -1,3 +1,4 @@
+// Updated login.js with session storage handling
 // DOM Elements
 const loginForm = document.getElementById('loginForm');
 const emailInput = document.getElementById('email');
@@ -131,6 +132,31 @@ function getDashboardUrlByRole(role) {
   }
 }
 
+/**
+ * Store user data in session storage
+ * @param {object} user - User data to store
+ */
+function storeUserInSession(user) {
+  try {
+    // Store essential user data in sessionStorage
+    sessionStorage.setItem('user', JSON.stringify({
+      id: user.id,
+      email: user.email,
+      role: user.user_metadata?.role || 'researcher',
+      name: user.user_metadata?.name || '',
+      picture: user.user_metadata?.picture || ''
+    }));
+    
+    // Store tokens in sessionStorage
+    if (user.session) {
+      sessionStorage.setItem('access_token', user.session.access_token);
+      sessionStorage.setItem('refresh_token', user.session.refresh_token);
+    }
+  } catch (error) {
+    console.error('Error storing user in sessionStorage:', error);
+  }
+}
+
 // Form submission
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
@@ -211,15 +237,14 @@ if (loginForm) {
         }
       }
       
-      // Save authentication data - Store user in a consistent way to match auth.js
-      localStorage.setItem('supabaseUser', JSON.stringify(data.user));
+      // Store user data in session storage
+      storeUserInSession(data.user);
       
       // Show success message
       formStatus.textContent = 'Login successful! Redirecting...';
       formStatus.className = 'form-status-message success';
       
       // Get the user's role from the user metadata
-      // Supabase stores custom user data in the user.user_metadata object
       const userRole = data.user?.user_metadata?.role || 'researcher';
       
       // Get the appropriate dashboard URL based on role
@@ -241,3 +266,14 @@ if (loginForm) {
     }
   });
 }
+
+// Handle Google login callback
+window.addEventListener('load', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const error = urlParams.get('error');
+  
+  if (error) {
+    formStatus.textContent = `Google login failed: ${error}`;
+    formStatus.className = 'form-status-message error';
+  }
+});

@@ -1,6 +1,8 @@
 /**
  * Admin Dashboard JavaScript
  * Manages the display and interaction with research proposals using API
+ * Now properly determines proposal assignment status from the /api/proposals database
+ * Modified to hide "Assign Reviewers" button for already assigned proposals
  */
 document.addEventListener('DOMContentLoaded', function() {
     // API Endpoints - Dynamically select between local and production URLs
@@ -13,10 +15,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const API_URL = `${BASE_URL}/api/projects`;
     const USERS_API_URL = `${BASE_URL}/api/users`;
+    const PROPOSALS_API_URL = `${BASE_URL}/api/proposals`;
     
-    // Store for proposals and reviewers
+    // Store for proposals, reviewers, and assignments
     let projectsData = [];
     let reviewersData = [];
+    let assignmentData = []; // Track all proposal assignments
     
     // DOM elements
     const proposalsList = document.getElementById('proposals-list');
@@ -121,9 +125,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the dashboard
     function initDashboard() {
-        fetchProjects();
+        fetchAllProposalAssignments()
+            .then(() => fetchProjects())
+            .catch(error => {
+                console.error('Error initializing dashboard:', error);
+                displayErrorMessage('Failed to initialize the dashboard. Please try again later.');
+            });
+        
         initReviewerProfileElements();
         setupEventListeners();
+    }
+
+    // Fetch all proposal assignments from API
+    async function fetchAllProposalAssignments() {
+        try {
+            const response = await fetch(PROPOSALS_API_URL);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            assignmentData = await response.json();
+            return assignmentData;
+        } catch (error) {
+            console.error('Error fetching proposal assignments:', error);
+            assignmentData = [];
+            throw error;
+        }
     }
 
     // Fetch projects from API
@@ -145,13 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch reviewers from API
     async function fetchReviewers(searchParams = {}) {
         try {
-            // Construct query parameters based on searchParams object
             const queryParams = new URLSearchParams();
-            
-            // Add promoted-role=reviewer as a default filter
             queryParams.append('promoted-role', 'reviewer');
             
-            // Add any additional search parameters
             for (const [key, value] of Object.entries(searchParams)) {
                 if (value) {
                     queryParams.append(key, value);
@@ -183,13 +206,23 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
+    // Check if a project has been assigned to reviewers
+    function isProjectAssigned(projectId) {
+        return assignmentData.some(assignment => assignment.project_id === projectId);
+    }
+
+    // Get assignment status for a project
+    function getProjectAssignmentStatus(projectId) {
+        return isProjectAssigned(projectId) ? 'assigned' : 'pending';
+    }
+
     // Load proposals based on filters
     function loadProposals() {
         proposalsList.innerHTML = '';
         
         const filteredProposals = projectsData.filter(project => {
-            // Map the database fields to our UI fields
-            const status = project.reviewer ? 'in-review' : 'pending';
+            // Determine status based on assignments in the database
+            const status = getProjectAssignmentStatus(project.id);
             const area = project.key_research_area || '';
             
             const statusMatch = currentFilters.status === 'all' || status === currentFilters.status;
@@ -207,12 +240,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Display proposals with sequential numbering from 1
         filteredProposals.forEach((project, index) => {
             const row = document.createElement('tr');
-            row.dataset.id = project.id; // Keep original ID in dataset for reference
+            row.dataset.id = project.id;
             
-            const displayIndex = index + 1; // Start numbering from 1
+            const displayIndex = index + 1;
             
             const startDate = project.start_date ? new Date(project.start_date).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -220,7 +252,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 day: 'numeric'
             }) : 'N/A';
             
-            const status = project.status || (project.reviewer ? 'in-review' : 'pending');
+            // Get status based on actual assignments
+            const status = getProjectAssignmentStatus(project.id);
             const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
             const statusClass = `status-${status}`;
             
@@ -253,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Open proposal details modal
-    function openProposalDetails(proposalId) {
+    async function openProposalDetails(proposalId) {
         currentProposal = projectsData.find(p => p.id === proposalId);
         
         if (!currentProposal) return;
@@ -264,18 +297,16 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'numeric'
         }) : 'N/A';
         
-        // Capturing status for current project
-        const status = currentProposal.status || (currentProposal.reviewer ? 'in-review' : 'pending');
+        // Get status based on actual assignments
+        const status = getProjectAssignmentStatus(proposalId);
         const displayStatus = status.charAt(0).toUpperCase() + status.slice(1);
         
-        // Extract concepts from description (assuming they might be stored there)
         const concepts = currentProposal.description ? 
             extractKeywords(currentProposal.description) : 
             ['No concepts available'];
         
-        // Find the display index of the current proposal
         const filteredProposals = projectsData.filter(project => {
-            const status = project.reviewer ? 'in-review' : 'pending';
+            const status = getProjectAssignmentStatus(project.id);
             const area = project.key_research_area || '';
             
             const statusMatch = currentFilters.status === 'all' || status === currentFilters.status;
@@ -288,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update modal content
         modalElements.title.textContent = currentProposal.project_title;
-        modalElements.id.textContent = displayIndex; // Display sequential number instead of DB ID
+        modalElements.id.textContent = displayIndex;
         modalElements.researcher.textContent = currentProposal.researcher_name;
         modalElements.date.textContent = startDate;
         modalElements.area.textContent = currentProposal.key_research_area || 'N/A';
@@ -304,26 +335,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Display assigned reviewers
-        modalElements.reviewers.innerHTML = '';
-        if (!currentProposal.reviewer) {
-            const li = document.createElement('li');
-            li.textContent = 'No reviewers assigned yet.';
-            modalElements.reviewers.appendChild(li);
+        await displayAssignedReviewers(proposalId);
+        
+        // Show or hide the assign reviewers button based on assignment status
+        if (status === 'assigned') {
+            modalElements.assignBtn.style.display = 'none';
         } else {
-            const li = document.createElement('li');
-            li.textContent = currentProposal.reviewer;
-            modalElements.reviewers.appendChild(li);
+            modalElements.assignBtn.style.display = 'block';
         }
         
         // Show the modal
         proposalModal.showModal();
     }
     
+    // Display assigned reviewers for a proposal
+    async function displayAssignedReviewers(proposalId) {
+        try {
+            // Filter assignments for this project from already loaded assignment data
+            const projectAssignments = assignmentData.filter(assignment => assignment.project_id === proposalId);
+            
+            modalElements.reviewers.innerHTML = '';
+            
+            if (!projectAssignments || projectAssignments.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No reviewers assigned yet.';
+                modalElements.reviewers.appendChild(li);
+            } else {
+                // Ensure we have reviewer data available
+                if (reviewersData.length === 0) {
+                    reviewersData = await fetchReviewers();
+                }
+                
+                for (const assignment of projectAssignments) {
+                    const li = document.createElement('li');
+                    const reviewer = reviewersData.find(r => r.id === assignment.reviewerId);
+                    li.textContent = reviewer ? reviewer.name : `Reviewer ID: ${assignment.reviewerId}`;
+                    modalElements.reviewers.appendChild(li);
+                }
+            }
+        } catch (error) {
+            console.error('Error displaying assigned reviewers:', error);
+            const li = document.createElement('li');
+            li.textContent = 'Error loading reviewer assignments.';
+            modalElements.reviewers.appendChild(li);
+        }
+    }
+    
     // Helper function to extract keywords/concepts from text
     function extractKeywords(text) {
         if (!text) return ['N/A'];
         
-        // Simple keyword extraction (can be improved)
         const words = text.split(/\s+/);
         const capitalizedWords = words.filter(word => 
             word.length > 3 && 
@@ -342,22 +403,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!currentProposal) return;
         
-        // Update modal content
+        // Check if proposal is already assigned
+        const status = getProjectAssignmentStatus(proposalId);
+        if (status === 'assigned') {
+            alert('This proposal already has assigned reviewers.');
+            return;
+        }
+        
         assignModalElements.title.textContent = currentProposal.project_title;
         assignModalElements.reviewersList.innerHTML = '';
         assignModalElements.searchInput.value = '';
         
-        // Display loading indicator
         const loadingItem = document.createElement('li');
         loadingItem.classList.add('info-message');
         loadingItem.textContent = 'Loading reviewers...';
         assignModalElements.reviewersList.appendChild(loadingItem);
         
-        // Show the modal
         assignReviewerModal.showModal();
         
-        // Fetch all reviewers initially
         try {
+            // First ensure the reviewers data is loaded
             const reviewers = await fetchReviewers();
             displayReviewersList(reviewers);
         } catch (error) {
@@ -378,15 +443,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Get currently assigned reviewers for this project
+        const assignedReviewerIds = assignmentData
+            .filter(assignment => assignment.project_id === currentProposal.id)
+            .map(assignment => assignment.reviewerId);
+        
         reviewers.forEach(reviewer => {
-            // Skip if already assigned to this proposal
-            if (currentProposal.reviewer === reviewer.name) return;
+            // Skip already assigned reviewers
+            if (assignedReviewerIds.includes(reviewer.id)) return;
             
             const li = document.createElement('li');
             li.classList.add('reviewer-item');
             li.dataset.id = reviewer.id;
             
-            // Calculate research match score (example algorithm)
             const matchScore = calculateMatchScore(reviewer, currentProposal);
             const matchClass = matchScore > 80 ? 'high-match' : 
                              matchScore > 50 ? 'medium-match' : 'low-match';
@@ -409,7 +478,6 @@ document.addEventListener('DOMContentLoaded', function() {
             assignModalElements.reviewersList.appendChild(li);
         });
         
-        // Add event listeners to buttons
         document.querySelectorAll('.view-profile-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const reviewerId = this.getAttribute('data-id');
@@ -439,12 +507,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Calculate match score between reviewer and proposal
     function calculateMatchScore(reviewer, proposal) {
-        // This is a simplified example - in real world this would be more complex
         if (!reviewer || !proposal) return 0;
         
         let score = 0;
         
-        // Research area match (highest weight)
         if (reviewer.research_area && proposal.key_research_area) {
             if (reviewer.research_area.toLowerCase() === proposal.key_research_area.toLowerCase()) {
                 score += 60;
@@ -454,7 +520,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Research experience (medium weight)
         if (reviewer.research_experience) {
             if (reviewer.research_experience > 10) {
                 score += 30;
@@ -465,7 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Department match (lower weight)
         if (reviewer.department && proposal.department) {
             if (reviewer.department.toLowerCase() === proposal.department.toLowerCase()) {
                 score += 10;
@@ -486,7 +550,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         currentReviewer = reviewer;
         
-        // Update profile modal content
         reviewerProfileElements.name.textContent = reviewer.name || 'N/A';
         reviewerProfileElements.role.textContent = reviewer.role || 'N/A';
         reviewerProfileElements.department.textContent = reviewer.department || 'N/A';
@@ -498,25 +561,84 @@ document.addEventListener('DOMContentLoaded', function() {
         reviewerProfileElements.qualifications.textContent = reviewer.qualifications || 'N/A';
         reviewerProfileElements.currentProject.textContent = reviewer.current_project || 'N/A';
         
-        // Show the profile modal
         reviewerProfileModal.showModal();
+    }
+    
+    // Assign reviewer to the current proposal
+    async function assignReviewer(reviewer) {
+        if (!currentProposal || !reviewer) return;
+        
+        try {
+            const assignmentData = {
+                project_id: currentProposal.id,
+                project_name: currentProposal.project_title,
+                reviewerId: reviewer.id,
+                researcherId: currentProposal.researcher_id || 'REV456',
+                rating: null,
+                review_message: null,
+                created_at: new Date().toISOString()
+            };
+
+            console.log('Sending assignment data:', JSON.stringify(assignmentData, null, 2));
+            
+            const response = await fetch(PROPOSALS_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(assignmentData)
+            });
+
+            const responseText = await response.text();
+            let responseData;
+            
+            try {
+                responseData = responseText ? JSON.parse(responseText) : {};
+            } catch (e) {
+                console.warn('Could not parse JSON response:', responseText);
+                responseData = { message: responseText };
+            }
+
+            console.log('Server response:', {
+                status: response.status,
+                data: responseData
+            });
+
+            if (!response.ok) {
+                throw new Error(responseData.message || `Server responded with status ${response.status}`);
+            }
+            
+            // Refresh assignment data and projects data
+            await fetchAllProposalAssignments();
+            
+            assignReviewerModal.close();
+            reviewerProfileModal.close();
+            
+            alert(`Successfully assigned ${reviewer.name} to review "${currentProposal.project_title}"`);
+            
+            // Refresh the proposal list
+            await fetchProjects();
+            
+        } catch (error) {
+            console.error('Assignment failed:', {
+                error: error.toString(),
+                stack: error.stack
+            });
+            alert(`Failed to assign reviewer: ${error.message}`);
+        }
     }
     
     // Search for available reviewers
     async function searchReviewers(searchTerm) {
         assignModalElements.reviewersList.innerHTML = '';
         
-        // Display loading indicator
         const loadingItem = document.createElement('li');
         loadingItem.classList.add('info-message');
         loadingItem.textContent = 'Searching reviewers...';
         assignModalElements.reviewersList.appendChild(loadingItem);
         
         try {
-            // Parse search term to extract possible filters
             const searchParams = parseSearchTerm(searchTerm);
-            
-            // Fetch reviewers with search parameters
             const reviewers = await fetchReviewers(searchParams);
             displayReviewersList(reviewers);
         } catch (error) {
@@ -533,19 +655,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return params;
         }
         
-        // Check for department: pattern
         const deptMatch = searchTerm.match(/department:([^\s,]+)/i);
         if (deptMatch) {
             params.department = deptMatch[1].trim();
         }
         
-        // Check for area: pattern
         const areaMatch = searchTerm.match(/area:([^\s,]+)/i);
         if (areaMatch) {
             params.research_area = areaMatch[1].trim();
         }
         
-        // If no specific patterns found, use as general search term
         if (!deptMatch && !areaMatch) {
             params.search = searchTerm.trim();
         }
@@ -553,66 +672,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return params;
     }
     
-    // Assign reviewer to the current proposal
-    async function assignReviewer(reviewer) {
-        if (!reviewer || !currentProposal) {
-            console.error('Missing reviewer or proposal data');
-            return;
-        }
-        
-        try {
-            // Update project with reviewer information
-            const response = await fetch(`${API_URL}/${currentProposal.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    reviewer: reviewer.name,
-                    reviewer_id: reviewer.id,
-                    status: 'in-review'
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            // Update local data
-            currentProposal.reviewer = reviewer.name;
-            currentProposal.reviewer_id = reviewer.id;
-            currentProposal.status = 'in-review';
-            
-            // Close modals
-            assignReviewerModal.close();
-            reviewerProfileModal.close();
-            
-            // Refetch data to ensure we have the latest
-            await fetchProjects();
-            
-            // Show a success message
-            alert(`Reviewer "${reviewer.name}" successfully assigned to "${currentProposal.project_title}"`);
-            
-        } catch (error) {
-            console.error('Error assigning reviewer:', error);
-            alert('Failed to assign reviewer. Please try again later.');
-            
-            // For prototype purposes, update the UI even if the API call fails
-            currentProposal.reviewer = reviewer.name;
-            currentProposal.reviewer_id = reviewer.id;
-            currentProposal.status = 'in-review';
-            
-            // Close modals
-            assignReviewerModal.close();
-            reviewerProfileModal.close();
-            
-            loadProposals();
-        }
-    }
-    
     // Setup event listeners
     function setupEventListeners() {
-        // Filter form submission
         filterForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
@@ -622,7 +683,6 @@ document.addEventListener('DOMContentLoaded', function() {
             loadProposals();
         });
         
-        // Close modals when clicking the close button
         document.querySelectorAll('.close-modal').forEach(button => {
             button.addEventListener('click', function() {
                 proposalModal.close();
@@ -631,7 +691,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Close modals when clicking outside the content
         window.addEventListener('click', function(e) {
             if (e.target === proposalModal) {
                 proposalModal.close();
@@ -644,19 +703,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Assign reviewers button in proposal details modal
         modalElements.assignBtn.addEventListener('click', function() {
+            // Double check the current proposal's status before proceeding
+            if (getProjectAssignmentStatus(currentProposal.id) === 'assigned') {
+                alert('This proposal already has assigned reviewers.');
+                return;
+            }
+            
             proposalModal.close();
             openAssignReviewers(currentProposal.id);
         });
         
-        // Search reviewers button
         assignModalElements.searchBtn.addEventListener('click', function(e) {
             e.preventDefault();
             searchReviewers(assignModalElements.searchInput.value);
         });
         
-        // Search input enter key
         assignModalElements.searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -664,14 +726,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Select reviewer from profile modal
         reviewerProfileElements.selectBtn.addEventListener('click', function() {
             if (currentReviewer) {
                 assignReviewer(currentReviewer);
             }
         });
         
-        // Logout button functionality
         document.getElementById('logout-btn').addEventListener('click', function(e) {
             e.preventDefault();
             if (confirm('Are you sure you want to log out?')) {

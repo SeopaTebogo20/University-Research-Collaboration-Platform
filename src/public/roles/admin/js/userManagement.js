@@ -146,6 +146,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up event listeners
     function setupEventListeners() {
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure you want to log out?')) {
+                // Clear session/local storage
+                localStorage.removeItem('adminName');
+                localStorage.removeItem('adminToken');
+
+                // Replace current history state so user can't go "back"
+                window.location.replace('../../../login.html');
+            }
+        });
+    }
+    // Set up event listeners
+    function setupEventListeners() {
         // Search form submission
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();

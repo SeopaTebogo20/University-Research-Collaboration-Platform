@@ -3,16 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>Assigned Proposals - CollabNexus Research Hub</title>
     <meta name="description" content="Assigned proposals for review on CollabNexus Research Hub">
     <meta name="author" content="CollabNexus">
     
     <meta property="og:title" content="Assigned Proposals - CollabNexus Research Hub">
     <meta property="og:description" content="Assigned proposals for review on CollabNexus Research Hub">
+=======
+    <title>Reviewer Dashboard - CollabNexus Research Hub</title>
+    <meta name="description" content="Reviewer dashboard for CollabNexus Research Hub">
+    <meta name="author" content="CollabNexus">
+    
+    <meta property="og:title" content="Reviewer Dashboard - CollabNexus Research Hub">
+    <meta property="og:description" content="Reviewer dashboard for CollabNexus Research Hub">
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
     <meta property="og:type" content="website">
     
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/reviewer-styles.css">
+<<<<<<< HEAD
+=======
+    <link rel="stylesheet" href="css/reviewer-proposals.css">
+    <link rel="stylesheet" href="css/reviewer-styles-enhanced.css">
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .proposals-table {
@@ -249,21 +263,21 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="reviewer-dashboard.html" class="logo">
+        <a href="dashboard.html" class="logo">
             <i class="fas fa-book-open book-logo"></i>
             CollabNexus
         </a>
         <ul class="nav-links">
-            <li><a href="reviewer-dashboard.html"><i class="fas fa-dashboard"></i> Dashboard</a></li>
+            <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li><a href="proposals.html" class="active"><i class="fas fa-clipboard-list"></i> Assigned Proposals</a></li>
-            <li><a href="history.html"><i class="fas fa-history"></i> Review History</a></li>
             <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
         </ul>
+        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </nav>
 
     <main class="reviewer-dashboard">
         <header class="dashboard-header">
+<<<<<<< HEAD
             <h1>Assigned Proposals</h1>
             <p>All proposals assigned to you for evaluation. You can edit your reviews at any time.</p>
         </header>
@@ -271,6 +285,42 @@
         <section class="proposals-card">
             <header class="card-header">
                 <h2>Proposals List</h2>
+=======
+            <h1>Review Proposals</h1>
+            <p>Review all proposals assigned to you.</p>
+        </header>
+
+        <section class="review-stats">
+            <article class="stat-card">
+                <i class="fas fa-clock stat-icon"></i>
+                <h3>Pending Reviews</h3>
+                <p class="stat-number">0</p>
+                <p class="stat-detail">Needs your evaluation</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-check-circle stat-icon"></i>
+                <h3>Completed Reviews</h3>
+                <p class="stat-number">0</p>
+                <p class="stat-detail">This month</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-calendar-alt stat-icon"></i>
+                <h3>Upcoming Deadlines</h3>
+                <p class="stat-number">0</p>
+                <p class="stat-detail">Due this week</p>
+            </article>
+            <article class="stat-card">
+                <i class="fas fa-star stat-icon"></i>
+                <h3>Your Rating</h3>
+                <p class="stat-number">0</p>
+                <p class="stat-detail">Out of 5</p>
+            </article>
+        </section>
+
+        <section class="proposals-card">
+            <header class="card-header">
+                <h2>Assigned Proposals</h2>
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
                 <fieldset class="filter-controls">
                     <select class="styled-select">
                         <option value="all">All Proposals</option>
@@ -289,13 +339,20 @@
                     <tr>
                         <th>Title</th>
                         <th>Author</th>
+<<<<<<< HEAD
                         <th>Submission Date</th>
                         <th>Status</th>
                         <th>Feedback Preview</th>
+=======
+                        <th>Research Area</th>
+                        <th>Submission Date</th>
+                        <th>Status</th>
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
+<<<<<<< HEAD
                     <tr>
                         <td>Novel Approaches to Quantum Computing</td>
                         <td>Dr. Sarah Chen</td>
@@ -336,6 +393,9 @@
                         <td class="feedback-preview">Excellent proposal with clear methodology and significant potential impact...</td>
                         <td><button class="btn btn-primary edit-btn" data-proposal="renewable-energy">Edit</button></td>
                     </tr>
+=======
+                    <!-- Will be populated by JavaScript -->
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
                 </tbody>
             </table>
         </section>
@@ -348,8 +408,13 @@
                 <button class="close-modal" aria-label="Close modal">×</button>
             </header>
             <section class="modal-body">
+<<<<<<< HEAD
                 <h3 id="proposal-title">Novel Approaches to Quantum Computing</h3>
                 <p class="proposal-meta">By <em id="proposal-author">Dr. Sarah Chen</em> • Submitted <time id="proposal-date">April 28, 2025</time></p>
+=======
+                <h3 id="proposal-title">Loading proposal...</h3>
+                <p class="proposal-meta">By <em id="proposal-author">Loading author...</em> • Submitted <time id="proposal-date">Loading date...</time></p>
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
                 
                 <form id="evaluation-form">
                     <fieldset class="form-group">
@@ -390,7 +455,11 @@
                     
                     <footer class="modal-footer">
                         <button type="button" class="btn btn-outline cancel-btn">Cancel</button>
+<<<<<<< HEAD
                         <button type="submit" class="btn btn-primary">Save Changes</button>
+=======
+                        <button type="submit" class="btn btn-primary">Submit Evaluation</button>
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
                     </footer>
                 </form>
             </section>
@@ -437,6 +506,10 @@
     </footer>
 
     <script src="js/reviewer-dashboard.js"></script>
+<<<<<<< HEAD
     <script src="js/proposal-detalis.js"></script>
+=======
+    <script src="../../js/auth.js"></script>
+>>>>>>> eeef101c87724dfd72b0e8986adc09918a570be1
 </body>
 </html>

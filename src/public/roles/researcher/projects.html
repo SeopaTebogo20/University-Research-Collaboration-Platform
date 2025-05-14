@@ -4,34 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects - CollabNexus</title>
-    <link rel="stylesheet" href="css/projects.css">
+
     <link rel="stylesheet" href="css/projects1.css">
     <link rel="stylesheet" href="css/projects2.css">
     <link rel="stylesheet" href="css/projectStyle.css">
+    <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <nav class="navbar">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between h-20">
-          <div class="flex items-center">
-            <a href="dashboard.html" class="flex-shrink-0 flex items-center">
-              <i class="fas fa-book-open book-logo"></i>
-              <span class="font-playfair text-xl font-bold text-research-dark">
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <a href="dashboard.html" class="logo">
+                <i class="fas fa-book-open book-logo"></i>
                 CollabNexus
-              </span>
             </a>
-            
-          </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html" ><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
+                <li><a href="projects.html" class="active"><i class="fas fa-project-diagram"></i> My Projects</a></li>
+                <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
+                <li><a href="funding.html"><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
+                <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+            </ul>
+            <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </nav>
 
-        </div>
-      </div>
-    </nav>
-  </header>
-
-    <main class="container">
-        <section class="page-header">
+    <main class="admin-proposal">
+        <section class="proposal-header">
             <div class="page-title-container">
                 <h1 class="page-title">Research Projects</h1>
                 <p class="page-subtitle">Create and manage your research projects, invite collaborators, and track progress.</p>
@@ -309,5 +308,6 @@
 </footer>
 
     <script src="js/projects.js"></script>
+    <script src="../../js/auth.js"></script>
 </body>
 </html>

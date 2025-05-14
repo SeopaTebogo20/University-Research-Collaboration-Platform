@@ -11,6 +11,9 @@ const invitationRouter = require('./public/roles/routes/received_invitations-api
 const proposalRouter = require('./public/roles/routes/assigned-proposals-api'); 
 const usersRouter = require('./public/roles/routes/users-api');
 const collaboratorsRouter = require('./public/roles/routes/collaborators-api');  
+const milestonesRouter = require('./public/roles/routes/milestones-api');
+const fundingRouter = require('./public/roles/routes/funding-api');
+const mydashboardRouter = require('./public/roles/routes/mydashboard-api');
 const jwt = require('jsonwebtoken'); // You'll need to install jsonwebtoken
 
 // Create the Express application
@@ -71,6 +74,9 @@ app.use('/api/invitations', invitationsRouter);
 app.use('/api/received_invitations', invitationRouter);
 app.use('/api/proposals', proposalRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/funding', fundingRouter);
+app.use('/api/mydashboard', mydashboardRouter);
+app.use('/api/milestones', milestonesRouter);
 app.use('/api/collaborators', collaboratorsRouter);
 
 // Custom middleware for logging
