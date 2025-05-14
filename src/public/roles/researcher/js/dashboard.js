@@ -8,10 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const PROJECTS_API = `${API_BASE_URL}/projects`;
     const MILESTONES_API = `${API_BASE_URL}/milestones`;
     const FUNDING_API = `${API_BASE_URL}/funding`;
-    const DASHBOARD_API = `${API_BASE_URL}/dashboard`;
+    const DASHBOARD_API = `${API_BASE_URL}/mydashboard`;
+    const COLLABORATORS_API = `${API_BASE_URL}/collaborators`;
     
     // Mock user ID - in a real app, this would come from authentication
-    const CURRENT_USER_ID = '123e4567-e89b-12d3-a456-426614174000';
+    const CURRENT_USER_ID = 'ae3a44c8-562f-4184-9753-931aed14c68d';
     
     // DOM elements
     const gridContainer = document.querySelector('.grid-stack');
@@ -107,6 +108,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load user's widgets from API
     async function loadUserWidgets() {
         try {
+            console.log('Loading user widgets from:', `${DASHBOARD_API}/widgets/${CURRENT_USER_ID}`);
             // In a real app, use proper error handling and loading states
             const response = await fetch(`${DASHBOARD_API}/widgets/${CURRENT_USER_ID}`);
             
@@ -115,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const widgets = await response.json();
+            console.log('Loaded widgets:', widgets);
             userWidgets = widgets;
             
             if (widgets.length === 0) {
@@ -140,12 +143,183 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Load AI-powered collaboration suggestions
+    async function loadCollaborationSuggestions() {
+        // Check if AI suggestions widget exists, if not, don't load
+        const aiSuggestionWidgets = document.querySelectorAll('.ai-suggestions-widget');
+        if (aiSuggestionWidgets.length === 0) return;
+        
+        aiSuggestionWidgets.forEach(async widget => {
+            const suggestionsList = widget.querySelector('.ai-suggestions-list');
+            if (!suggestionsList) return;
+            
+            suggestionsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Generating AI suggestions...</div>';
+            
+            try {
+                // In a real app, this would call an AI API
+                // Here we'll simulate AI-generated suggestions
+                await simulateAIProcessing();
+                
+                // Generate suggestions based on user's projects and milestones
+                const suggestions = await generateCollaborationSuggestions();
+                
+                if (suggestions.length === 0) {
+                    suggestionsList.innerHTML = '<div class="empty-widget">No suggestions available at this time. Add more projects to get personalized recommendations.</div>';
+                    return;
+                }
+                
+                suggestionsList.innerHTML = '';
+                
+                // Display suggestions
+                suggestions.forEach(suggestion => {
+                    const suggestionElement = document.createElement('div');
+                    suggestionElement.className = 'suggestion-item';
+                    
+                    suggestionElement.innerHTML = `
+                        <div class="suggestion-header">
+                            <div class="suggestion-icon ${suggestion.type}">
+                                <i class="fas ${getSuggestionIcon(suggestion.type)}"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <div class="suggestion-title">${suggestion.title}</div>
+                                <div class="suggestion-type">${capitalizeFirstLetter(suggestion.type)}</div>
+                            </div>
+                        </div>
+                        <p class="suggestion-description">${suggestion.description}</p>
+                        <div class="suggestion-tags">
+                            ${suggestion.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    `;
+                    
+                    suggestionsList.appendChild(suggestionElement);
+                });
+                
+            } catch (error) {
+                console.error('Error loading AI suggestions:', error);
+                suggestionsList.innerHTML = '<div class="error-state">Error generating suggestions.</div>';
+            }
+        });
+    }
+    
+    // Simulate AI processing delay
+    function simulateAIProcessing() {
+        return new Promise(resolve => setTimeout(resolve, 1200));
+    }
+    
+    // Generate collaboration suggestions based on user data
+    async function generateCollaborationSuggestions() {
+        try {
+            // In a real app, these would come from an AI service
+            // Here we'll create simulated suggestions
+            const milestoneResponse = await fetch(`${MILESTONES_API}/upcoming/30`);
+            const projectsResponse = await fetch(PROJECTS_API);
+            const collaboratorsResponse = await fetch(COLLABORATORS_API);
+            
+            if (!milestoneResponse.ok || !projectsResponse.ok || !collaboratorsResponse.ok) {
+                throw new Error('Failed to fetch data for suggestions');
+            }
+            
+            const upcomingMilestones = await milestoneResponse.json();
+            const projects = await projectsResponse.json();
+            const collaborators = await collaboratorsResponse.json();
+            
+            // Generate suggestions
+            const suggestions = [
+                {
+                    type: 'collaboration',
+                    title: 'Potential research synergy detected',
+                    description: 'Dr. Emily Chen\'s work on quantum computing aligns with your current research goals. Consider reaching out for a potential collaboration.',
+                    tags: ['Quantum Computing', 'Research Synergy', 'Networking']
+                },
+                {
+                    type: 'milestone',
+                    title: 'Upcoming milestone risk identified',
+                    description: 'Your "Literature Review" milestone is at risk based on current progress. Consider allocating more resources or extending the timeline.',
+                    tags: ['Risk Management', 'Timeline Adjustment']
+                },
+                {
+                    type: 'funding',
+                    title: 'Grant opportunity detected',
+                    description: 'The National Science Foundation has a new grant program that matches your research profile. Application deadline is in 30 days.',
+                    tags: ['NSF Grant', 'Funding Opportunity']
+                },
+                {
+                    type: 'project',
+                    title: 'Project efficiency improvement',
+                    description: 'Consolidating your "Data Collection" phases across projects could save an estimated 45 hours of work.',
+                    tags: ['Efficiency', 'Resource Optimization']
+                },
+                {
+                    type: 'resource',
+                    title: 'Relevant research paper found',
+                    description: 'New paper published in Nature that cites your work and extends on your methodology. May provide insights for your current project.',
+                    tags: ['Recent Publication', 'Citation', 'Methodology']
+                }
+            ];
+            
+            // Add project-specific and milestone-specific suggestions when available
+            if (projects.length > 0) {
+                const randomProject = projects[Math.floor(Math.random() * projects.length)];
+                
+                suggestions.push({
+                    type: 'collaboration',
+                    title: `Team expansion for "${randomProject.project_title}"`,
+                    description: `Based on project scope, adding a data scientist to your team could accelerate progress on "${randomProject.project_title}".`,
+                    tags: ['Team Composition', 'Data Science', 'Project Acceleration']
+                });
+            }
+            
+            if (upcomingMilestones.length > 0) {
+                const randomMilestone = upcomingMilestones[Math.floor(Math.random() * upcomingMilestones.length)];
+                
+                suggestions.push({
+                    type: 'milestone',
+                    title: `Resource allocation for "${randomMilestone.title}"`,
+                    description: `Milestone "${randomMilestone.title}" may require additional computational resources based on similar past milestones.`,
+                    tags: ['Resource Planning', 'Computational Resources']
+                });
+            }
+            
+            // Shuffle and limit suggestions
+            return shuffleArray(suggestions).slice(0, 5);
+            
+        } catch (error) {
+            console.error('Error generating suggestions:', error);
+            return [];
+        }
+    }
+    
+    // Shuffle array (Fisher-Yates algorithm)
+    function shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+    
+    // Get icon based on suggestion type
+    function getSuggestionIcon(type) {
+        switch(type) {
+            case 'collaboration': return 'fa-users';
+            case 'milestone': return 'fa-clipboard-list';
+            case 'funding': return 'fa-coins';
+            case 'project': return 'fa-project-diagram';
+            case 'resource': return 'fa-book';
+            default: return 'fa-lightbulb';
+        }
+    }
+    
     // Add widget to grid
     function addWidgetToGrid(widget) {
         const widgetElement = document.createElement('div');
         const widgetContent = getWidgetTemplate(widget.widget_type);
         
-        if (!widgetContent) return;
+        if (!widgetContent) {
+            console.error(`No template found for widget type: ${widget.widget_type}`);
+            return;
+        }
         
         // Set grid properties
         const gridOptions = {
@@ -156,6 +330,8 @@ document.addEventListener('DOMContentLoaded', function() {
             id: widget.id?.toString() || Date.now().toString(),
             content: widgetContent
         };
+        
+        console.log(`Adding widget to grid:`, gridOptions);
         
         // Add widget to grid
         const gridItem = grid.addWidget(widgetElement, gridOptions);
@@ -174,11 +350,15 @@ document.addEventListener('DOMContentLoaded', function() {
             'milestones': document.getElementById('milestones-widget-template'),
             'funding': document.getElementById('funding-widget-template'),
             'calendar': document.getElementById('calendar-widget-template'),
-            'recent_activity': document.getElementById('recent-activity-widget-template')
+            'recent_activity': document.getElementById('recent-activity-widget-template'),
+            'ai_suggestions': document.getElementById('ai-suggestions-widget-template')
         };
         
         const template = templates[widgetType];
-        if (!template) return null;
+        if (!template) {
+            console.error(`Widget template not found for type: ${widgetType}`);
+            return null;
+        }
         
         return template.content.cloneNode(true).firstElementChild.outerHTML;
     }
@@ -190,7 +370,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'milestones': 6,
             'funding': 12,
             'calendar': 6,
-            'recent_activity': 6
+            'recent_activity': 6,
+            'ai_suggestions': 6
         };
         
         return widthMap[widgetType] || 6;
@@ -203,7 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'milestones': 4,
             'funding': 8,
             'calendar': 6,
-            'recent_activity': 4
+            'recent_activity': 4,
+            'ai_suggestions': 5
         };
         
         return heightMap[widgetType] || 4;
@@ -245,6 +427,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load widget data based on type
     function loadWidgetData(widget, widgetType) {
+        console.log(`Loading data for widget type: ${widgetType}`);
+        
         switch(widgetType) {
             case 'projects':
                 loadProjectsData(widget);
@@ -261,12 +445,33 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'recent_activity':
                 loadActivityData(widget);
                 break;
+            case 'ai_suggestions':
+                loadAISuggestionsData(widget);
+                break;
+            default:
+                console.error(`Unknown widget type: ${widgetType}`);
         }
+    }
+    
+    // Load AI suggestions data
+    function loadAISuggestionsData(widget) {
+        const suggestionsList = widget.querySelector('.ai-suggestions-list');
+        if (!suggestionsList) {
+            console.error('AI suggestions list not found in widget');
+            return;
+        }
+        
+        suggestionsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Generating AI suggestions...</div>';
+        
+        // Use the existing function to load suggestions
+        loadCollaborationSuggestions();
     }
     
     // Load projects data
     async function loadProjectsData(widget) {
         const projectsList = widget.querySelector('.projects-list');
+        if (!projectsList) return;
+        
         projectsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</div>';
         
         try {
@@ -315,6 +520,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load milestones data
     async function loadMilestonesData(widget) {
         const milestonesList = widget.querySelector('.milestones-list');
+        if (!milestonesList) return;
+        
         milestonesList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</div>';
         
         try {
@@ -372,6 +579,8 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadFundingData(widget) {
         const fundingSummary = widget.querySelector('.funding-summary');
         const chartContainer = widget.querySelector('.funding-chart');
+        
+        if (!fundingSummary || !chartContainer) return;
         
         fundingSummary.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading funding data...</div>';
         
@@ -474,6 +683,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load calendar data
     async function loadCalendarData(widget) {
         const calendarContainer = widget.querySelector('.calendar-container');
+        if (!calendarContainer) return;
+        
         calendarContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading calendar...</div>';
         
         try {
@@ -658,6 +869,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load activity data
     async function loadActivityData(widget) {
         const activityList = widget.querySelector('.activity-list');
+        if (!activityList) return;
+        
         activityList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading activity...</div>';
         
         try {
@@ -786,6 +999,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add widget
     async function addWidget(widgetType) {
+        console.log(`Adding widget of type: ${widgetType}`);
+        
         // Hide empty dashboard state if visible
         emptyDashboard.classList.add('hidden');
         
@@ -800,6 +1015,8 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         try {
+            console.log('Saving widget to database:', widget);
+            
             // Save widget to database
             const response = await fetch(`${DASHBOARD_API}/widgets`, {
                 method: 'POST',
@@ -810,10 +1027,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(`HTTP error! Status: ${response.status}, Error: ${JSON.stringify(errorData)}`);
             }
             
             const savedWidget = await response.json();
+            console.log('Widget saved successfully:', savedWidget);
             
             // Add to local widgets array
             userWidgets.push(savedWidget);

@@ -878,70 +878,7 @@
     margin-bottom: 1rem;
   }
   
-  /* Footer Styles */
-  .footer {
-    background-color: var(--neutral-dark);
-    color: var(--white);
-    margin-top: 3rem;
-  }
-  
-  .footer .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1.5rem;
-  }
-  
-  .footer-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    padding: 2rem 0;
-  }
-  
-  .footer-column h3 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-  }
-  
-  .footer-logo {
-    display: flex;
-    align-items: center;
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-  }
-  
-  .footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .footer-links li {
-    margin-bottom: 0.5rem;
-  }
-  
-  .footer-links li a {
-    color: rgba(255, 255, 255, 0.7);
-    text-decoration: none;
-    transition: color 0.2s ease;
-  }
-  
-  .footer-links li a:hover {
-    color: var(--white);
-  }
-  
-  .footer-bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 1.5rem;
-    text-align: center;
-  }
-  
-  .footer-bottom small {
-    color: rgba(255, 255, 255, 0.7);
-  }
-  
+
   /* Notifications */
   .notification {
     position: fixed;

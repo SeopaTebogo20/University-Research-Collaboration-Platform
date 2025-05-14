@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
@@ -41,12 +40,21 @@ router.get('/widgets/:userId', async (req, res) => {
 // POST create or update widget
 router.post('/widgets', async (req, res) => {
   try {
-    console.log(`[${new Date().toISOString()}] Creating/updating dashboard widget`);
+    console.log(`[${new Date().toISOString()}] Creating/updating dashboard widget:`, req.body);
     
     const widget = req.body;
     
     if (!widget.user_id || !widget.widget_type) {
       return res.status(400).json({ message: 'Missing required widget details' });
+    }
+    
+    // Validate widget_type is allowed
+    const allowedWidgetTypes = ['projects', 'milestones', 'funding', 'calendar', 'recent_activity', 'ai_suggestions'];
+    if (!allowedWidgetTypes.includes(widget.widget_type)) {
+      return res.status(400).json({ 
+        message: `Invalid widget type. Allowed types: ${allowedWidgetTypes.join(', ')}`,
+        widget_type: widget.widget_type
+      });
     }
     
     // Check if widget already exists for this user
@@ -61,6 +69,7 @@ router.post('/widgets', async (req, res) => {
     let result;
     
     if (existingWidgets && existingWidgets.length > 0) {
+      console.log(`[${new Date().toISOString()}] Widget exists, updating:`, existingWidgets[0].id);
       // Update existing widget
       const { data, error } = await supabase
         .from('dashboard_widgets')
@@ -72,6 +81,7 @@ router.post('/widgets', async (req, res) => {
       if (error) throw error;
       result = data;
     } else {
+      console.log(`[${new Date().toISOString()}] Widget doesn't exist, creating new`);
       // Create new widget
       const { data, error } = await supabase
         .from('dashboard_widgets')
@@ -83,10 +93,11 @@ router.post('/widgets', async (req, res) => {
       result = data;
     }
     
+    console.log(`[${new Date().toISOString()}] Widget saved successfully:`, result);
     res.status(201).json(result);
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error saving dashboard widget:`, error);
-    res.status(500).json({ message: 'Error saving dashboard widget', error: error.message });
+    res.status(500).json({ message: 'Error saving dashboard widget', error });
   }
 });
 
