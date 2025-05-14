@@ -43,18 +43,21 @@
     box-sizing: border-box;
   }
   
-  /* Navbar Styles */
+  
+  
+  /* Navbar */
   .navbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background-color: var(--white);
-    padding: 0.75rem 1.25rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    justify-content: space-between;
+    background-color: var(--background-light);
+    padding: 0.75rem 2rem;
+    box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
     z-index: 100;
   }
+  
   
   .logo {
     display: flex;
@@ -1041,7 +1044,8 @@
     }
     
     .navbar {
-      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      flex-wrap: wrap;
     }
     
     .mobile-menu-toggle {
