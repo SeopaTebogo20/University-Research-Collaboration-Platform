@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const PROJECTS_API = `${API_BASE_URL}/projects`;
     const MILESTONES_API = `${API_BASE_URL}/milestones`;
     const FUNDING_API = `${API_BASE_URL}/funding`;
-    const DASHBOARD_API = `${API_BASE_URL}/dashboard`;
+    const DASHBOARD_API = `${API_BASE_URL}/mydashboard`;
     
     // Mock user ID - in a real app, this would come from authentication
-    const CURRENT_USER_ID = '123e4567-e89b-12d3-a456-426614174000';
+    const CURRENT_USER_ID = '87babb4c-2518-41bd-982e-bd235bdeaa54';
     
     // DOM elements
     const gridContainer = document.querySelector('.grid-stack');
