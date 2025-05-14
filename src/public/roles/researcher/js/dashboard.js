@@ -17,14 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let grid;
     let userWidgets = [];
+    let isInitialLoad = true;
     
     initApp();
     
     async function initApp() {
-        console.log('Initializing application...');
         setupEventListeners();
         
         try {
+            // Initialize GridStack with proper configuration
             grid = GridStack.init({
                 margin: 10,
                 cellHeight: 80,
@@ -32,23 +33,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 disableOneColumnMode: false,
                 float: false,
                 resizable: { handles: 'e,se,s,sw,w' },
-                acceptWidgets: true
+                acceptWidgets: true,
+                staticGrid: false
             });
             
-            console.log('GridStack initialized successfully');
             grid.on('change', saveWidgetPositions);
             
+            // Load widgets from localStorage first for immediate display
+            loadWidgetsFromLocalStorage();
+            
+            // Then try to load from server
             await loadUserWidgets();
+            
             loadingIndicator.style.display = 'none';
+            isInitialLoad = false;
         } catch (error) {
-            console.error('Error initializing grid:', error);
-            showNotification('Error initializing dashboard. Please refresh the page.', 'error');
+            console.error('Initialization error:', error);
             loadingIndicator.style.display = 'none';
+            
+            // If server load fails, use localStorage data
+            if (userWidgets.length === 0) {
+                emptyDashboard.classList.remove('hidden');
+            }
         }
     }
     
     function setupEventListeners() {
-        console.log('Setting up event listeners...');
         addWidgetBtn.addEventListener('click', openAddWidgetModal);
         emptyAddWidgetBtn.addEventListener('click', openAddWidgetModal);
         exportDashboardBtn.addEventListener('click', exportDashboardToPDF);
@@ -70,15 +80,30 @@ document.addEventListener('DOMContentLoaded', function() {
         widgetOptions.forEach(option => {
             option.addEventListener('click', () => {
                 const widgetType = option.getAttribute('data-widget-type');
-                console.log('Widget option clicked:', widgetType);
                 addWidget(widgetType);
                 addWidgetModal.style.display = 'none';
             });
         });
     }
     
+    function loadWidgetsFromLocalStorage() {
+        try {
+            const savedWidgets = localStorage.getItem(`dashboard_widgets_${CURRENT_USER_ID}`);
+            if (savedWidgets) {
+                userWidgets = JSON.parse(savedWidgets);
+                if (userWidgets.length > 0) {
+                    emptyDashboard.classList.add('hidden');
+                    userWidgets.forEach(widget => {
+                        addWidgetToGrid(widget);
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error loading from localStorage:', error);
+        }
+    }
+    
     async function loadUserWidgets() {
-        console.log('Loading user widgets...');
         try {
             const response = await fetch(`${DASHBOARD_API}/widgets/${CURRENT_USER_ID}`);
             
@@ -87,35 +112,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const widgets = await response.json();
-            console.log('Loaded widgets:', widgets);
             userWidgets = widgets;
             
-            if (widgets.length === 0) {
-                console.log('No widgets found - showing empty dashboard');
-                emptyDashboard.classList.remove('hidden');
-                return;
+            // Only update the display if this is the initial load
+            if (isInitialLoad) {
+                if (widgets.length === 0) {
+                    emptyDashboard.classList.remove('hidden');
+                    return;
+                }
+                
+                emptyDashboard.classList.add('hidden');
+                grid.removeAll();
+                
+                widgets.forEach(widget => {
+                    addWidgetToGrid(widget);
+                });
             }
             
-            emptyDashboard.classList.add('hidden');
-            
-            // Clear existing widgets first
-            grid.removeAll();
-            
-            // Add widgets one by one with a small delay to prevent rendering issues
-            for (const widget of widgets) {
-                await addWidgetToGrid(widget);
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
+            // Save to localStorage for offline use
+            localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
             
         } catch (error) {
             console.error('Error loading user widgets:', error);
-            showNotification('Error loading dashboard. Please try again later.', 'error');
-            emptyDashboard.classList.remove('hidden');
+            // Don't show error if we have localStorage data
+            if (userWidgets.length === 0) {
+                showNotification('Error loading dashboard. Using local data.', 'warning');
+            }
         }
     }
     
-    async function addWidgetToGrid(widget) {
-        console.log('Adding widget to grid:', widget);
+    function addWidgetToGrid(widget) {
         try {
             const widgetElement = document.createElement('div');
             widgetElement.classList.add('grid-stack-item');
@@ -133,54 +159,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 y: widget.position_y || 0,
                 w: widget.width || getDefaultWidgetWidth(widget.widget_type),
                 h: widget.height || getDefaultWidgetHeight(widget.widget_type),
-                id: widget.id?.toString() || Date.now().toString(),
+                id: widget.id?.toString() || `local_${Date.now().toString()}`,
                 noMove: false,
                 noResize: false,
                 locked: false
             };
             
-            console.log('Adding widget with options:', gridOptions);
             const gridItem = grid.addWidget(widgetElement, gridOptions);
             
-            if (!gridItem) {
-                throw new Error('Failed to add widget to grid');
-            }
-            
-            console.log('Widget added successfully:', gridItem);
             setupWidgetEventListeners(gridItem, widget.widget_type);
-            
-            // Load widget data after it's added to the grid
-            await loadWidgetData(gridItem, widget.widget_type);
+            loadWidgetData(gridItem, widget.widget_type);
             
             return gridItem;
         } catch (error) {
             console.error('Error adding widget to grid:', error);
-            showNotification(`Error adding ${widget.widget_type} widget`, 'error');
-            throw error;
+            return null;
         }
     }
     
     async function loadWidgetData(widgetElement, widgetType) {
-        console.log(`Loading data for ${widgetType} widget`);
-        try {
-            // Simulate data loading (replace with actual API calls)
-            const loadingElement = widgetElement.querySelector('.loading');
-            if (loadingElement) {
+        const loadingElement = widgetElement.querySelector('.loading');
+        if (loadingElement) {
+            loadingElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading ${widgetType} data...`;
+            
+            // Simulate data loading
+            setTimeout(() => {
+                loadingElement.innerHTML = `<i class="fas fa-check-circle"></i> ${capitalizeFirstLetter(widgetType)} data loaded`;
                 setTimeout(() => {
-                    loadingElement.innerHTML = `<i class="fas fa-check-circle"></i> ${capitalizeFirstLetter(widgetType)} data loaded`;
-                    setTimeout(() => {
-                        loadingElement.style.display = 'none';
-                        // Here you would populate actual data
-                    }, 1000);
-                }, 1500);
-            }
-        } catch (error) {
-            console.error(`Error loading data for ${widgetType} widget:`, error);
+                    loadingElement.style.display = 'none';
+                }, 1000);
+            }, 1500);
         }
     }
     
     function getWidgetTemplate(widgetType) {
-        console.log(`Getting template for ${widgetType}`);
         const templates = {
             'projects': document.getElementById('projects-widget-template'),
             'milestones': document.getElementById('milestones-widget-template'),
@@ -191,10 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         const template = templates[widgetType];
-        if (!template) {
-            console.error(`Template not found for ${widgetType}`);
-            return null;
-        }
+        if (!template) return null;
         
         return template.innerHTML;
     }
@@ -224,12 +233,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupWidgetEventListeners(widget, widgetType) {
-        console.log(`Setting up event listeners for ${widgetType} widget`);
-        
         const refreshBtn = widget.querySelector('.widget-refresh');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
-                console.log(`Refreshing ${widgetType} widget`);
                 showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)} widget...`, 'info');
                 loadWidgetData(widget, widgetType);
             });
@@ -238,13 +244,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const removeBtn = widget.querySelector('.widget-remove');
         if (removeBtn) {
             removeBtn.addEventListener('click', async () => {
-                console.log(`Removing ${widgetType} widget`);
                 const gridItem = widget.closest('.grid-stack-item');
                 const widgetId = gridItem.getAttribute('gs-id');
                 
                 try {
                     await removeWidgetFromDatabase(widgetId);
                     grid.removeWidget(gridItem, true);
+                    
+                    // Update local state
+                    userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
+                    localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
+                    
                     showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
                     
                     if (grid.engine.nodes.length === 0) {
@@ -259,7 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function openAddWidgetModal() {
-        console.log('Opening add widget modal');
         addWidgetModal.style.display = 'block';
         
         const widgetOptions = document.querySelectorAll('.widget-option');
@@ -280,7 +289,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     async function addWidget(widgetType) {
-        console.log(`Adding new ${widgetType} widget`);
+        if (isWidgetAdded(widgetType)) {
+            showNotification(`${capitalizeFirstLetter(widgetType)} widget already exists`, 'warning');
+            return;
+        }
+        
         emptyDashboard.classList.add('hidden');
         
         const widget = {
@@ -289,11 +302,24 @@ document.addEventListener('DOMContentLoaded', function() {
             position_x: 0,
             position_y: 0,
             width: getDefaultWidgetWidth(widgetType),
-            height: getDefaultWidgetHeight(widgetType)
+            height: getDefaultWidgetHeight(widgetType),
+            id: `temp_${Date.now().toString()}`
         };
         
+        // Add to local state immediately
+        userWidgets.push(widget);
+        const gridItem = addWidgetToGrid(widget);
+        
+        if (!gridItem) {
+            showNotification('Error creating widget. Please try again.', 'error');
+            return;
+        }
+        
+        showNotification(`Added ${capitalizeFirstLetter(widgetType)} widget to dashboard`, 'success');
+        localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
+        
+        // Try to save to server in background
         try {
-            console.log('Saving widget to server:', widget);
             const response = await fetch(`${DASHBOARD_API}/widgets`, {
                 method: 'POST',
                 headers: {
@@ -303,105 +329,83 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(`HTTP error! Status: ${response.status}, Error: ${JSON.stringify(errorData)}`);
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
             
             const savedWidget = await response.json();
-            console.log('Widget saved to server:', savedWidget);
             
-            userWidgets.push(savedWidget);
-            await addWidgetToGrid(savedWidget);
-            showNotification(`Added ${capitalizeFirstLetter(widgetType)} widget to dashboard`, 'success');
+            // Update the local widget with server ID
+            const localIndex = userWidgets.findIndex(w => w.id === widget.id);
+            if (localIndex !== -1) {
+                userWidgets[localIndex] = savedWidget;
+                
+                // Update the grid item ID
+                const gridItemElement = gridItem.el;
+                if (gridItemElement) {
+                    gridItemElement.setAttribute('gs-id', savedWidget.id.toString());
+                }
+            }
+            
+            // Update localStorage with the server data
+            localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
             
         } catch (error) {
-            console.error('Error adding widget:', error);
-            showNotification('Error adding widget. Please try again.', 'error');
-            
-            // If API fails, add widget locally for better UX
-            if (error.message.includes('Failed to fetch')) {
-                console.log('Adding widget locally due to API failure');
-                const localWidget = {
-                    ...widget,
-                    id: Date.now().toString()
-                };
-                userWidgets.push(localWidget);
-                await addWidgetToGrid(localWidget);
-                showNotification(`Added ${capitalizeFirstLetter(widgetType)} widget locally`, 'info');
-            }
+            console.error('Error saving widget to server:', error);
+            // Widget remains in local state even if server save fails
         }
     }
     
     async function removeWidgetFromDatabase(widgetId) {
-        console.log(`Removing widget ${widgetId} from database`);
+        // Skip if it's a local/temporary widget
+        if (widgetId.startsWith('temp_') || widgetId.startsWith('local_')) {
+            return;
+        }
+        
         try {
-            const response = await fetch(`${DASHBOARD_API}/widgets/${widgetId}`, {
+            await fetch(`${DASHBOARD_API}/widgets/${widgetId}`, {
                 method: 'DELETE'
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
-            console.log(`Widget ${widgetId} removed successfully`);
-            
         } catch (error) {
-            console.error('Error removing widget from database:', error);
-            throw error;
+            console.error('Error removing widget from server:', error);
+            // Continue with local removal even if server fails
         }
     }
     
     async function saveWidgetPositions() {
-        console.log('Saving widget positions...');
+        const updatedWidgets = grid.engine.nodes.map(node => ({
+            id: node.id,
+            position_x: node.x,
+            position_y: node.y,
+            width: node.w,
+            height: node.h
+        }));
+        
+        // Update local state
+        updatedWidgets.forEach(updated => {
+            const index = userWidgets.findIndex(w => w.id.toString() === updated.id.toString());
+            if (index !== -1) {
+                userWidgets[index] = { ...userWidgets[index], ...updated };
+            }
+        });
+        
+        // Save to localStorage immediately
+        localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
+        
+        // Try to save to server in background
         try {
-            const updatedWidgets = [];
-            
-            grid.engine.nodes.forEach(node => {
-                updatedWidgets.push({
-                    id: node.id,
-                    position_x: node.x,
-                    position_y: node.y,
-                    width: node.w,
-                    height: node.h
-                });
-            });
-            
-            console.log('Updated widgets:', updatedWidgets);
-            
-            // Update local state
-            updatedWidgets.forEach(updated => {
-                const index = userWidgets.findIndex(w => w.id.toString() === updated.id.toString());
-                if (index !== -1) {
-                    userWidgets[index].position_x = updated.position_x;
-                    userWidgets[index].position_y = updated.position_y;
-                    userWidgets[index].width = updated.width;
-                    userWidgets[index].height = updated.height;
-                }
-            });
-            
-            // Save to server
-            const response = await fetch(`${DASHBOARD_API}/widgets/position`, {
+            await fetch(`${DASHBOARD_API}/widgets/position`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ widgets: updatedWidgets })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            console.log('Widget positions saved successfully');
-            
         } catch (error) {
             console.error('Error saving widget positions:', error);
         }
     }
     
     function exportDashboardToPDF() {
-        console.log('Exporting dashboard to PDF');
         const dashboardContainer = document.querySelector('.dashboard-content');
         
         showNotification('Preparing PDF export...', 'info');
@@ -421,13 +425,11 @@ document.addEventListener('DOMContentLoaded', function() {
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         };
         
-        console.log('Starting PDF export with options:', options);
         html2pdf()
             .from(dashboardContainer)
             .set(options)
             .save()
             .then(() => {
-                console.log('PDF export completed successfully');
                 document.body.classList.remove('exporting-pdf');
                 showNotification('Dashboard exported as PDF', 'success');
             })
@@ -439,7 +441,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showNotification(message, type = 'info') {
-        console.log(`Showing notification: [${type}] ${message}`);
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
