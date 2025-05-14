@@ -1,540 +1,987 @@
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize researcher dashboard
-    initializeDashboard();
-
-    // Set up event listeners
-    setupEventListeners();
-});
-
-// Initialize the dashboard with data and components
-function initializeDashboard() {
-    // Update current date
-    updateCurrentDate();
+    // API URL configuration - supports both local development and production
+    const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:3000/api' 
+        : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
     
-    // Initialize charts
-    initializeResearchActivityChart();
-    initializeResearchAreasChart();
+    const PROJECTS_API = `${API_BASE_URL}/projects`;
+    const MILESTONES_API = `${API_BASE_URL}/milestones`;
+    const FUNDING_API = `${API_BASE_URL}/funding`;
+    const DASHBOARD_API = `${API_BASE_URL}/dashboard`;
     
-    // Initialize calendar
-    initializeResearchCalendar();
+    // Mock user ID - in a real app, this would come from authentication
+    const CURRENT_USER_ID = '123e4567-e89b-12d3-a456-426614174000';
     
-    // Set up timeframe buttons
-    setupTimeframeButtons();
+    // DOM elements
+    const gridContainer = document.querySelector('.grid-stack');
+    const addWidgetBtn = document.getElementById('add-widget-btn');
+    const addWidgetModal = document.getElementById('add-widget-modal');
+    const closeModalBtns = document.querySelectorAll('.modal .close');
+    const exportDashboardBtn = document.getElementById('export-dashboard-btn');
+    const emptyDashboard = document.getElementById('empty-dashboard');
+    const emptyAddWidgetBtn = document.getElementById('empty-add-widget-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
     
-    // Load dashboard data
-    loadDashboardData();
+    // Initialize GridStack
+    let grid;
+    let userWidgets = [];
     
-    // Add fade-in animations
-    addAnimations();
-}
-
-// Update current date display
-function updateCurrentDate() {
-    const now = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
-}
-
-// Load dashboard data from API or use mock data
-async function loadDashboardData() {
-    try {
-        // Simulate API call with setTimeout
-        await new Promise(resolve => setTimeout(resolve, 600));
+    // Initialize application
+    initApp();
+    
+    // Main initialization function
+    async function initApp() {
+        setupEventListeners();
         
-        // Update dashboard statistics with mock data
-        animateMetricCounters({
-            activeProjects: 14,
-            collaborators: 27,
-            publications: 8,
-            pendingInvitations: 5
+        // Initialize grid
+        grid = GridStack.init({
+            margin: 10,
+            cellHeight: 80,
+            minRow: 1,
+            disableOneColumnMode: false,
+            float: false,
+            resizable: { handles: 'e,se,s,sw,w' }
         });
         
-    } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        showToast('Failed to load dashboard data. Please refresh the page.', 'error');
-    }
-}
-
-// Animate metric counters from 0 to target value
-function animateMetricCounters(data) {
-    // Find all metric values
-    const metricElements = document.querySelectorAll('.metric-value');
-    
-    metricElements.forEach(element => {
-        // Get the value from the element
-        const targetValue = parseInt(element.textContent);
-        if (isNaN(targetValue)) return;
+        // Register change events to save layout
+        grid.on('change', saveWidgetPositions);
         
-        animateCounter(element, targetValue);
-    });
-}
-
-// Animate counter from 0 to target value
-function animateCounter(element, targetValue) {
-    const duration = 1500;
-    const startTime = performance.now();
-    const startValue = 0;
+        // Load user widgets
+        await loadUserWidgets();
+        
+        // Hide loading indicator
+        loadingIndicator.style.display = 'none';
+    }
     
-    function updateCounter(currentTime) {
-        const elapsedTime = currentTime - startTime;
-        if (elapsedTime < duration) {
-            const progress = elapsedTime / duration;
-            const currentValue = Math.floor(progress * targetValue);
-            element.textContent = currentValue;
-            requestAnimationFrame(updateCounter);
-        } else {
-            element.textContent = targetValue;
+    // Setup event listeners
+    function setupEventListeners() {
+        // Add widget button
+        addWidgetBtn.addEventListener('click', () => {
+            openAddWidgetModal();
+        });
+        
+        // Empty dashboard add widget button
+        emptyAddWidgetBtn.addEventListener('click', () => {
+            openAddWidgetModal();
+        });
+        
+        // Export dashboard button
+        exportDashboardBtn.addEventListener('click', () => {
+            exportDashboardToPDF();
+        });
+        
+        // Close modal buttons
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modal = btn.closest('.modal');
+                modal.style.display = 'none';
+            });
+        });
+        
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === addWidgetModal) {
+                addWidgetModal.style.display = 'none';
+            }
+        });
+        
+        // Add widget options
+        const widgetOptions = document.querySelectorAll('.widget-option');
+        widgetOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const widgetType = option.getAttribute('data-widget-type');
+                addWidget(widgetType);
+                addWidgetModal.style.display = 'none';
+            });
+        });
+
+        // Update current date in footer
+        const currentDateEl = document.getElementById('current-date');
+        if (currentDateEl) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateEl.textContent = new Date().toLocaleDateString('en-US', options);
         }
     }
     
-    requestAnimationFrame(updateCounter);
-}
-
-// Initialize research activity chart
-function initializeResearchActivityChart() {
-    const ctx = document.getElementById('researchActivityChart');
-    if (!ctx) return;
-    
-    // Sample data - in a real app, this would come from an API
-    const activityData = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [
-            {
-                label: 'Publications',
-                data: [1, 0, 2, 0, 1, 0, 0, 1, 1, 0, 2, 0],
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true
-            },
-            {
-                label: 'Citations',
-                data: [5, 8, 6, 9, 12, 10, 13, 15, 18, 21, 25, 28],
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true
-            },
-            {
-                label: 'Presentations',
-                data: [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1],
-                borderColor: '#f59e0b',
-                backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                borderWidth: 2,
-                tension: 0.4,
-                fill: true
+    // Load user's widgets from API
+    async function loadUserWidgets() {
+        try {
+            // In a real app, use proper error handling and loading states
+            const response = await fetch(`${DASHBOARD_API}/widgets/${CURRENT_USER_ID}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
             }
-        ]
-    };
-    
-    const activityChart = new Chart(ctx, {
-        type: 'line',
-        data: activityData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: '#1F2937',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 10,
-                    displayColors: true,
-                    titleFont: {
-                        family: "'Inter', sans-serif",
-                        size: 14
-                    },
-                    bodyFont: {
-                        family: "'Inter', sans-serif",
-                        size: 12
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            family: "'Inter', sans-serif",
-                            size: 12
-                        },
-                        color: '#4b5563'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    suggestedMax: 30,
-                    ticks: {
-                        stepSize: 5,
-                        font: {
-                            family: "'Inter', sans-serif",
-                            size: 12
-                        },
-                        color: '#4b5563'
-                    },
-                    grid: {
-                        color: 'rgba(229, 231, 235, 0.5)'
-                    }
-                }
+            
+            const widgets = await response.json();
+            userWidgets = widgets;
+            
+            if (widgets.length === 0) {
+                // Show empty dashboard state
+                emptyDashboard.classList.remove('hidden');
+                return;
             }
+            
+            // Hide empty dashboard state
+            emptyDashboard.classList.add('hidden');
+            
+            // Add widgets to grid
+            widgets.forEach(widget => {
+                addWidgetToGrid(widget);
+            });
+            
+        } catch (error) {
+            console.error('Error loading user widgets:', error);
+            showNotification('Error loading dashboard. Please try again later.', 'error');
+            
+            // Show empty dashboard as fallback
+            emptyDashboard.classList.remove('hidden');
         }
-    });
+    }
     
-    // Store chart reference for later use
-    window.activityChart = activityChart;
-}
-
-// Initialize research areas chart
-function initializeResearchAreasChart() {
-    const ctx = document.getElementById('researchAreasChart');
-    if (!ctx) return;
+    // Add widget to grid
+    function addWidgetToGrid(widget) {
+        const widgetElement = document.createElement('div');
+        const widgetContent = getWidgetTemplate(widget.widget_type);
+        
+        if (!widgetContent) return;
+        
+        // Set grid properties
+        const gridOptions = {
+            x: widget.position_x || 0,
+            y: widget.position_y || 0,
+            w: widget.width || getDefaultWidgetWidth(widget.widget_type),
+            h: widget.height || getDefaultWidgetHeight(widget.widget_type),
+            id: widget.id?.toString() || Date.now().toString(),
+            content: widgetContent
+        };
+        
+        // Add widget to grid
+        const gridItem = grid.addWidget(widgetElement, gridOptions);
+        
+        // Setup widget event listeners
+        setupWidgetEventListeners(widgetElement, widget.widget_type);
+        
+        // Load widget data
+        loadWidgetData(widgetElement, widget.widget_type);
+    }
     
-    // Sample data - in a real app, this would come from an API
-    const researchData = {
-        labels: ['Quantum Computing', 'AI Ethics', 'Climate Science', 'Genomics', 'Renewable Energy'],
-        datasets: [
-            {
-                data: [35, 25, 20, 15, 5],
-                backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'],
-                borderColor: '#ffffff',
-                borderWidth: 2
-            }
-        ]
-    };
+    // Get widget template by type
+    function getWidgetTemplate(widgetType) {
+        const templates = {
+            'projects': document.getElementById('projects-widget-template'),
+            'milestones': document.getElementById('milestones-widget-template'),
+            'funding': document.getElementById('funding-widget-template'),
+            'calendar': document.getElementById('calendar-widget-template'),
+            'recent_activity': document.getElementById('recent-activity-widget-template')
+        };
+        
+        const template = templates[widgetType];
+        if (!template) return null;
+        
+        return template.content.cloneNode(true).firstElementChild.outerHTML;
+    }
     
-    const researchAreasChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: researchData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        font: {
-                            family: "'Inter', sans-serif",
-                            size: 12
-                        },
-                        color: '#4b5563',
-                        usePointStyle: true,
-                        padding: 20
-                    }
-                },
-                tooltip: {
-                    backgroundColor: '#1F2937',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 10,
-                    displayColors: true,
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            return `${tooltipItem.label}: ${tooltipItem.formattedValue}%`;
-                        }
-                    },
-                    titleFont: {
-                        family: "'Inter', sans-serif",
-                        size: 14
-                    },
-                    bodyFont: {
-                        family: "'Inter', sans-serif",
-                        size: 12
-                    }
-                }
-            }
+    // Get default widget width
+    function getDefaultWidgetWidth(widgetType) {
+        const widthMap = {
+            'projects': 6,
+            'milestones': 6,
+            'funding': 12,
+            'calendar': 6,
+            'recent_activity': 6
+        };
+        
+        return widthMap[widgetType] || 6;
+    }
+    
+    // Get default widget height
+    function getDefaultWidgetHeight(widgetType) {
+        const heightMap = {
+            'projects': 4,
+            'milestones': 4,
+            'funding': 8,
+            'calendar': 6,
+            'recent_activity': 4
+        };
+        
+        return heightMap[widgetType] || 4;
+    }
+    
+    // Setup widget event listeners
+    function setupWidgetEventListeners(widget, widgetType) {
+        // Refresh button
+        const refreshBtn = widget.querySelector('.widget-refresh');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                loadWidgetData(widget, widgetType);
+                showNotification(`Refreshed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
+            });
         }
-    });
-    
-    // Store chart reference for later use
-    window.researchAreasChart = researchAreasChart;
-}
-
-// Initialize research calendar
-function initializeResearchCalendar() {
-    const calendarEl = document.getElementById('research-calendar');
-    if (!calendarEl) return;
-    
-    // Initialize flatpickr calendar with events
-    const calendar = flatpickr(calendarEl, {
-        inline: true,
-        dateFormat: 'Y-m-d',
-        minDate: 'today',
-        maxDate: new Date().fp_incr(180), // 6 months ahead
-        locale: {
-            firstDayOfWeek: 1 // Start week on Monday
-        },
-        onMonthChange: function(selectedDates, dateStr, instance) {
-            // Handle month change if needed
-        },
-        onYearChange: function(selectedDates, dateStr, instance) {
-            // Handle year change if needed
-        },
-        onDayCreate: function(dObj, dStr, fp, dayElem) {
-            // Add event markers to specific days
-            const dateStr = dayElem.dateObj.toISOString().split('T')[0];
-            
-            // Sample events data - in a real app, this would come from an API
-            const events = [
-                { date: '2025-05-15', type: 'conference' },
-                { date: '2025-05-21', type: 'deadline' },
-                { date: '2025-06-04', type: 'presentation' },
-                { date: '2025-05-10', type: 'meeting' },
-                { date: '2025-06-15', type: 'deadline' }
-            ];
-            
-            const event = events.find(event => event.date === dateStr);
-            
-            if (event) {
-                const eventMarker = document.createElement('span');
-                eventMarker.classList.add('event-marker', event.type);
+        
+        // Remove button
+        const removeBtn = widget.querySelector('.widget-remove');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                const gridItem = widget.closest('.grid-stack-item');
+                const widgetId = gridItem.getAttribute('gs-id');
                 
-                // Style the event marker based on type
-                let markerColor = '#6366f1'; // Default color
-                switch (event.type) {
-                    case 'conference':
-                        markerColor = '#6366f1'; // Primary color
-                        break;
-                    case 'deadline':
-                        markerColor = '#ef4444'; // Error color
-                        break;
-                    case 'presentation':
-                        markerColor = '#10b981'; // Success color
-                        break;
-                    case 'meeting':
-                        markerColor = '#f59e0b'; // Warning color
-                        break;
+                // Remove from UI
+                grid.removeWidget(gridItem);
+                
+                // Remove from database
+                removeWidgetFromDatabase(widgetId);
+                
+                showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
+                
+                // Check if grid is empty and show empty state
+                if (grid.engine.nodes.length === 0) {
+                    emptyDashboard.classList.remove('hidden');
                 }
+            });
+        }
+    }
+    
+    // Load widget data based on type
+    function loadWidgetData(widget, widgetType) {
+        switch(widgetType) {
+            case 'projects':
+                loadProjectsData(widget);
+                break;
+            case 'milestones':
+                loadMilestonesData(widget);
+                break;
+            case 'funding':
+                loadFundingData(widget);
+                break;
+            case 'calendar':
+                loadCalendarData(widget);
+                break;
+            case 'recent_activity':
+                loadActivityData(widget);
+                break;
+        }
+    }
+    
+    // Load projects data
+    async function loadProjectsData(widget) {
+        const projectsList = widget.querySelector('.projects-list');
+        projectsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</div>';
+        
+        try {
+            const response = await fetch(PROJECTS_API);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const projects = await response.json();
+            
+            // Limit to 5 most recent projects
+            const recentProjects = projects.slice(0, 5);
+            
+            if (recentProjects.length === 0) {
+                projectsList.innerHTML = '<div class="empty-widget">No projects found.</div>';
+                return;
+            }
+            
+            projectsList.innerHTML = '';
+            
+            recentProjects.forEach(project => {
+                const startDate = new Date(project.start_date).toLocaleDateString();
+                const endDate = new Date(project.end_date).toLocaleDateString();
                 
-                // Apply event marker styling
-                eventMarker.style.cssText = `
-                    display: block;
-                    width: 5px;
-                    height: 5px;
-                    border-radius: 50%;
-                    background-color: ${markerColor};
-                    position: absolute;
-                    bottom: 2px;
-                    left: 50%;
-                    transform: translateX(-50%);
+                const projectElement = document.createElement('div');
+                projectElement.className = 'project-item';
+                
+                projectElement.innerHTML = `
+                    <div class="project-name">${project.project_title}</div>
+                    <div class="project-meta">
+                        <span><i class="fas fa-clock"></i> ${startDate} - ${endDate}</span>
+                        <span><i class="fas fa-user"></i> ${project.researcher_name}</span>
+                    </div>
                 `;
                 
-                dayElem.appendChild(eventMarker);
-            }
+                projectsList.appendChild(projectElement);
+            });
+            
+        } catch (error) {
+            console.error('Error loading projects:', error);
+            projectsList.innerHTML = '<div class="error-state">Error loading projects.</div>';
         }
-    });
+    }
     
-    // Store calendar reference for later use
-    window.researchCalendar = calendar;
-}
-
-// Set up timeframe buttons for the research activity chart
-function setupTimeframeButtons() {
-    const timeframeButtons = document.querySelectorAll('.timeframe-btn');
-    
-    timeframeButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons
-            timeframeButtons.forEach(btn => btn.classList.remove('active'));
+    // Load milestones data
+    async function loadMilestonesData(widget) {
+        const milestonesList = widget.querySelector('.milestones-list');
+        milestonesList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</div>';
+        
+        try {
+            // Get upcoming milestones (due in the next 30 days)
+            const response = await fetch(`${MILESTONES_API}/upcoming/30`);
             
-            // Add active class to clicked button
-            this.classList.add('active');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
             
-            // Update chart data based on selected timeframe
-            updateChartData(this.getAttribute('data-period'));
-        });
-    });
-}
-
-// Update chart data based on selected timeframe
-function updateChartData(period) {
-    // In a real app, this would fetch new data from an API
-    // For this demo, we'll use predefined data sets
-    
-    if (!window.activityChart) return;
-    
-    let publicationsData, citationsData, presentationsData, labels;
-    
-    switch(period) {
-        case 'week':
-            labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            publicationsData = [0, 0, 1, 0, 0, 0, 0];
-            citationsData = [2, 3, 2, 4, 3, 1, 2];
-            presentationsData = [0, 0, 0, 1, 0, 0, 0];
-            break;
-        case 'month':
-            labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-            publicationsData = [0, 1, 0, 1];
-            citationsData = [8, 10, 7, 12];
-            presentationsData = [0, 1, 0, 1];
-            break;
-        case 'year':
-            // Use the existing yearly data
-            labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            publicationsData = [1, 0, 2, 0, 1, 0, 0, 1, 1, 0, 2, 0];
-            citationsData = [5, 8, 6, 9, 12, 10, 13, 15, 18, 21, 25, 28];
-            presentationsData = [1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1];
-            break;
-        default:
-            return;
+            const milestones = await response.json();
+            
+            if (milestones.length === 0) {
+                milestonesList.innerHTML = '<div class="empty-widget">No upcoming milestones.</div>';
+                return;
+            }
+            
+            milestonesList.innerHTML = '';
+            
+            // Display up to 5 upcoming milestones
+            milestones.slice(0, 5).forEach(milestone => {
+                const dueDate = new Date(milestone.end_date).toLocaleDateString();
+                
+                const milestoneElement = document.createElement('div');
+                milestoneElement.className = 'milestone-item';
+                
+                let statusClass;
+                switch (milestone.status?.toLowerCase()) {
+                    case 'completed': statusClass = 'status-completed'; break;
+                    case 'in-progress': statusClass = 'status-in-progress'; break;
+                    case 'delayed': statusClass = 'status-delayed'; break;
+                    default: statusClass = 'status-pending';
+                }
+                
+                milestoneElement.innerHTML = `
+                    <div class="milestone-title">${milestone.title}</div>
+                    <div class="milestone-meta">
+                        <span><i class="fas fa-calendar-day"></i> Due: ${dueDate}</span>
+                        <span class="milestone-status ${statusClass}">
+                            ${capitalizeFirstLetter(milestone.status || 'pending')}
+                        </span>
+                    </div>
+                `;
+                
+                milestonesList.appendChild(milestoneElement);
+            });
+            
+        } catch (error) {
+            console.error('Error loading milestones:', error);
+            milestonesList.innerHTML = '<div class="error-state">Error loading milestones.</div>';
+        }
     }
     
-    // Update chart data
-    window.activityChart.data.labels = labels;
-    window.activityChart.data.datasets[0].data = publicationsData;
-    window.activityChart.data.datasets[1].data = citationsData;
-    window.activityChart.data.datasets[2].data = presentationsData;
-    window.activityChart.update();
-}
-
-// Set up event listeners
-function setupEventListeners() {
-    // Chart download button
-    const chartDownloadBtn = document.querySelector('.chart-download');
-    if (chartDownloadBtn) {
-        chartDownloadBtn.addEventListener('click', function() {
-            // In a real app, this would download the chart as an image
-            showToast('Chart data downloaded as CSV', 'success');
-        });
+    // Load funding data
+    async function loadFundingData(widget) {
+        const fundingSummary = widget.querySelector('.funding-summary');
+        const chartContainer = widget.querySelector('.funding-chart');
+        
+        fundingSummary.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading funding data...</div>';
+        
+        try {
+            const response = await fetch(`${DASHBOARD_API}/summary/${CURRENT_USER_ID}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const summary = await response.json();
+            const fundingStats = summary.funding;
+            
+            fundingSummary.innerHTML = '';
+            
+            // Create funding stats
+            const statsContainer = document.createElement('div');
+            statsContainer.className = 'funding-stats';
+            
+            // Format currency values
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('en-US', { 
+                    style: 'currency',
+                    currency: 'USD',
+                    maximumFractionDigits: 0
+                }).format(value);
+            };
+            
+            statsContainer.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${formatCurrency(fundingStats.total || 0)}</div>
+                    <div class="stat-label">Total Funding</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${formatCurrency(fundingStats.spent || 0)}</div>
+                    <div class="stat-label">Spent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${formatCurrency(fundingStats.remaining || 0)}</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+            `;
+            
+            fundingSummary.appendChild(statsContainer);
+            
+            // Create funding chart
+            const ctx = chartContainer.getContext('2d');
+            
+            if (window.fundingChart) {
+                window.fundingChart.destroy();
+            }
+            
+            window.fundingChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Spent', 'Remaining'],
+                    datasets: [{
+                        data: [fundingStats.spent || 0, fundingStats.remaining || 0],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',  // Red for spent
+                            'rgba(16, 185, 129, 0.8)'  // Green for remaining
+                        ],
+                        borderColor: [
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(16, 185, 129, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error loading funding data:', error);
+            fundingSummary.innerHTML = '<div class="error-state">Error loading funding data.</div>';
+        }
     }
     
-    // Notifications button
-    const notificationsBtn = document.querySelector('.notifications-btn');
-    if (notificationsBtn) {
-        notificationsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            showToast('You have 3 new notifications', 'info');
-            // In a real app, this would open a notifications panel
-        });
+    // Load calendar data
+    async function loadCalendarData(widget) {
+        const calendarContainer = widget.querySelector('.calendar-container');
+        calendarContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading calendar...</div>';
+        
+        try {
+            // Simulate loading milestones for calendar
+            const milestonesResponse = await fetch(MILESTONES_API);
+            
+            if (!milestonesResponse.ok) {
+                throw new Error(`HTTP error! Status: ${milestonesResponse.status}`);
+            }
+            
+            const milestones = await milestonesResponse.json();
+            
+            // Create a simple calendar view
+            calendarContainer.innerHTML = '';
+            
+            // Get current date
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            
+            // Create calendar header
+            const calendarHeader = document.createElement('div');
+            calendarHeader.className = 'calendar-header';
+            calendarHeader.innerHTML = `
+                <h3>${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}</h3>
+            `;
+            
+            // Create calendar grid
+            const calendarGrid = document.createElement('div');
+            calendarGrid.className = 'calendar-grid';
+            
+            // Add day headers
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+            
+            // Get days in month
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // Get first day of month
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            
+            // Add blank days for start of month
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const blankDay = document.createElement('div');
+                blankDay.className = 'calendar-day empty';
+                calendarGrid.appendChild(blankDay);
+            }
+            
+            // Prepare milestone dates
+            const milestoneDates = {};
+            milestones.forEach(milestone => {
+                const startDate = new Date(milestone.start_date);
+                const endDate = new Date(milestone.end_date);
+                
+                // Only include milestones in current month
+                if (startDate.getMonth() === currentMonth || endDate.getMonth() === currentMonth) {
+                    const dayKey = startDate.getDate().toString();
+                    if (!milestoneDates[dayKey]) milestoneDates[dayKey] = [];
+                    milestoneDates[dayKey].push(milestone);
+                }
+            });
+            
+            // Add days of month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                if (day === currentDate.getDate()) {
+                    dayElement.classList.add('today');
+                }
+                
+                dayElement.innerHTML = `<span class="day-number">${day}</span>`;
+                
+                // Add milestone indicators
+                if (milestoneDates[day]) {
+                    const indicators = document.createElement('div');
+                    indicators.className = 'day-indicators';
+                    
+                    milestoneDates[day].slice(0, 2).forEach(milestone => {
+                        const indicator = document.createElement('div');
+                        indicator.className = `day-indicator ${milestone.status || 'pending'}`;
+                        indicator.title = milestone.title;
+                        indicators.appendChild(indicator);
+                    });
+                    
+                    if (milestoneDates[day].length > 2) {
+                        const more = document.createElement('span');
+                        more.className = 'more-indicators';
+                        more.textContent = `+${milestoneDates[day].length - 2}`;
+                        indicators.appendChild(more);
+                    }
+                    
+                    dayElement.appendChild(indicators);
+                }
+                
+                calendarGrid.appendChild(dayElement);
+            }
+            
+            calendarContainer.appendChild(calendarHeader);
+            calendarContainer.appendChild(calendarGrid);
+            
+            // Add calendar styles (inline for simplicity)
+            const calendarStyles = document.createElement('style');
+            calendarStyles.textContent = `
+                .calendar-grid {
+                    display: grid;
+                    grid-template-columns: repeat(7, 1fr);
+                    gap: 2px;
+                    margin-top: 1rem;
+                }
+                .calendar-day-header {
+                    text-align: center;
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    color: #6b7280;
+                    padding: 0.25rem;
+                }
+                .calendar-day {
+                    aspect-ratio: 1/1;
+                    background-color: #f9fafb;
+                    border-radius: 4px;
+                    padding: 0.25rem;
+                    position: relative;
+                    min-height: 2.5rem;
+                }
+                .calendar-day.empty {
+                    background-color: transparent;
+                }
+                .calendar-day.today {
+                    background-color: rgba(99, 102, 241, 0.1);
+                    border: 1px solid #6366f1;
+                }
+                .day-number {
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                }
+                .day-indicators {
+                    position: absolute;
+                    bottom: 0.25rem;
+                    left: 0.25rem;
+                    right: 0.25rem;
+                    display: flex;
+                    gap: 2px;
+                    align-items: center;
+                }
+                .day-indicator {
+                    width: 6px;
+                    height: 6px;
+                    border-radius: 50%;
+                    background-color: #6366f1;
+                }
+                .day-indicator.completed {
+                    background-color: #10b981;
+                }
+                .day-indicator.in-progress {
+                    background-color: #6366f1;
+                }
+                .day-indicator.delayed {
+                    background-color: #ef4444;
+                }
+                .day-indicator.pending {
+                    background-color: #f59e0b;
+                }
+                .more-indicators {
+                    font-size: 0.625rem;
+                    color: #6b7280;
+                    margin-left: auto;
+                }
+            `;
+            calendarContainer.appendChild(calendarStyles);
+            
+        } catch (error) {
+            console.error('Error loading calendar:', error);
+            calendarContainer.innerHTML = '<div class="error-state">Error loading calendar.</div>';
+        }
     }
     
-    // Profile button
-    const profileBtn = document.querySelector('.profile-btn');
-    if (profileBtn) {
-        profileBtn.addEventListener('click', function(e) {
-            // This would navigate to the profile page
-            // For demo, we'll just show a toast
-            if (e.target.tagName !== 'A') {
-                e.preventDefault();
-                showToast('Navigating to profile page...', 'info');
+    // Load activity data
+    async function loadActivityData(widget) {
+        const activityList = widget.querySelector('.activity-list');
+        activityList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading activity...</div>';
+        
+        try {
+            // In a real app, we'd fetch from an activity log API
+            // Here we'll simulate some recent activity
+            
+            const activities = [
+                {
+                    type: 'project',
+                    title: 'Quantum Computing Research',
+                    message: 'Project created',
+                    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() // 2 days ago
+                },
+                {
+                    type: 'milestone',
+                    title: 'Literature Review',
+                    message: 'Milestone completed',
+                    timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
+                },
+                {
+                    type: 'funding',
+                    title: 'Research Grant',
+                    message: 'New funding added: $50,000',
+                    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString() // 12 hours ago
+                },
+                {
+                    type: 'milestone',
+                    title: 'Data Collection',
+                    message: 'Milestone updated to In Progress',
+                    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() // 4 hours ago
+                },
+                {
+                    type: 'project',
+                    title: 'AI Ethics Framework',
+                    message: 'New collaborator added',
+                    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString() // 1 hour ago
+                }
+            ];
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            activityList.innerHTML = '';
+            
+            activities.forEach(activity => {
+                const activityElement = document.createElement('div');
+                activityElement.className = 'activity-item';
+                
+                const timestamp = new Date(activity.timestamp);
+                const timeAgo = getTimeAgo(timestamp);
+                
+                activityElement.innerHTML = `
+                    <div class="activity-header">
+                        <div class="activity-icon ${activity.type}">
+                            <i class="fas ${getActivityIcon(activity.type)}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.title}</div>
+                            <div class="activity-timestamp">${timeAgo}</div>
+                        </div>
+                    </div>
+                    <div class="activity-message">${activity.message}</div>
+                `;
+                
+                activityList.appendChild(activityElement);
+            });
+            
+        } catch (error) {
+            console.error('Error loading activity:', error);
+            activityList.innerHTML = '<div class="error-state">Error loading activity.</div>';
+        }
+    }
+    
+    // Get activity icon based on type
+    function getActivityIcon(type) {
+        switch(type) {
+            case 'project': return 'fa-users';
+            case 'milestone': return 'fa-clipboard-list';
+            case 'funding': return 'fa-coins';
+            default: return 'fa-bell';
+        }
+    }
+    
+    // Get time ago string
+    function getTimeAgo(date) {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+        
+        if (diffDay > 0) {
+            return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+        } else if (diffHour > 0) {
+            return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+        } else if (diffMin > 0) {
+            return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+        } else {
+            return 'Just now';
+        }
+    }
+    
+    // Open add widget modal
+    function openAddWidgetModal() {
+        addWidgetModal.style.display = 'block';
+        
+        // Highlight already added widgets
+        const widgetOptions = document.querySelectorAll('.widget-option');
+        widgetOptions.forEach(option => {
+            const widgetType = option.getAttribute('data-widget-type');
+            if (isWidgetAdded(widgetType)) {
+                option.classList.add('disabled');
+                option.title = 'Widget already added';
+            } else {
+                option.classList.remove('disabled');
+                option.title = '';
             }
         });
     }
     
-    // Navigation links highlighting
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            if (this.getAttribute('href') === '#') {
-                e.preventDefault();
-                
-                // Remove active class from all links
-                navLinks.forEach(navLink => navLink.classList.remove('active'));
-                
-                // Add active class to clicked link
-                this.classList.add('active');
-            }
-        });
-    });
-}
-
-// Add animations to elements
-function addAnimations() {
-    const animateElements = [
-        '.welcome-banner', 
-        '.metrics-overview',
-        '.dashboard-charts',
-        '.calendar-goals-section',
-        '.project-status-section'
-    ];
-    
-    animateElements.forEach((selector, index) => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(element => {
-            element.classList.add('fade-in');
-            element.style.animationDelay = `${index * 0.1}s`;
-        });
-    });
-}
-
-// Toast notification function
-function showToast(message, type = 'info', duration = 5000) {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `toast ${type}`;
-    
-    let icon = '';
-    switch(type) {
-        case 'success':
-            icon = '<i class="fas fa-check-circle"></i>';
-            break;
-        case 'error':
-            icon = '<i class="fas fa-exclamation-circle"></i>';
-            break;
-        case 'warning':
-            icon = '<i class="fas fa-exclamation-triangle"></i>';
-            break;
-        default:
-            icon = '<i class="fas fa-info-circle"></i>';
+    // Check if widget is already added
+    function isWidgetAdded(widgetType) {
+        return userWidgets.some(widget => widget.widget_type === widgetType);
     }
     
-    notification.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
-        <button class="toast-close"><i class="fas fa-times"></i></button>
-    `;
+    // Add widget
+    async function addWidget(widgetType) {
+        // Hide empty dashboard state if visible
+        emptyDashboard.classList.add('hidden');
+        
+        // Prepare widget data
+        const widget = {
+            user_id: CURRENT_USER_ID,
+            widget_type: widgetType,
+            position_x: 0,
+            position_y: 0,
+            width: getDefaultWidgetWidth(widgetType),
+            height: getDefaultWidgetHeight(widgetType)
+        };
+        
+        try {
+            // Save widget to database
+            const response = await fetch(`${DASHBOARD_API}/widgets`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(widget)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const savedWidget = await response.json();
+            
+            // Add to local widgets array
+            userWidgets.push(savedWidget);
+            
+            // Add to grid
+            addWidgetToGrid(savedWidget);
+            
+            showNotification(`Added ${capitalizeFirstLetter(widgetType)} widget to dashboard`, 'success');
+            
+        } catch (error) {
+            console.error('Error adding widget:', error);
+            showNotification('Error adding widget. Please try again.', 'error');
+        }
+    }
     
-    // Add to document
-    const toastContainer = document.getElementById('toast-container');
-    if (toastContainer) {
+    // Remove widget from database
+    async function removeWidgetFromDatabase(widgetId) {
+        try {
+            // Remove from API
+            await fetch(`${DASHBOARD_API}/widgets/${widgetId}`, {
+                method: 'DELETE'
+            });
+            
+            // Remove from local array
+            userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
+            
+        } catch (error) {
+            console.error('Error removing widget from database:', error);
+            // No need to show notification as widget is already removed from UI
+        }
+    }
+    
+    // Save widget positions to database
+    async function saveWidgetPositions() {
+        try {
+            // Get current widget positions from grid
+            const updatedWidgets = [];
+            
+            grid.engine.nodes.forEach(node => {
+                updatedWidgets.push({
+                    id: node.id,
+                    position_x: node.x,
+                    position_y: node.y,
+                    width: node.w,
+                    height: node.h
+                });
+            });
+            
+            // Update local widgets
+            updatedWidgets.forEach(updated => {
+                const index = userWidgets.findIndex(w => w.id.toString() === updated.id.toString());
+                if (index !== -1) {
+                    userWidgets[index].position_x = updated.position_x;
+                    userWidgets[index].position_y = updated.position_y;
+                    userWidgets[index].width = updated.width;
+                    userWidgets[index].height = updated.height;
+                }
+            });
+            
+            // Save to API
+            await fetch(`${DASHBOARD_API}/widgets/position`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ widgets: updatedWidgets })
+            });
+            
+        } catch (error) {
+            console.error('Error saving widget positions:', error);
+            // Silent fail, don't distrupt user experience
+        }
+    }
+    
+    // Export dashboard to PDF
+    function exportDashboardToPDF() {
+        const dashboardContainer = document.querySelector('.dashboard-content');
+        
+        // Show loading notification
+        showNotification('Preparing PDF export...', 'info');
+        
+        // Add print class to body to apply print styles
+        document.body.classList.add('exporting-pdf');
+        
+        // Configure pdf options
+        const options = {
+            margin: 10,
+            filename: `research-dashboard-${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        
+        // Generate PDF
+        html2pdf()
+            .from(dashboardContainer)
+            .set(options)
+            .save()
+            .then(() => {
+                // Remove print class
+                document.body.classList.remove('exporting-pdf');
+                showNotification('Dashboard exported as PDF', 'success');
+            })
+            .catch(error => {
+                console.error('Error exporting PDF:', error);
+                document.body.classList.remove('exporting-pdf');
+                showNotification('Error exporting PDF. Please try again.', 'error');
+            });
+    }
+    
+    // Utility function for notifications
+    function showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="notification-close"><i class="fas fa-times"></i></button>
+        `;
+        
+        // Get or create toast container
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // Add to container
         toastContainer.appendChild(notification);
         
-        // Allow DOM to update before adding active class for animation
+        // Add active class for animation
         setTimeout(() => {
             notification.classList.add('active');
         }, 10);
         
-        const timeout = setTimeout(() => {
-            removeToast(notification);
-        }, duration);
-        
-        const closeBtn = notification.querySelector('.toast-close');
-        closeBtn.addEventListener('click', () => {
-            clearTimeout(timeout);
-            removeToast(notification);
+        // Add close button functionality
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            notification.classList.remove('active');
+            notification.classList.add('notification-hiding');
+            setTimeout(() => {
+                if (notification.parentNode === toastContainer) {
+                    toastContainer.removeChild(notification);
+                }
+            }, 300);
         });
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode === toastContainer) {
+                notification.classList.remove('active');
+                notification.classList.add('notification-hiding');
+                setTimeout(() => {
+                    if (notification.parentNode === toastContainer) {
+                        toastContainer.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
-}
-
-// Remove toast notification
-function removeToast(toast) {
-    toast.classList.remove('active');
-    toast.classList.add('notification-hiding');
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
-    }, 300);
-}
-
-// Utility function to format dates
-function formatDate(date) {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(date).toLocaleDateString('en-US', options);
-}
-
-// Utility function to capitalize first letter
-function capitalizeFirstLetter(string) {
-    if (!string) return '';
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
-}
+    
+    // Utility function to capitalize first letter
+    function capitalizeFirstLetter(string) {
+        if (!string) return '';
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+});
