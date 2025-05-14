@@ -37,8 +37,6 @@ body {
     flex: 1;
     min-height: calc(100vh - 4rem);
     max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
 }
 /* Navigation Bar - Updated to match proposal style */
 .navbar {
