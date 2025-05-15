@@ -44,64 +44,6 @@
   }
   
   
-  
-  /* Navbar */
-  .navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--background-light);
-    padding: 0.75rem 2rem;
-    box-shadow: var(--shadow-sm);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  
-  
-  .logo {
-    display: flex;
-    align-items: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    text-decoration: none;
-  }
-  
-  .book-logo {
-    margin-right: 0.5rem;
-  }
-  
-  .nav-links {
-    display: flex;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .nav-links li a {
-    display: flex;
-    align-items: center;
-    color: var(--neutral-dark);
-    text-decoration: none;
-    padding: 0.75rem 1rem;
-    border-radius: var(--border-radius);
-    transition: all 0.2s ease;
-  }
-  
-  .nav-links li a i {
-    margin-right: 0.5rem;
-  }
-  
-  .nav-links li a:hover, .nav-links li a.active {
-    background-color: var(--primary-light);
-    color: var(--primary-dark);
-  }
-  
-  .nav-links li a.active {
-    font-weight: 500;
-  }
-  
   .logout-btn {
     display: flex;
     align-items: center;
@@ -980,10 +922,6 @@
       display: none;
     }
     
-    .navbar {
-      padding: 0.5rem 1rem;
-      flex-wrap: wrap;
-    }
     
     .mobile-menu-toggle {
       display: block;

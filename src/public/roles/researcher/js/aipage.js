@@ -352,34 +352,706 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateFundingSuggestions(keywords) {
         const fundingOpportunities = [
             {
-                name: "NSF Advanced Computing Initiative",
-                focus: ["quantum computing", "high performance computing"],
-                amount: "$2.5 million",
-                deadline: "2025-08-15",
-                relevance: 5
+                "name": "NSF Quantum Leap Challenge",
+                "focus": ["quantum information science", "quantum algorithms"],
+                "amount": "$4 million",
+                "deadline": "2025-10-05",
+                "relevance": 5
             },
             {
-                name: "NIH AI in Healthcare Research Grant",
-                focus: ["artificial intelligence", "healthcare", "machine learning"],
-                amount: "$1.8 million",
-                deadline: "2025-06-30",
-                relevance: 4
+                "name": "DARPA AI Exploration Grant",
+                "focus": ["artificial intelligence", "autonomous systems", "defense tech"],
+                "amount": "$1.5 million",
+                "deadline": "2025-07-22",
+                "relevance": 4
             },
             {
-                name: "Department of Energy Clean Tech Innovation Fund",
-                focus: ["renewable energy", "sustainability", "clean technology"],
-                amount: "$3.2 million",
-                deadline: "2025-09-20",
-                relevance: 3
+                "name": "NASA Space Tech Research Grants",
+                "focus": ["space exploration", "robotics", "advanced propulsion"],
+                "amount": "$2.8 million",
+                "deadline": "2025-11-15",
+                "relevance": 3
             },
             {
-                name: "European Research Council Advanced Grant",
-                focus: ["quantum algorithms", "computational theory", "theoretical physics"],
-                amount: "€2.5 million",
-                deadline: "2025-07-10",
-                relevance: 4
-            }
-        ];
+                "name": "Bill & Melinda Gates Foundation Global Health Grant",
+                "focus": ["public health", "vaccine development", "disease prevention"],
+                "amount": "$5 million",
+                "deadline": "2025-09-01",
+                "relevance": 4
+            },
+            {
+                "name": "Google AI Research Award",
+                "focus": ["machine learning", "natural language processing", "computer vision"],
+                "amount": "$750,000",
+                "deadline": "2025-08-30",
+                "relevance": 4
+            },
+            {
+                "name": "National Endowment for the Humanities Digital Humanities Grant",
+                "focus": ["digital archives", "cultural preservation", "history"],
+                "amount": "$300,000",
+                "deadline": "2025-07-15",
+                "relevance": 2
+            },
+            {
+                "name": "USDA Sustainable Agriculture Research Program",
+                "focus": ["agricultural innovation", "sustainable farming", "food security"],
+                "amount": "$1.2 million",
+                "deadline": "2025-10-20",
+                "relevance": 3
+            },
+            {
+                "name": "Wellcome Trust Biomedical Research Fund",
+                "focus": ["genomics", "infectious diseases", "neuroscience"],
+                "amount": "£2 million",
+                "deadline": "2025-08-10",
+                "relevance": 4
+            },
+            {
+                "name": "Sloan Foundation Computational Biology Grant",
+                "focus": ["bioinformatics", "systems biology", "computational modeling"],
+                "amount": "$600,000",
+                "deadline": "2025-09-05",
+                "relevance": 3
+            },
+            {
+                "name": "NSF Cyber-Physical Systems Program",
+                "focus": ["IoT", "embedded systems", "smart infrastructure"],
+                "amount": "$1.7 million",
+                "deadline": "2025-11-01",
+                "relevance": 4
+            },
+            {
+                "name": "European Commission Horizon Europe AI Ethics Grant",
+                "focus": ["AI ethics", "responsible AI", "policy development"],
+                "amount": "€1.3 million",
+                "deadline": "2025-10-12",
+                "relevance": 3
+            },
+            {
+                "name": "Chan Zuckerberg Initiative Neurodegeneration Challenge",
+                "focus": ["Alzheimer's research", "Parkinson's disease", "brain health"],
+                "amount": "$3.5 million",
+                "deadline": "2025-07-25",
+                "relevance": 5
+            },
+            {
+                "name": "Amazon Climate Pledge Fund",
+                "focus": ["carbon reduction", "climate tech", "sustainability"],
+                "amount": "$2 million",
+                "deadline": "2025-09-30",
+                "relevance": 3
+            },
+            {
+                "name": "NSF Secure and Trustworthy Cyberspace (SaTC) Grant",
+                "focus": ["cybersecurity", "privacy", "encryption"],
+                "amount": "$1.9 million",
+                "deadline": "2025-08-18",
+                "relevance": 4
+            },
+            {
+                "name": "NIH Precision Medicine Initiative",
+                "focus": ["genomic medicine", "personalized healthcare", "biomarkers"],
+                "amount": "$4.2 million",
+                "deadline": "2025-10-25",
+                "relevance": 5
+            },
+            {
+                "name": "Ford Foundation Social Justice Grant",
+                "focus": ["racial equity", "economic justice", "human rights"],
+                "amount": "$500,000",
+                "deadline": "2025-07-05",
+                "relevance": 2
+            },
+            {
+                "name": "Intel Neuromorphic Computing Research Grant",
+                "focus": ["brain-inspired computing", "AI hardware", "neuromorphic chips"],
+                "amount": "$1.1 million",
+                "deadline": "2025-08-28",
+                "relevance": 4
+            },
+            {
+                "name": "National Geographic Exploration Grant",
+                "focus": ["biodiversity", "conservation", "field research"],
+                "amount": "$150,000",
+                "deadline": "2025-09-15",
+                "relevance": 2
+            },
+            {
+                "name": "DOE Fusion Energy Sciences Program",
+                "focus": ["nuclear fusion", "plasma physics", "energy innovation"],
+                "amount": "$3.8 million",
+                "deadline": "2025-11-10",
+                "relevance": 4
+            },
+            {
+                "name": "Microsoft AI for Earth Grant",
+                "focus": ["environmental AI", "climate modeling", "conservation tech"],
+                "amount": "$900,000",
+                "deadline": "2025-08-05",
+                "relevance": 3
+            },
+            {
+                "name": "NIH BRAIN Initiative",
+                "focus": ["neuroscience", "brain mapping", "neurotechnology"],
+                "amount": "$5.5 million",
+                "deadline": "2025-10-30",
+                "relevance": 5
+            },
+            {
+                "name": "Rockefeller Foundation Food Systems Innovation Grant",
+                "focus": ["food tech", "agricultural sustainability", "nutrition"],
+                "amount": "$1.4 million",
+                "deadline": "2025-09-12",
+                "relevance": 3
+            },
+            {
+                "name": "NSF Materials Genome Initiative",
+                "focus": ["advanced materials", "nanotechnology", "materials science"],
+                "amount": "$2.3 million",
+                "deadline": "2025-07-20",
+                "relevance": 4
+            },
+            {
+                "name": "UKRI Future Leaders Fellowship",
+                "focus": ["early-career researchers", "interdisciplinary science", "innovation"],
+                "amount": "£1.2 million",
+                "deadline": "2025-08-31",
+                "relevance": 3
+            },
+            {
+                "name": "IBM Quantum Open Science Prize",
+                "focus": ["quantum computing", "quantum algorithms", "open-source research"],
+                "amount": "$200,000",
+                "deadline": "2025-09-08",
+                "relevance": 4
+            },
+            {
+                "name": "NIH Cancer Moonshot Initiative",
+                "focus": ["oncology", "cancer immunotherapy", "early detection"],
+                "amount": "$6 million",
+                "deadline": "2025-11-20",
+                "relevance": 5
+            },
+            {
+                "name": "Schmidt Futures AI in Science Grant",
+                "focus": ["scientific AI", "computational research", "data-driven discovery"],
+                "amount": "$2.1 million",
+                "deadline": "2025-08-14",
+                "relevance": 4
+            },
+            {
+                "name": "NSF Convergence Accelerator",
+                "focus": ["interdisciplinary research", "tech commercialization", "societal impact"],
+                "amount": "$1 million",
+                "deadline": "2025-10-01",
+                "relevance": 3
+            },
+            {
+                "name": "OpenAI Research Access Grant",
+                "focus": ["AI safety", "large language models", "alignment research"],
+                "amount": "$500,000",
+                "deadline": "2025-07-31",
+                "relevance": 4
+            },
+            {
+                "name": "DOE Advanced Manufacturing Office Grant",
+                "focus": ["3D printing", "industrial automation", "smart manufacturing"],
+                "amount": "$2.6 million",
+                "deadline": "2025-09-25",
+                "relevance": 3
+            },
+            {
+                "name": "NIH All of Us Research Program",
+                "focus": ["precision medicine", "health data", "diversity in research"],
+                "amount": "$3.3 million",
+                "deadline": "2025-11-05",
+                "relevance": 4
+            },
+            {
+                "name": "Knight Foundation Journalism Innovation Fund",
+                "focus": ["media technology", "data journalism", "misinformation"],
+                "amount": "$250,000",
+                "deadline": "2025-08-08",
+                "relevance": 2
+            },
+            {
+                "name": "NSF Ethical and Responsible Research (ER2) Program",
+                "focus": ["research ethics", "social implications of tech", "policy"],
+                "amount": "$800,000",
+                "deadline": "2025-07-18",
+                "relevance": 3
+            },
+            {
+                "name": "Facebook Reality Labs Research Grant",
+                "focus": ["virtual reality", "augmented reality", "human-computer interaction"],
+                "amount": "$1.2 million",
+                "deadline": "2025-09-10",
+                "relevance": 4
+            },
+            {
+                "name": "NIH Rapid Acceleration of Diagnostics (RADx) Initiative",
+                "focus": ["diagnostic tech", "infectious diseases", "point-of-care testing"],
+                "amount": "$4.5 million",
+                "deadline": "2025-10-15",
+                "relevance": 5
+            },
+            {
+                "name": "NSF Future of Work at the Human-Technology Frontier",
+                "focus": ["workplace automation", "human-AI collaboration", "labor economics"],
+                "amount": "$1.6 million",
+                "deadline": "2025-08-25",
+                "relevance": 3
+            },
+            {
+                "name": "European Space Agency (ESA) Space Innovation Fund",
+                "focus": ["satellite tech", "space exploration", "orbital systems"],
+                "amount": "€2 million",
+                "deadline": "2025-11-30",
+                "relevance": 4
+            },
+            {
+                "name": "NIH Aging Research Grant",
+                "focus": ["gerontology", "longevity science", "age-related diseases"],
+                "amount": "$2.7 million",
+                "deadline": "2025-09-18",
+                "relevance": 4
+            },
+            {
+                "name": "NSF Smart and Connected Communities",
+                "focus": ["urban tech", "smart cities", "community resilience"],
+                "amount": "$1.8 million",
+                "deadline": "2025-10-08",
+                "relevance": 3
+            },
+            {
+                "name": "Alfred P. Sloan Foundation Digital Technology Grant",
+                "focus": ["blockchain", "digital privacy", "cyber-physical security"],
+                "amount": "$700,000",
+                "deadline": "2025-07-28",
+                "relevance": 3
+            },
+            {
+                "name": "NIH Minority Health and Health Disparities Research",
+                "focus": ["health equity", "community health", "social determinants"],
+                "amount": "$2.4 million",
+                "deadline": "2025-08-20",
+                "relevance": 4
+            },
+            {
+                "name": "NSF Biological Integration Institutes",
+                "focus": ["synthetic biology", "evolutionary biology", "systems biology"],
+                "amount": "$3 million",
+                "deadline": "2025-09-28",
+                "relevance": 4
+            },
+            {
+                "name": "Tesla Energy Innovation Prize",
+                "focus": ["battery tech", "energy storage", "grid optimization"],
+                "amount": "$1.5 million",
+                "deadline": "2025-10-22",
+                "relevance": 3
+            },
+            {
+                "name": "NIH Mental Health Research Grant",
+                "focus": ["psychiatry", "neuroscience", "behavioral health"],
+                "amount": "$2.9 million",
+                "deadline": "2025-11-25",
+                "relevance": 5
+            },
+            {
+                "name": "NSF Disaster Resilience Research Grants",
+                "focus": ["climate adaptation", "disaster response", "resilient infrastructure"],
+                "amount": "$1.3 million",
+                "deadline": "2025-08-12",
+                "relevance": 3
+            },
+            {
+                "name": "Google for Startups Black Founders Fund",
+                "focus": ["entrepreneurship", "tech startups", "diversity in tech"],
+                "amount": "$100,000",
+                "deadline": "2025-07-10",
+                "relevance": 2
+            },
+            {
+                "name": "NIH Rare Diseases Research Network",
+                "focus": ["orphan diseases", "genetic disorders", "therapeutic development"],
+                "amount": "$3.6 million",
+                "deadline": "2025-10-18",
+                "relevance": 4
+            },
+            {
+                "name": "NSF AI Institute for Dynamic Systems",
+                "focus": ["AI control systems", "robotics", "autonomous agents"],
+                "amount": "$5 million",
+                "deadline": "2025-11-12",
+                "relevance": 5
+            },
+            {
+                "name": "World Bank Climate Innovation Grants",
+                "focus": ["climate finance", "green infrastructure", "sustainable development"],
+                "amount": "$2.2 million",
+                "deadline": "2025-09-05",
+                "relevance": 3
+            },
+            {
+                "name": "NIH Biomedical Data Science Training Program",
+                "focus": ["data science", "biostatistics", "health informatics"],
+                "amount": "$1.7 million",
+                "deadline": "2025-08-29",
+                "relevance": 4
+            },
+                {
+                    "name": "NRF Quantum Computing Development Grant",
+                    "focus": ["quantum computing", "algorithm development"],
+                    "amount": "R37 million",
+                    "deadline": "2025-08-20",
+                    "relevance": 5
+                },
+                {
+                    "name": "DST AI for Agriculture Innovation Fund",
+                    "focus": ["artificial intelligence", "precision farming", "machine learning"],
+                    "amount": "R28 million",
+                    "deadline": "2025-07-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "SANEDI Renewable Energy Research Grant",
+                    "focus": ["solar energy", "energy storage", "sustainability"],
+                    "amount": "R42 million",
+                    "deadline": "2025-09-25",
+                    "relevance": 3
+                },
+                {
+                    "name": "CSIR High-Performance Computing Initiative",
+                    "focus": ["HPC", "data science", "simulation"],
+                    "amount": "R50 million",
+                    "deadline": "2025-10-10",
+                    "relevance": 5
+                },
+                {
+                    "name": "NHLS Medical AI Research Fund",
+                    "focus": ["healthcare AI", "diagnostics", "deep learning"],
+                    "amount": "R22 million",
+                    "deadline": "2025-06-30",
+                    "relevance": 4
+                },
+                {
+                    "name": "TIA Robotics and Automation Grant",
+                    "focus": ["robotics", "industrial automation", "AI"],
+                    "amount": "R35 million",
+                    "deadline": "2025-08-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "WRC Water Technology Innovation Fund",
+                    "focus": ["water purification", "sustainable water use", "IoT"],
+                    "amount": "R30 million",
+                    "deadline": "2025-07-30",
+                    "relevance": 3
+                },
+                {
+                    "name": "DSI Space Technology Development Grant",
+                    "focus": ["satellite tech", "aerospace", "remote sensing"],
+                    "amount": "R45 million",
+                    "deadline": "2025-09-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF Bioinformatics and Genomics Initiative",
+                    "focus": ["genomics", "bioinformatics", "precision medicine"],
+                    "amount": "R25 million",
+                    "deadline": "2025-08-12",
+                    "relevance": 4
+                },
+                {
+                    "name": "DTIC Smart Manufacturing Fund",
+                    "focus": ["Industry 4.0", "IoT", "automation"],
+                    "amount": "R40 million",
+                    "deadline": "2025-10-05",
+                    "relevance": 3
+                },
+                {
+                    "name": "SAAO Astrophysics and Data Science Grant",
+                    "focus": ["astrophysics", "big data", "telescope tech"],
+                    "amount": "R18 million",
+                    "deadline": "2025-07-22",
+                    "relevance": 3
+                },
+                {
+                    "name": "MRC Digital Health Innovations Fund",
+                    "focus": ["telemedicine", "wearable tech", "health analytics"],
+                    "amount": "R20 million",
+                    "deadline": "2025-06-25",
+                    "relevance": 4
+                },
+                {
+                    "name": "DEFF Wildlife Conservation Tech Grant",
+                    "focus": ["conservation tech", "drones", "AI tracking"],
+                    "amount": "R15 million",
+                    "deadline": "2025-09-10",
+                    "relevance": 3
+                },
+                {
+                    "name": "NRF Cybersecurity Research Initiative",
+                    "focus": ["cybersecurity", "blockchain", "encryption"],
+                    "amount": "R32 million",
+                    "deadline": "2025-08-30",
+                    "relevance": 5
+                },
+                {
+                    "name": "DBSA Urban Smart Cities Fund",
+                    "focus": ["smart cities", "urban IoT", "sustainable infrastructure"],
+                    "amount": "R55 million",
+                    "deadline": "2025-11-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "TIA AgriTech Innovation Challenge",
+                    "focus": ["precision agriculture", "AI farming", "drones"],
+                    "amount": "R27 million",
+                    "deadline": "2025-07-18",
+                    "relevance": 4
+                },
+                {
+                    "name": "CSIR Nanotechnology Development Grant",
+                    "focus": ["nanotech", "material science", "medical applications"],
+                    "amount": "R38 million",
+                    "deadline": "2025-09-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "DSI Climate Change Adaptation Fund",
+                    "focus": ["climate resilience", "carbon capture", "sustainability"],
+                    "amount": "R33 million",
+                    "deadline": "2025-10-20",
+                    "relevance": 3
+                },
+                {
+                    "name": "NRF Data Science for Social Good",
+                    "focus": ["big data", "social impact", "AI ethics"],
+                    "amount": "R21 million",
+                    "deadline": "2025-08-08",
+                    "relevance": 4
+                },
+                {
+                    "name": "SANRAL Smart Transport Solutions Grant",
+                    "focus": ["autonomous vehicles", "traffic AI", "smart roads"],
+                    "amount": "R48 million",
+                    "deadline": "2025-09-30",
+                    "relevance": 3
+                },
+                {
+                    "name": "NHLS Pandemic Preparedness Fund",
+                    "focus": ["infectious disease AI", "vaccine research", "epidemiology"],
+                    "amount": "R29 million",
+                    "deadline": "2025-07-05",
+                    "relevance": 5
+                },
+                {
+                    "name": "DST Future Fibre Optic Technologies",
+                    "focus": ["optical computing", "quantum comms", "networking"],
+                    "amount": "R36 million",
+                    "deadline": "2025-10-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "CSIR Energy Storage Innovation Fund",
+                    "focus": ["battery tech", "renewable storage", "grid solutions"],
+                    "amount": "R41 million",
+                    "deadline": "2025-11-10",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF AI in Education Research Grant",
+                    "focus": ["EdTech", "adaptive learning", "AI tutoring"],
+                    "amount": "R19 million",
+                    "deadline": "2025-08-25",
+                    "relevance": 3
+                },
+                {
+                    "name": "SEDA Startup Tech Innovation Fund",
+                    "focus": ["tech startups", "incubation", "entrepreneurship"],
+                    "amount": "R24 million",
+                    "deadline": "2025-07-28",
+                    "relevance": 4
+                },
+                {
+                    "name": "DEFF Marine Robotics Research Grant",
+                    "focus": ["underwater drones", "oceanography", "marine conservation"],
+                    "amount": "R26 million",
+                    "deadline": "2025-09-12",
+                    "relevance": 3
+                },
+                {
+                    "name": "DSI Advanced Materials Discovery Fund",
+                    "focus": ["material science", "nanotech", "3D printing"],
+                    "amount": "R34 million",
+                    "deadline": "2025-10-08",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF Neural Networks & Deep Learning Grant",
+                    "focus": ["AI models", "neural networks", "computer vision"],
+                    "amount": "R31 million",
+                    "deadline": "2025-08-14",
+                    "relevance": 5
+                },
+                {
+                    "name": "TIA FinTech Innovation Challenge",
+                    "focus": ["blockchain", "digital banking", "AI finance"],
+                    "amount": "R43 million",
+                    "deadline": "2025-09-18",
+                    "relevance": 4
+                },
+                {
+                    "name": "CSIR AI for Disaster Response Fund",
+                    "focus": ["disaster prediction", "AI救援", "crisis management"],
+                    "amount": "R23 million",
+                    "deadline": "2025-07-20",
+                    "relevance": 4
+                },
+                {
+                    "name": "SANBI Biodiversity Data Science Grant",
+                    "focus": ["biodiversity AI", "ecological data", "conservation"],
+                    "amount": "R17 million",
+                    "deadline": "2025-08-28",
+                    "relevance": 3
+                },
+                {
+                    "name": "NRF Quantum Encryption Initiative",
+                    "focus": ["quantum cryptography", "secure comms", "cybersecurity"],
+                    "amount": "R39 million",
+                    "deadline": "2025-10-25",
+                    "relevance": 5
+                },
+                {
+                    "name": "DST AI in Mining Automation Fund",
+                    "focus": ["autonomous mining", "safety AI", "resource optimization"],
+                    "amount": "R47 million",
+                    "deadline": "2025-11-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "MRC AI for Drug Discovery Grant",
+                    "focus": ["pharmaceutical AI", "molecular modeling", "drug design"],
+                    "amount": "R30 million",
+                    "deadline": "2025-09-08",
+                    "relevance": 5
+                },
+                {
+                    "name": "NRF Space Data Analytics Fund",
+                    "focus": ["satellite imagery", "space data", "AI analytics"],
+                    "amount": "R28 million",
+                    "deadline": "2025-08-17",
+                    "relevance": 4
+                },
+                {
+                    "name": "CSIR Green Hydrogen Research Grant",
+                    "focus": ["hydrogen energy", "clean fuel", "renewable tech"],
+                    "amount": "R52 million",
+                    "deadline": "2025-11-20",
+                    "relevance": 4
+                },
+                {
+                    "name": "DTIC 5G & Advanced Networks Fund",
+                    "focus": ["5G tech", "IoT networks", "telecom innovation"],
+                    "amount": "R44 million",
+                    "deadline": "2025-10-12",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF AI Ethics & Policy Research",
+                    "focus": ["AI governance", "ethics", "policy frameworks"],
+                    "amount": "R16 million",
+                    "deadline": "2025-07-10",
+                    "relevance": 3
+                },
+                {
+                    "name": "SANSA Space Weather Prediction Grant",
+                    "focus": ["space weather", "AI forecasting", "satellite safety"],
+                    "amount": "R20 million",
+                    "deadline": "2025-09-22",
+                    "relevance": 3
+                },
+                {
+                    "name": "DSI Synthetic Biology Innovation Fund",
+                    "focus": ["bioengineering", "synthetic DNA", "biotech"],
+                    "amount": "R35 million",
+                    "deadline": "2025-10-30",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF AI for Mental Health Research",
+                    "focus": ["mental health AI", "therapy bots", "neuroscience"],
+                    "amount": "R22 million",
+                    "deadline": "2025-08-03",
+                    "relevance": 4
+                },
+                {
+                    "name": "CSIR Smart Grid Technology Fund",
+                    "focus": ["energy grids", "AI optimization", "renewable integration"],
+                    "amount": "R46 million",
+                    "deadline": "2025-11-08",
+                    "relevance": 4
+                },
+                {
+                    "name": "TIA AI for Logistics & Supply Chain",
+                    "focus": ["supply chain AI", "autonomous logistics", "inventory AI"],
+                    "amount": "R33 million",
+                    "deadline": "2025-09-14",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF Exoplanet Discovery AI Initiative",
+                    "focus": ["astrophysics AI", "exoplanet detection", "telescope data"],
+                    "amount": "R27 million",
+                    "deadline": "2025-10-18",
+                    "relevance": 3
+                },
+                {
+                    "name": "DST Neurotechnology Development Grant",
+                    "focus": ["brain-computer interface", "neuro AI", "medical devices"],
+                    "amount": "R40 million",
+                    "deadline": "2025-11-25",
+                    "relevance": 5
+                },
+                {
+                    "name": "CSIR AI for Food Security Fund",
+                    "focus": ["agricultural AI", "food supply chain", "sustainability"],
+                    "amount": "R29 million",
+                    "deadline": "2025-09-28",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF Post-Quantum Cryptography Fund",
+                    "focus": ["quantum-safe encryption", "cybersecurity", "algorithms"],
+                    "amount": "R37 million",
+                    "deadline": "2025-10-22",
+                    "relevance": 5
+                },
+                {
+                    "name": "SANRAL AI for Traffic Management",
+                    "focus": ["smart traffic", "AI routing", "urban mobility"],
+                    "amount": "R31 million",
+                    "deadline": "2025-08-09",
+                    "relevance": 3
+                },
+                {
+                    "name": "DSI Fusion Energy Research Grant",
+                    "focus": ["fusion power", "plasma physics", "clean energy"],
+                    "amount": "R58 million",
+                    "deadline": "2025-12-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "NRF AI-Powered Language Processing",
+                    "focus": ["NLP", "translation AI", "linguistics"],
+                    "amount": "R25 million",
+                    "deadline": "2025-07-25",
+                    "relevance": 4
+                }
+            ]
         
         return fundingOpportunities.map(opportunity => {
             // Calculate match based on focus overlap
@@ -548,30 +1220,719 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateEventSuggestions(keywords) {
         const events = [
             {
-                name: "International Quantum Computing Conference",
-                location: "Zurich, Switzerland",
-                date: "2025-09-15",
-                keywords: ["quantum computing", "quantum information", "quantum algorithms"],
-                deadline: "2025-05-30",
-                relevance: 5
+                "name": "African Quantum Computing Summit",
+                "location": "Cape Town, South Africa",
+                "date": "2025-11-10",
+                "keywords": ["quantum computing", "quantum cryptography", "quantum hardware"],
+                "deadline": "2025-08-25",
+                "relevance": 5
             },
             {
-                name: "AI Ethics and Governance Symposium",
-                location: "Boston, MA, USA",
-                date: "2025-07-22",
-                keywords: ["AI ethics", "responsible AI", "governance"],
-                deadline: "2025-04-15",
-                relevance: 4
+                "name": "AI for Healthcare Africa Conference",
+                "location": "Nairobi, Kenya",
+                "date": "2025-09-18",
+                "keywords": ["medical AI", "diagnostics", "health tech"],
+                "deadline": "2025-07-05",
+                "relevance": 4
             },
             {
-                name: "Renewable Energy and Smart Grid Conference",
-                location: "Copenhagen, Denmark",
-                date: "2025-10-05",
-                keywords: ["renewable energy", "smart grid", "sustainability"],
-                deadline: "2025-06-20",
-                relevance: 3
-            }
-        ];
+                "name": "Pan-African Renewable Energy Forum",
+                "location": "Johannesburg, South Africa",
+                "date": "2025-10-30",
+                "keywords": ["solar power", "wind energy", "green tech"],
+                "deadline": "2025-08-15",
+                "relevance": 4
+            },
+            {
+                "name": "Global FinTech & Blockchain Expo",
+                "location": "Lagos, Nigeria",
+                "date": "2025-12-05",
+                "keywords": ["blockchain", "digital banking", "cryptocurrency"],
+                "deadline": "2025-09-20",
+                "relevance": 4
+            },
+            {
+                "name": "International AI Ethics Symposium",
+                "location": "London, UK",
+                "date": "2025-08-12",
+                "keywords": ["AI governance", "ethics", "policy"],
+                "deadline": "2025-05-30",
+                "relevance": 5
+            },
+            {
+                "name": "Africa Data Science Conference",
+                "location": "Kigali, Rwanda",
+                "date": "2025-11-22",
+                "keywords": ["big data", "machine learning", "data analytics"],
+                "deadline": "2025-09-10",
+                "relevance": 4
+            },
+            {
+                "name": "Space Tech & Satellite Innovation Summit",
+                "location": "Dubai, UAE",
+                "date": "2025-10-08",
+                "keywords": ["satellite tech", "space exploration", "aerospace"],
+                "deadline": "2025-07-25",
+                "relevance": 4
+            },
+            {
+                "name": "Global Cybersecurity Forum",
+                "location": "Singapore",
+                "date": "2025-09-05",
+                "keywords": ["cybersecurity", "encryption", "threat intelligence"],
+                "deadline": "2025-06-15",
+                "relevance": 5
+            },
+            {
+                "name": "African AgriTech Innovation Summit",
+                "location": "Accra, Ghana",
+                "date": "2025-10-15",
+                "keywords": ["precision farming", "drones", "AI agriculture"],
+                "deadline": "2025-08-01",
+                "relevance": 4
+            },
+            {
+                "name": "International Robotics & Automation Expo",
+                "location": "Tokyo, Japan",
+                "date": "2025-11-20",
+                "keywords": ["robotics", "industrial automation", "AI"],
+                "deadline": "2025-09-30",
+                "relevance": 4
+            },
+            {
+                "name": "Future of Quantum Communication Workshop",
+                "location": "Berlin, Germany",
+                "date": "2025-07-30",
+                "keywords": ["quantum networks", "secure comms", "quantum internet"],
+                "deadline": "2025-05-10",
+                "relevance": 5
+            },
+            {
+                "name": "AI in Education Africa Conference",
+                "location": "Dakar, Senegal",
+                "date": "2025-09-28",
+                "keywords": ["EdTech", "adaptive learning", "AI tutoring"],
+                "deadline": "2025-07-15",
+                "relevance": 3
+            },
+            {
+                "name": "Global Clean Energy & Sustainability Summit",
+                "location": "Stockholm, Sweden",
+                "date": "2025-10-25",
+                "keywords": ["renewables", "carbon capture", "green energy"],
+                "deadline": "2025-08-10",
+                "relevance": 4
+            },
+            {
+                "name": "Africa HealthTech Innovation Forum",
+                "location": "Cairo, Egypt",
+                "date": "2025-11-15",
+                "keywords": ["telemedicine", "wearables", "digital health"],
+                "deadline": "2025-09-05",
+                "relevance": 4
+            },
+            {
+                "name": "International Neurotechnology Conference",
+                "location": "San Francisco, USA",
+                "date": "2025-12-12",
+                "keywords": ["brain-computer interface", "neuro AI", "medical devices"],
+                "deadline": "2025-10-01",
+                "relevance": 5
+            },
+            {
+                "name": "African Smart Cities Summit",
+                "location": "Addis Ababa, Ethiopia",
+                "date": "2025-10-18",
+                "keywords": ["urban IoT", "smart infrastructure", "sustainability"],
+                "deadline": "2025-08-05",
+                "relevance": 4
+            },
+            {
+                "name": "Global AI & Deep Learning Symposium",
+                "location": "Toronto, Canada",
+                "date": "2025-09-10",
+                "keywords": ["neural networks", "computer vision", "NLP"],
+                "deadline": "2025-06-25",
+                "relevance": 5
+            },
+            {
+                "name": "Africa Climate Tech Conference",
+                "location": "Windhoek, Namibia",
+                "date": "2025-11-05",
+                "keywords": ["climate resilience", "carbon tech", "sustainability"],
+                "deadline": "2025-09-15",
+                "relevance": 4
+            },
+            {
+                "name": "International 5G & IoT Innovation Forum",
+                "location": "Seoul, South Korea",
+                "date": "2025-10-12",
+                "keywords": ["5G networks", "IoT", "smart devices"],
+                "deadline": "2025-07-30",
+                "relevance": 4
+            },
+            {
+                "name": "African Digital Banking Summit",
+                "location": "Abuja, Nigeria",
+                "date": "2025-09-25",
+                "keywords": ["FinTech", "digital finance", "blockchain banking"],
+                "deadline": "2025-07-10",
+                "relevance": 4
+            },
+            {
+                "name": "Global Synthetic Biology Conference",
+                "location": "Boston, USA",
+                "date": "2025-12-08",
+                "keywords": ["bioengineering", "synthetic DNA", "biotech"],
+                "deadline": "2025-10-20",
+                "relevance": 4
+            },
+            {
+                "name": "Africa AI & Robotics Expo",
+                "location": "Lusaka, Zambia",
+                "date": "2025-10-22",
+                "keywords": ["AI robotics", "automation", "industrial AI"],
+                "deadline": "2025-08-12",
+                "relevance": 4
+            },
+            {
+                "name": "International Space Exploration Forum",
+                "location": "Paris, France",
+                "date": "2025-11-30",
+                "keywords": ["space travel", "satellite tech", "Mars missions"],
+                "deadline": "2025-09-18",
+                "relevance": 4
+            },
+            {
+                "name": "African Water Tech Symposium",
+                "location": "Dar es Salaam, Tanzania",
+                "date": "2025-09-15",
+                "keywords": ["water purification", "IoT water management", "sustainability"],
+                "deadline": "2025-07-01",
+                "relevance": 3
+            },
+            {
+                "name": "Global Quantum Algorithms Workshop",
+                "location": "Zurich, Switzerland",
+                "date": "2025-08-20",
+                "keywords": ["quantum software", "algorithms", "quantum advantage"],
+                "deadline": "2025-06-05",
+                "relevance": 5
+            },
+            {
+                "name": "Africa Cybersecurity & Privacy Summit",
+                "location": "Nairobi, Kenya",
+                "date": "2025-10-10",
+                "keywords": ["cyber defense", "data privacy", "encryption"],
+                "deadline": "2025-08-20",
+                "relevance": 5
+            },
+            {
+                "name": "International AI for Social Good Conference",
+                "location": "Amsterdam, Netherlands",
+                "date": "2025-11-18",
+                "keywords": ["AI ethics", "social impact", "inclusive AI"],
+                "deadline": "2025-09-05",
+                "relevance": 4
+            },
+            {
+                "name": "African Future of Work Summit",
+                "location": "Johannesburg, South Africa",
+                "date": "2025-09-30",
+                "keywords": ["AI jobs", "automation impact", "future skills"],
+                "deadline": "2025-07-15",
+                "relevance": 3
+            },
+            {
+                "name": "Global Fusion Energy Symposium",
+                "location": "Oxford, UK",
+                "date": "2025-12-15",
+                "keywords": ["fusion power", "clean energy", "plasma physics"],
+                "deadline": "2025-10-30",
+                "relevance": 4
+            },
+            {
+                "name": "Africa Blockchain & Digital Assets Forum",
+                "location": "Lagos, Nigeria",
+                "date": "2025-10-28",
+                "keywords": ["crypto", "DeFi", "smart contracts"],
+                "deadline": "2025-08-15",
+                "relevance": 4
+            },
+            {
+                "name": "International AI in Finance Summit",
+                "location": "New York, USA",
+                "date": "2025-11-25",
+                "keywords": ["algorithmic trading", "AI banking", "risk modeling"],
+                "deadline": "2025-09-10",
+                "relevance": 5
+            },
+            {
+                "name": "African Wildlife Tech Conference",
+                "location": "Gaborone, Botswana",
+                "date": "2025-09-12",
+                "keywords": ["conservation tech", "drones", "AI tracking"],
+                "deadline": "2025-07-20",
+                "relevance": 3
+            },
+            {
+                "name": "Global NLP & Language AI Workshop",
+                "location": "Barcelona, Spain",
+                "date": "2025-10-17",
+                "keywords": ["natural language processing", "translation AI", "linguistics"],
+                "deadline": "2025-08-05",
+                "relevance": 4
+            },
+            {
+                "name": "Africa AI Startup Pitch Competition",
+                "location": "Cape Town, South Africa",
+                "date": "2025-11-08",
+                "keywords": ["startups", "entrepreneurship", "AI innovation"],
+                "deadline": "2025-09-22",
+                "relevance": 4
+            },
+            {
+                "name": "International Smart Manufacturing Expo",
+                "location": "Munich, Germany",
+                "date": "2025-10-05",
+                "keywords": ["Industry 4.0", "IoT factories", "automation"],
+                "deadline": "2025-07-25",
+                "relevance": 4
+            },
+            {
+                "name": "African Digital Health Symposium",
+                "location": "Kampala, Uganda",
+                "date": "2025-09-20",
+                "keywords": ["health AI", "telemedicine", "wearable tech"],
+                "deadline": "2025-07-10",
+                "relevance": 4
+            },
+            {
+                "name": "Global Quantum Sensors Conference",
+                "location": "Melbourne, Australia",
+                "date": "2025-12-10",
+                "keywords": ["quantum sensing", "precision measurement", "physics"],
+                "deadline": "2025-10-25",
+                "relevance": 5
+            },
+            {
+                "name": "Africa Renewable Energy Investors Forum",
+                "location": "Abidjan, Côte d'Ivoire",
+                "date": "2025-11-12",
+                "keywords": ["solar investments", "wind farms", "green energy"],
+                "deadline": "2025-09-28",
+                "relevance": 4
+            },
+            {
+                "name": "International AI in Law & Governance Summit",
+                "location": "Brussels, Belgium",
+                "date": "2025-10-30",
+                "keywords": ["AI policy", "legal tech", "regulation"],
+                "deadline": "2025-08-15",
+                "relevance": 4
+            },
+            {
+                "name": "African Space & Satellite Forum",
+                "location": "Pretoria, South Africa",
+                "date": "2025-09-08",
+                "keywords": ["satellite tech", "space data", "aerospace"],
+                "deadline": "2025-07-20",
+                "relevance": 4
+            },
+            {
+                "name": "Global AI in Retail & E-Commerce Expo",
+                "location": "Shanghai, China",
+                "date": "2025-11-15",
+                "keywords": ["AI shopping", "recommendation engines", "supply chain AI"],
+                "deadline": "2025-09-30",
+                "relevance": 4
+            },
+            {
+                "name": "Africa Quantum & HPC Workshop",
+                "location": "Nairobi, Kenya",
+                "date": "2025-10-20",
+                "keywords": ["quantum computing", "high-performance computing", "supercomputing"],
+                "deadline": "2025-08-10",
+                "relevance": 5
+            },
+            {
+                "name": "International AI for Climate Action Conference",
+                "location": "Vancouver, Canada",
+                "date": "2025-12-05",
+                "keywords": ["climate AI", "carbon tracking", "sustainability"],
+                "deadline": "2025-10-20",
+                "relevance": 4
+            },
+            {
+                "name": "African MedTech & AI Diagnostics Summit",
+                "location": "Accra, Ghana",
+                "date": "2025-09-28",
+                "keywords": ["medical AI", "diagnostics", "health innovation"],
+                "deadline": "2025-07-15",
+                "relevance": 4
+            },
+            {
+                "name": "Global Future of AI Governance Forum",
+                "location": "Geneva, Switzerland",
+                "date": "2025-11-22",
+                "keywords": ["AI policy", "ethics", "global standards"],
+                "deadline": "2025-09-10",
+                "relevance": 5
+            },
+            
+                {
+                    "name": "Global Summit on Artificial Intelligence",
+                    "location": "San Francisco, CA, USA",
+                    "date": "2025-11-10",
+                    "keywords": ["AI research", "machine learning", "deep learning"],
+                    "deadline": "2025-08-25",
+                    "relevance": 5
+                },
+                {
+                    "name": "International Conference on High-Performance Computing",
+                    "location": "Tokyo, Japan",
+                    "date": "2025-10-18",
+                    "keywords": ["HPC", "supercomputing", "parallel computing"],
+                    "deadline": "2025-07-30",
+                    "relevance": 4
+                },
+                {
+                    "name": "Neural Information Processing Systems (NeurIPS)",
+                    "location": "Vancouver, Canada",
+                    "date": "2025-12-05",
+                    "keywords": ["neural networks", "AI", "computational neuroscience"],
+                    "deadline": "2025-09-15",
+                    "relevance": 5
+                },
+                {
+                    "name": "Blockchain and Cryptocurrency Expo",
+                    "location": "Singapore",
+                    "date": "2025-09-25",
+                    "keywords": ["blockchain", "DeFi", "Web3"],
+                    "deadline": "2025-06-10",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Robotics and Automation Conference",
+                    "location": "Munich, Germany",
+                    "date": "2025-11-20",
+                    "keywords": ["robotics", "autonomous systems", "AI in robotics"],
+                    "deadline": "2025-09-01",
+                    "relevance": 4
+                },
+                {
+                    "name": "Climate Change and Sustainability Forum",
+                    "location": "Stockholm, Sweden",
+                    "date": "2025-10-30",
+                    "keywords": ["climate action", "sustainability", "green tech"],
+                    "deadline": "2025-08-15",
+                    "relevance": 3
+                },
+                {
+                    "name": "Bioinformatics and Computational Biology Conference",
+                    "location": "Boston, MA, USA",
+                    "date": "2025-08-12",
+                    "keywords": ["genomics", "computational biology", "bioinformatics"],
+                    "deadline": "2025-05-20",
+                    "relevance": 4
+                },
+                {
+                    "name": "Future of Quantum Technologies Workshop",
+                    "location": "London, UK",
+                    "date": "2025-07-15",
+                    "keywords": ["quantum computing", "quantum cryptography", "quantum sensing"],
+                    "deadline": "2025-04-30",
+                    "relevance": 5
+                },
+                {
+                    "name": "International Symposium on Cybersecurity",
+                    "location": "Tel Aviv, Israel",
+                    "date": "2025-09-05",
+                    "keywords": ["cybersecurity", "privacy", "ethical hacking"],
+                    "deadline": "2025-06-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "Space Exploration and Technology Summit",
+                    "location": "Houston, TX, USA",
+                    "date": "2025-11-15",
+                    "keywords": ["space tech", "satellites", "Mars exploration"],
+                    "deadline": "2025-08-30",
+                    "relevance": 3
+                },
+                {
+                    "name": "Digital Health and AI in Medicine Conference",
+                    "location": "Berlin, Germany",
+                    "date": "2025-10-10",
+                    "keywords": ["AI in healthcare", "telemedicine", "medical AI"],
+                    "deadline": "2025-07-25",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Workshop on Natural Language Processing",
+                    "location": "Seattle, WA, USA",
+                    "date": "2025-08-28",
+                    "keywords": ["NLP", "LLMs", "computational linguistics"],
+                    "deadline": "2025-06-10",
+                    "relevance": 5
+                },
+                {
+                    "name": "Autonomous Vehicles and Smart Mobility Expo",
+                    "location": "Detroit, MI, USA",
+                    "date": "2025-09-18",
+                    "keywords": ["self-driving cars", "autonomous systems", "smart cities"],
+                    "deadline": "2025-07-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Conference on Computer Vision",
+                    "location": "Paris, France",
+                    "date": "2025-10-22",
+                    "keywords": ["computer vision", "image processing", "AI vision"],
+                    "deadline": "2025-08-10",
+                    "relevance": 4
+                },
+                {
+                    "name": "Global Fintech Innovation Summit",
+                    "location": "Hong Kong",
+                    "date": "2025-11-05",
+                    "keywords": ["fintech", "blockchain finance", "digital banking"],
+                    "deadline": "2025-09-20",
+                    "relevance": 3
+                },
+                {
+                    "name": "Advanced Materials and Nanotechnology Conference",
+                    "location": "Seoul, South Korea",
+                    "date": "2025-09-08",
+                    "keywords": ["nanotech", "graphene", "material science"],
+                    "deadline": "2025-06-25",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Symposium on Human-Computer Interaction",
+                    "location": "Austin, TX, USA",
+                    "date": "2025-07-30",
+                    "keywords": ["HCI", "UX design", "interactive systems"],
+                    "deadline": "2025-05-15",
+                    "relevance": 3
+                },
+                {
+                    "name": "AI for Social Good Workshop",
+                    "location": "New York, NY, USA",
+                    "date": "2025-10-15",
+                    "keywords": ["AI ethics", "social impact", "responsible AI"],
+                    "deadline": "2025-08-01",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Conference on Biomedical Engineering",
+                    "location": "Sydney, Australia",
+                    "date": "2025-11-25",
+                    "keywords": ["biomedical devices", "health tech", "medical imaging"],
+                    "deadline": "2025-09-10",
+                    "relevance": 4
+                },
+                {
+                    "name": "Future of Work and Automation Forum",
+                    "location": "Zurich, Switzerland",
+                    "date": "2025-09-05",
+                    "keywords": ["automation", "future workforce", "AI in business"],
+                    "deadline": "2025-06-20",
+                    "relevance": 3
+                },
+                {
+                    "name": "International Conference on Data Science",
+                    "location": "Barcelona, Spain",
+                    "date": "2025-10-28",
+                    "keywords": ["big data", "data analytics", "machine learning"],
+                    "deadline": "2025-08-12",
+                    "relevance": 5
+                },
+                {
+                    "name": "Renewable Energy Storage Symposium",
+                    "location": "Oslo, Norway",
+                    "date": "2025-08-20",
+                    "keywords": ["battery tech", "energy storage", "solar power"],
+                    "deadline": "2025-06-05",
+                    "relevance": 3
+                },
+                {
+                    "name": "Global AI Safety Summit",
+                    "location": "Geneva, Switzerland",
+                    "date": "2025-12-10",
+                    "keywords": ["AI alignment", "AI policy", "existential risk"],
+                    "deadline": "2025-09-30",
+                    "relevance": 5
+                },
+                {
+                    "name": "International Workshop on Edge Computing",
+                    "location": "Chicago, IL, USA",
+                    "date": "2025-09-12",
+                    "keywords": ["edge AI", "IoT", "distributed computing"],
+                    "deadline": "2025-07-01",
+                    "relevance": 4
+                },
+                {
+                    "name": "Augmented and Virtual Reality Expo",
+                    "location": "Los Angeles, CA, USA",
+                    "date": "2025-11-08",
+                    "keywords": ["AR/VR", "metaverse", "immersive tech"],
+                    "deadline": "2025-08-22",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Conference on Cybersecurity and Privacy",
+                    "location": "Brussels, Belgium",
+                    "date": "2025-10-17",
+                    "keywords": ["data privacy", "cyber defense", "encryption"],
+                    "deadline": "2025-08-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "Global Health Tech Innovation Summit",
+                    "location": "Dubai, UAE",
+                    "date": "2025-11-30",
+                    "keywords": ["digital health", "medical AI", "telemedicine"],
+                    "deadline": "2025-09-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Symposium on Wireless Communications",
+                    "location": "Singapore",
+                    "date": "2025-09-22",
+                    "keywords": ["5G", "IoT", "wireless networks"],
+                    "deadline": "2025-07-10",
+                    "relevance": 3
+                },
+                {
+                    "name": "AI in Finance and Trading Conference",
+                    "location": "London, UK",
+                    "date": "2025-10-08",
+                    "keywords": ["algorithmic trading", "AI finance", "quantitative analysis"],
+                    "deadline": "2025-08-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Conference on Smart Cities",
+                    "location": "Barcelona, Spain",
+                    "date": "2025-11-12",
+                    "keywords": ["urban tech", "IoT", "sustainable cities"],
+                    "deadline": "2025-09-25",
+                    "relevance": 3
+                },
+                {
+                    "name": "Future of Quantum Communication Workshop",
+                    "location": "Zurich, Switzerland",
+                    "date": "2025-07-25",
+                    "keywords": ["quantum networks", "quantum cryptography", "QKD"],
+                    "deadline": "2025-05-10",
+                    "relevance": 5
+                },
+                {
+                    "name": "International Conference on Human-Robot Interaction",
+                    "location": "Tokyo, Japan",
+                    "date": "2025-10-14",
+                    "keywords": ["HRI", "social robotics", "collaborative robots"],
+                    "deadline": "2025-08-28",
+                    "relevance": 4
+                },
+                {
+                    "name": "Global Semiconductor Technology Forum",
+                    "location": "Taipei, Taiwan",
+                    "date": "2025-09-30",
+                    "keywords": ["semiconductors", "chip design", "nanofabrication"],
+                    "deadline": "2025-07-15",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Workshop on Federated Learning",
+                    "location": "Berlin, Germany",
+                    "date": "2025-08-15",
+                    "keywords": ["privacy-preserving AI", "distributed ML", "decentralized learning"],
+                    "deadline": "2025-06-01",
+                    "relevance": 4
+                },
+                {
+                    "name": "AI in Education and EdTech Summit",
+                    "location": "San Diego, CA, USA",
+                    "date": "2025-10-25",
+                    "keywords": ["adaptive learning", "AI tutors", "educational tech"],
+                    "deadline": "2025-08-10",
+                    "relevance": 3
+                },
+                {
+                    "name": "International Conference on Cloud Computing",
+                    "location": "Seattle, WA, USA",
+                    "date": "2025-11-18",
+                    "keywords": ["cloud AI", "serverless computing", "distributed systems"],
+                    "deadline": "2025-09-05",
+                    "relevance": 4
+                },
+                {
+                    "name": "Global Conference on AI and Law",
+                    "location": "Washington, D.C., USA",
+                    "date": "2025-09-28",
+                    "keywords": ["AI regulation", "legal tech", "algorithmic fairness"],
+                    "deadline": "2025-07-12",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Workshop on Synthetic Biology",
+                    "location": "Boston, MA, USA",
+                    "date": "2025-08-05",
+                    "keywords": ["bioengineering", "genetic circuits", "synthetic life"],
+                    "deadline": "2025-06-20",
+                    "relevance": 4
+                },
+                {
+                    "name": "Future of Quantum Machine Learning Symposium",
+                    "location": "Toronto, Canada",
+                    "date": "2025-10-20",
+                    "keywords": ["quantum ML", "quantum-enhanced AI", "hybrid algorithms"],
+                    "deadline": "2025-08-30",
+                    "relevance": 5
+                },
+                {
+                    "name": "International Conference on Autonomous Drones",
+                    "location": "Munich, Germany",
+                    "date": "2025-09-10",
+                    "keywords": ["drone tech", "UAVs", "autonomous navigation"],
+                    "deadline": "2025-07-25",
+                    "relevance": 3
+                },
+                {
+                    "name": "Global AI in Manufacturing Summit",
+                    "location": "Shanghai, China",
+                    "date": "2025-11-22",
+                    "keywords": ["smart factories", "industrial AI", "predictive maintenance"],
+                    "deadline": "2025-09-08",
+                    "relevance": 4
+                },
+                {
+                    "name": "International Workshop on Explainable AI",
+                    "location": "Amsterdam, Netherlands",
+                    "date": "2025-08-18",
+                    "keywords": ["XAI", "interpretability", "transparent AI"],
+                    "deadline": "2025-06-30",
+                    "relevance": 4
+                },
+                {
+                    "name": "Future of Digital Identity Conference",
+                    "location": "Stockholm, Sweden",
+                    "date": "2025-10-12",
+                    "keywords": ["self-sovereign identity", "blockchain ID", "privacy tech"],
+                    "deadline": "2025-08-20",
+                    "relevance": 3
+                },
+                {
+                    "name": "International Conference on AI in Agriculture",
+                    "location": "Melbourne, Australia",
+                    "date": "2025-11-28",
+                    "keywords": ["precision farming", "agri-tech", "AI for food security"],
+                    "deadline": "2025-09-18",
+                    "relevance": 3
+                }
+            ];
         
         return events.map(event => {
             // Calculate match based on keyword overlap

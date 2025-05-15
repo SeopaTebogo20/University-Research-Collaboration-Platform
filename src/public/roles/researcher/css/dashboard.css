@@ -225,7 +225,7 @@ body {
 .date-display {
   display: flex;
   align-items: center;
-  color: var(--text-secondary);
+  color: #f9fafb;
   font-size: 0.875rem;
 }
 
@@ -1060,75 +1060,6 @@ body {
 
 .status-step.active span {
   color: var(--warning-color);
-}
-
-/* Footer */
-.app-footer {
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-color);
-  padding: 2rem;
-  margin-top: auto;
-}
-
-.footer-content {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.footer-brand {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.footer-brand h2 {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  flex: 1;
-  justify-content: space-around;
-}
-
-.footer-section h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.footer-section ul {
-  list-style: none;
-}
-
-.footer-section ul li {
-  margin-bottom: 0.5rem;
-}
-
-.footer-section ul li a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 0.875rem;
-  transition: color var(--transition-fast);
-}
-
-.footer-section ul li a:hover {
-  color: var(--primary-color);
-}
-
-.footer-copyright {
-  text-align: center;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-tertiary);
-  font-size: 0.875rem;
 }
 
 /* Toast Notifications */
