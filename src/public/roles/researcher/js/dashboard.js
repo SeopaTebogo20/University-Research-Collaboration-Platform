@@ -182,14 +182,468 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loadingElement) {
             loadingElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading ${widgetType} data...`;
             
-            // Simulate data loading
-            setTimeout(() => {
-                loadingElement.innerHTML = `<i class="fas fa-check-circle"></i> ${capitalizeFirstLetter(widgetType)} data loaded`;
-                setTimeout(() => {
-                    loadingElement.style.display = 'none';
-                }, 1000);
-            }, 1500);
+            try {
+                let response;
+                let data;
+                
+                switch(widgetType) {
+                    case 'projects':
+                        response = await fetch(`${API_BASE_URL}/projects?user_id=${CURRENT_USER_ID}`);
+                        if (!response.ok) throw new Error('Failed to load projects');
+                        data = await response.json();
+                        displayProjectsWidgetData(widgetElement, data);
+                        break;
+                        
+                    case 'milestones':
+                        response = await fetch(`${API_BASE_URL}/milestones?user_id=${CURRENT_USER_ID}`);
+                        if (!response.ok) throw new Error('Failed to load milestones');
+                        data = await response.json();
+                        displayMilestonesWidgetData(widgetElement, data);
+                        break;
+                        
+                    case 'funding':
+                        response = await fetch(`${API_BASE_URL}/funding?user_id=${CURRENT_USER_ID}`);
+                        if (!response.ok) throw new Error('Failed to load funding');
+                        data = await response.json();
+                        displayFundingWidgetData(widgetElement, data);
+                        break;
+                        
+                    case 'calendar':
+                        // Fetch all relevant calendar data
+                        const [projectsRes, milestonesRes, fundingRes] = await Promise.all([
+                            fetch(`${API_BASE_URL}/projects?user_id=${CURRENT_USER_ID}`),
+                            fetch(`${API_BASE_URL}/milestones?user_id=${CURRENT_USER_ID}`),
+                            fetch(`${API_BASE_URL}/funding?user_id=${CURRENT_USER_ID}`)
+                        ]);
+                        
+                        if (!projectsRes.ok || !milestonesRes.ok || !fundingRes.ok) {
+                            throw new Error('Failed to load calendar data');
+                        }
+                        
+                        const projects = await projectsRes.json();
+                        const milestones = await milestonesRes.json();
+                        const funding = await fundingRes.json();
+                        displayCalendarWidgetData(widgetElement, {projects, milestones, funding});
+                        break;
+                        
+                    case 'recent_activity':
+                        response = await fetch(`${API_BASE_URL}/activity?user_id=${CURRENT_USER_ID}`);
+                        if (!response.ok) throw new Error('Failed to load activity');
+                        data = await response.json();
+                        displayActivityWidgetData(widgetElement, data);
+                        break;
+                        
+                    case 'ai_suggestions':
+                        response = await fetch(`${API_BASE_URL}/ai-suggestions?user_id=${CURRENT_USER_ID}`);
+                        if (!response.ok) throw new Error('Failed to load AI suggestions');
+                        data = await response.json();
+                        displayAISuggestionsWidgetData(widgetElement, data);
+                        break;
+                        
+                    default:
+                        throw new Error('Unknown widget type');
+                }
+                
+                loadingElement.style.display = 'none';
+                
+            } catch (error) {
+                console.error(`Error loading ${widgetType} data:`, error);
+                loadingElement.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error loading data. <button class="retry-btn">Retry</button>`;
+                
+                // Add retry functionality
+                loadingElement.querySelector('.retry-btn').addEventListener('click', () => {
+                    loadWidgetData(widgetElement, widgetType);
+                });
+            }
         }
+    }
+    
+    function displayProjectsWidgetData(widgetElement, projects) {
+        const listContainer = widgetElement.querySelector('.projects-list');
+        listContainer.innerHTML = '';
+        
+        if (projects.length === 0) {
+            listContainer.innerHTML = '<div class="no-data">No projects found</div>';
+            return;
+        }
+        
+        // Show only the most recent 3-5 projects
+        const recentProjects = projects.slice(0, 5);
+        
+        recentProjects.forEach(project => {
+            const projectItem = document.createElement('div');
+            projectItem.className = 'project-item';
+            
+            const statusClass = getStatusClass(project.status);
+            const startDate = project.start_date ? new Date(project.start_date).toLocaleDateString() : 'No date';
+            
+            projectItem.innerHTML = `
+                <div class="project-header">
+                    <span class="project-status ${statusClass}">${project.status || 'Active'}</span>
+                    <h4>${project.project_title || 'Untitled Project'}</h4>
+                </div>
+                <div class="project-meta">
+                    <span><i class="fas fa-calendar"></i> ${startDate}</span>
+                    <span><i class="fas fa-users"></i> ${project.collaborator_count || 0} collaborators</span>
+                </div>
+            `;
+            
+            projectItem.addEventListener('click', () => {
+                window.location.href = `projects.html?project_id=${project.id}`;
+            });
+            
+            listContainer.appendChild(projectItem);
+        });
+    }
+    
+    function displayMilestonesWidgetData(widgetElement, milestones) {
+        const listContainer = widgetElement.querySelector('.milestones-list');
+        listContainer.innerHTML = '';
+        
+        if (milestones.length === 0) {
+            listContainer.innerHTML = '<div class="no-data">No milestones found</div>';
+            return;
+        }
+        
+        // Sort by upcoming first
+        const sortedMilestones = [...milestones].sort((a, b) => {
+            return new Date(a.end_date) - new Date(b.end_date);
+        });
+        
+        // Show only the most urgent 3-5 milestones
+        const upcomingMilestones = sortedMilestones.slice(0, 5);
+        
+        upcomingMilestones.forEach(milestone => {
+            const milestoneItem = document.createElement('div');
+            milestoneItem.className = 'milestone-item';
+            
+            const statusClass = getStatusClass(milestone.status);
+            const endDate = milestone.end_date ? new Date(milestone.end_date).toLocaleDateString() : 'No date';
+            
+            milestoneItem.innerHTML = `
+                <div class="milestone-header">
+                    <span class="milestone-status ${statusClass}">${milestone.status || 'Pending'}</span>
+                    <h4>${milestone.title || 'Untitled Milestone'}</h4>
+                </div>
+                <div class="milestone-meta">
+                    <span><i class="fas fa-calendar"></i> Due: ${endDate}</span>
+                    ${milestone.project_title ? `<span><i class="fas fa-project-diagram"></i> ${milestone.project_title}</span>` : ''}
+                </div>
+            `;
+            
+            milestoneItem.addEventListener('click', () => {
+                window.location.href = `milestones.html?milestone_id=${milestone.id}`;
+            });
+            
+            listContainer.appendChild(milestoneItem);
+        });
+    }
+    
+    function displayFundingWidgetData(widgetElement, fundingRecords) {
+        const summaryContainer = widgetElement.querySelector('.funding-summary');
+        const chartContainer = widgetElement.querySelector('.funding-chart');
+        const ctx = chartContainer.getContext('2d');
+        
+        if (fundingRecords.length === 0) {
+            summaryContainer.innerHTML = '<div class="no-data">No funding records found</div>';
+            chartContainer.style.display = 'none';
+            return;
+        }
+        
+        // Calculate totals
+        const totalFunding = fundingRecords.reduce((sum, record) => sum + parseFloat(record.total_amount || 0), 0);
+        const totalSpent = fundingRecords.reduce((sum, record) => sum + parseFloat(record.amount_spent || 0), 0);
+        const totalRemaining = totalFunding - totalSpent;
+        
+        // Update summary
+        summaryContainer.innerHTML = `
+            <div class="funding-stats">
+                <div class="stat-item">
+                    <div class="stat-value">R${totalFunding.toLocaleString()}</div>
+                    <div class="stat-label">Total Funding</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">R${totalSpent.toLocaleString()}</div>
+                    <div class="stat-label">Spent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">R${totalRemaining.toLocaleString()}</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+            </div>
+        `;
+        
+        // Create or update chart
+        if (widgetElement.fundingChart) {
+            widgetElement.fundingChart.destroy();
+        }
+        
+        widgetElement.fundingChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Spent', 'Remaining'],
+                datasets: [{
+                    data: [totalSpent, totalRemaining],
+                    backgroundColor: ['#ef4444', '#10b981'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        chartContainer.style.display = 'block';
+    }
+    
+    function displayCalendarWidgetData(widgetElement, data) {
+        const { projects, milestones, funding } = data;
+        const calendarContainer = widgetElement.querySelector('.calendar-container');
+        calendarContainer.innerHTML = '';
+        
+        if (projects.length === 0 && milestones.length === 0 && funding.length === 0) {
+            calendarContainer.innerHTML = '<div class="no-data">No calendar events found</div>';
+            return;
+        }
+        
+        // Create a combined list of all events
+        const allEvents = [];
+        
+        // Add project events
+        projects.forEach(project => {
+            if (project.start_date) {
+                allEvents.push({
+                    type: 'project',
+                    title: `Project Start: ${project.project_title}`,
+                    date: project.start_date,
+                    color: '#3b82f6' // blue
+                });
+            }
+            
+            if (project.end_date) {
+                allEvents.push({
+                    type: 'project',
+                    title: `Project End: ${project.project_title}`,
+                    date: project.end_date,
+                    color: '#3b82f6' // blue
+                });
+            }
+        });
+        
+        // Add milestone events
+        milestones.forEach(milestone => {
+            if (milestone.end_date) {
+                allEvents.push({
+                    type: 'milestone',
+                    title: `Milestone: ${milestone.title}`,
+                    date: milestone.end_date,
+                    color: '#f59e0b' // amber
+                });
+            }
+        });
+        
+        // Add funding events
+        funding.forEach(fund => {
+            if (fund.expiration_date) {
+                allEvents.push({
+                    type: 'funding',
+                    title: `Funding Expires: ${fund.title}`,
+                    date: fund.expiration_date,
+                    color: '#10b981' // green
+                });
+            }
+        });
+        
+        // Sort events by date
+        allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // Group events by date
+        const eventsByDate = {};
+        allEvents.forEach(event => {
+            const dateStr = new Date(event.date).toLocaleDateString();
+            if (!eventsByDate[dateStr]) {
+                eventsByDate[dateStr] = [];
+            }
+            eventsByDate[dateStr].push(event);
+        });
+        
+        // Display upcoming events (next 7 days)
+        const today = new Date();
+        const nextWeek = new Date();
+        nextWeek.setDate(today.getDate() + 7);
+        
+        const upcomingEvents = allEvents.filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate >= today && eventDate <= nextWeek;
+        });
+        
+        if (upcomingEvents.length === 0) {
+            calendarContainer.innerHTML = '<div class="no-upcoming">No upcoming events in the next 7 days</div>';
+            
+            // Show all events button
+            const showAllBtn = document.createElement('button');
+            showAllBtn.className = 'btn btn-secondary show-all-events';
+            showAllBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> View All Events';
+            showAllBtn.addEventListener('click', () => displayAllCalendarEvents(calendarContainer, eventsByDate));
+            calendarContainer.appendChild(showAllBtn);
+            
+            return;
+        }
+        
+        // Create a list of upcoming events
+        const upcomingList = document.createElement('div');
+        upcomingList.className = 'upcoming-events';
+        
+        upcomingEvents.slice(0, 5).forEach(event => {
+            const eventItem = document.createElement('div');
+            eventItem.className = 'calendar-event';
+            eventItem.style.borderLeft = `3px solid ${event.color}`;
+            
+            const eventDate = new Date(event.date);
+            const isToday = eventDate.toDateString() === today.toDateString();
+            
+            eventItem.innerHTML = `
+                <div class="event-date ${isToday ? 'today' : ''}">
+                    ${isToday ? 'Today' : eventDate.toLocaleDateString()}
+                </div>
+                <div class="event-title">
+                    ${event.title}
+                </div>
+                <div class="event-type" style="color: ${event.color}">
+                    ${event.type}
+                </div>
+            `;
+            
+            upcomingList.appendChild(eventItem);
+        });
+        
+        calendarContainer.appendChild(upcomingList);
+        
+        // Show all events button if there are more
+        if (allEvents.length > upcomingEvents.length) {
+            const showAllBtn = document.createElement('button');
+            showAllBtn.className = 'btn btn-secondary show-all-events';
+            showAllBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> View All Events';
+            showAllBtn.addEventListener('click', () => displayAllCalendarEvents(calendarContainer, eventsByDate));
+            calendarContainer.appendChild(showAllBtn);
+        }
+    }
+    
+    function displayAllCalendarEvents(container, eventsByDate) {
+        container.innerHTML = '';
+        
+        const allEventsList = document.createElement('div');
+        allEventsList.className = 'all-events';
+        
+        Object.keys(eventsByDate).forEach(dateStr => {
+            const dateHeader = document.createElement('h4');
+            dateHeader.className = 'event-date-header';
+            dateHeader.textContent = dateStr;
+            allEventsList.appendChild(dateHeader);
+            
+            eventsByDate[dateStr].forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.className = 'calendar-event';
+                eventItem.style.borderLeft = `3px solid ${event.color}`;
+                
+                eventItem.innerHTML = `
+                    <div class="event-title">
+                        ${event.title}
+                    </div>
+                    <div class="event-type" style="color: ${event.color}">
+                        ${event.type}
+                    </div>
+                `;
+                
+                allEventsList.appendChild(eventItem);
+            });
+        });
+        
+        container.appendChild(allEventsList);
+        
+        // Add back button
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn btn-secondary back-to-upcoming';
+        backBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Back to Upcoming';
+        backBtn.addEventListener('click', () => {
+            // Reload the calendar widget to show upcoming events
+            const widgetElement = container.closest('.widget-content');
+            const widgetType = widgetElement.closest('.grid-stack-item').getAttribute('data-widget-type');
+            loadWidgetData(widgetElement, widgetType);
+        });
+        container.appendChild(backBtn);
+    }
+    
+    function displayActivityWidgetData(widgetElement, activities) {
+        const listContainer = widgetElement.querySelector('.activity-list');
+        listContainer.innerHTML = '';
+        
+        if (activities.length === 0) {
+            listContainer.innerHTML = '<div class="no-data">No recent activity</div>';
+            return;
+        }
+        
+        // Show only the most recent 5 activities
+        const recentActivities = activities.slice(0, 5);
+        
+        recentActivities.forEach(activity => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            
+            const activityDate = activity.timestamp ? new Date(activity.timestamp).toLocaleString() : 'Recently';
+            
+            activityItem.innerHTML = `
+                <div class="activity-icon">
+                    <i class="fas ${getActivityIcon(activity.type)}"></i>
+                </div>
+                <div class="activity-content">
+                    <p class="activity-message">${activity.message}</p>
+                    <p class="activity-meta">
+                        <span class="activity-type">${activity.type}</span>
+                        <span class="activity-date">${activityDate}</span>
+                    </p>
+                </div>
+            `;
+            
+            listContainer.appendChild(activityItem);
+        });
+    }
+    
+    function displayAISuggestionsWidgetData(widgetElement, suggestions) {
+        const listContainer = widgetElement.querySelector('.ai-suggestions-list');
+        listContainer.innerHTML = '';
+        
+        if (suggestions.length === 0) {
+            listContainer.innerHTML = '<div class="no-data">No AI suggestions available</div>';
+            return;
+        }
+        
+        // Show only the top 3 suggestions
+        const topSuggestions = suggestions.slice(0, 3);
+        
+        topSuggestions.forEach(suggestion => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'ai-suggestion-item';
+            
+            suggestionItem.innerHTML = `
+                <div class="suggestion-header">
+                    <i class="fas fa-lightbulb"></i>
+                    <h4>${suggestion.title}</h4>
+                </div>
+                <div class="suggestion-content">
+                    <p>${suggestion.description}</p>
+                    ${suggestion.action ? `<button class="btn btn-small">${suggestion.action}</button>` : ''}
+                </div>
+            `;
+            
+            listContainer.appendChild(suggestionItem);
+        });
     }
     
     function getWidgetTemplate(widgetType) {
@@ -233,37 +687,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupWidgetEventListeners(widget, widgetType) {
+        // Hover effects
+        widget.addEventListener('mouseenter', () => {
+            widget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.12)';
+        });
+        
+        widget.addEventListener('mouseleave', () => {
+            widget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+        });
+
+        // Refresh button
         const refreshBtn = widget.querySelector('.widget-refresh');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => {
-                showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)} widget...`, 'info');
-                loadWidgetData(widget, widgetType);
+                refreshBtn.querySelector('i').classList.add('fa-spin');
+                showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)}...`, 'info');
+                
+                // Reload widget data
+                loadWidgetData(widget, widgetType).then(() => {
+                    refreshBtn.querySelector('i').classList.remove('fa-spin');
+                    showNotification(`${capitalizeFirstLetter(widgetType)} refreshed`, 'success');
+                });
             });
         }
-        
+
+        // Remove button
         const removeBtn = widget.querySelector('.widget-remove');
         if (removeBtn) {
             removeBtn.addEventListener('click', async () => {
                 const gridItem = widget.closest('.grid-stack-item');
                 const widgetId = gridItem.getAttribute('gs-id');
                 
-                try {
-                    await removeWidgetFromDatabase(widgetId);
-                    grid.removeWidget(gridItem, true);
-                    
-                    // Update local state
-                    userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
-                    localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
-                    
-                    showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
-                    
-                    if (grid.engine.nodes.length === 0) {
-                        emptyDashboard.classList.remove('hidden');
+                // Add animation
+                gridItem.style.transform = 'scale(0.95)';
+                gridItem.style.opacity = '0.8';
+                
+                setTimeout(async () => {
+                    try {
+                        await removeWidgetFromDatabase(widgetId);
+                        grid.removeWidget(gridItem, true);
+                        
+                        // Update local state
+                        userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
+                        localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
+                        
+                        showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
+                        
+                        if (grid.engine.nodes.length === 0) {
+                            emptyDashboard.classList.remove('hidden');
+                        }
+                    } catch (error) {
+                        console.error(`Error removing ${widgetType} widget:`, error);
+                        gridItem.style.transform = '';
+                        gridItem.style.opacity = '';
+                        showNotification(`Error removing ${widgetType} widget`, 'error');
                     }
-                } catch (error) {
-                    console.error(`Error removing ${widgetType} widget:`, error);
-                    showNotification(`Error removing ${widgetType} widget`, 'error');
-                }
+                }, 200);
             });
         }
     }
@@ -492,78 +971,40 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!string) return '';
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
-});
-// Add this to your existing dashboard.js file
-function setupWidgetEventListeners(widget, widgetType) {
-    // Hover effects
-    widget.addEventListener('mouseenter', () => {
-        widget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.12)';
-    });
     
-    widget.addEventListener('mouseleave', () => {
-        widget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
-    });
-
-    // Refresh button
-    const refreshBtn = widget.querySelector('.widget-refresh');
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            refreshBtn.querySelector('i').classList.add('fa-spin');
-            showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)}...`, 'info');
-            
-            // Simulate refresh
-            setTimeout(() => {
-                refreshBtn.querySelector('i').classList.remove('fa-spin');
-                showNotification(`${capitalizeFirstLetter(widgetType)} refreshed`, 'success');
-            }, 1500);
-        });
+    // Helper functions for widget data display
+    function getStatusClass(status) {
+        if (!status) return 'status-default';
+        
+        switch(status.toLowerCase()) {
+            case 'completed': return 'status-completed';
+            case 'active': return 'status-active';
+            case 'pending': return 'status-pending';
+            case 'delayed': return 'status-delayed';
+            default: return 'status-default';
+        }
     }
-
-    // Remove button
-    const removeBtn = widget.querySelector('.widget-remove');
-    if (removeBtn) {
-        removeBtn.addEventListener('click', async () => {
-            const gridItem = widget.closest('.grid-stack-item');
-            const widgetId = gridItem.getAttribute('gs-id');
-            
-            // Add animation
-            gridItem.style.transform = 'scale(0.95)';
-            gridItem.style.opacity = '0.8';
-            
-            setTimeout(async () => {
-                try {
-                    await removeWidgetFromDatabase(widgetId);
-                    grid.removeWidget(gridItem, true);
-                    
-                    // Update local state
-                    userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
-                    localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
-                    
-                    showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
-                    
-                    if (grid.engine.nodes.length === 0) {
-                        emptyDashboard.classList.remove('hidden');
-                    }
-                } catch (error) {
-                    console.error(`Error removing ${widgetType} widget:`, error);
-                    gridItem.style.transform = '';
-                    gridItem.style.opacity = '';
-                    showNotification(`Error removing ${widgetType} widget`, 'error');
-                }
-            }, 200);
-        });
+    
+    function getActivityIcon(activityType) {
+        switch(activityType.toLowerCase()) {
+            case 'project': return 'fa-project-diagram';
+            case 'milestone': return 'fa-clipboard-check';
+            case 'funding': return 'fa-coins';
+            case 'collaboration': return 'fa-users';
+            default: return 'fa-info-circle';
+        }
     }
-}
-
-// Update the current date in calendar widget
-function updateCurrentDate() {
-    const dateElement = document.getElementById('current-date');
-    if (dateElement) {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        dateElement.textContent = new Date().toLocaleDateString(undefined, options);
+    
+    // Update the current date in calendar widget
+    function updateCurrentDate() {
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateElement.textContent = new Date().toLocaleDateString(undefined, options);
+        }
     }
-}
-
-// Call this in your init function
-updateCurrentDate();
-setInterval(updateCurrentDate, 60000); // Update every minute
+    
+    // Call this in your init function
+    updateCurrentDate();
+    setInterval(updateCurrentDate, 60000); // Update every minute
+});
