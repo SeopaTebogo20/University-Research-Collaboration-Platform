@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', function() {
   // DOM Elements
   const receivedSection = document.getElementById('invitations-received-section');
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
   : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
 
   const RECEIVED_INVITATIONS_ENDPOINT = `${API_BASE_URL}/received_invitations`;
-  const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/sent_invitations`; // Assuming this will be added later
+  const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/project_invitations`; 
   const INVITATIONS_ENDPOINT = `${API_BASE_URL}/invitations`; // For operations like updating status
 
   // Tab switching logic
@@ -91,15 +92,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Fetch sent invitations from API (placeholder for future implementation)
+  // Fetch sent invitations from API
   async function fetchSentInvitations() {
     try {
       // Show loading state before fetch
       sentContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading invitations...</span></div>';
       
-      // Use a mock response for now until the sent invitations API is implemented
-      // In the future, replace this with: const response = await fetch(SENT_INVITATIONS_ENDPOINT);
-      return [];
+      const response = await fetch(SENT_INVITATIONS_ENDPOINT);
+      if (!response.ok) {
+        throw new Error('Failed to fetch sent invitations');
+      }
+      
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error('Error fetching sent invitations:', error);
       showToast('Error loading sent invitations. Please try again.', 'error');
@@ -232,16 +237,114 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Render sent invitations (placeholder for future implementation)
+  // Render sent invitations
   function renderSentInvitations(statusFilter = 'all') {
-    if (sentInvitations.length === 0) {
+    let filteredInvites = sentInvitations;
+    
+    if (statusFilter !== 'all') {
+      filteredInvites = sentInvitations.filter(invite => invite.status === statusFilter);
+    }
+    
+    if (filteredInvites.length === 0) {
       sentContainer.innerHTML = '';
       noSentMessage.classList.remove('hidden');
     } else {
-      // Implementation will be similar to renderReceivedInvitations
-      // but adapted for sent invitations schema
       noSentMessage.classList.add('hidden');
-      sentContainer.innerHTML = '<p>Sent invitations feature coming soon.</p>';
+      
+      const invitationsHTML = filteredInvites.map(invitation => {
+        // Format date
+        const date = new Date(invitation.created_at).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+        
+        // Status badge
+        let statusBadge = '';
+        if (invitation.status === 'pending') {
+          statusBadge = '<span class="badge badge-pending">Pending</span>';
+        } else if (invitation.status === 'accepted') {
+          statusBadge = '<span class="badge badge-success">Accepted</span>';
+        } else if (invitation.status === 'declined') {
+          statusBadge = '<span class="badge badge-danger">Declined</span>';
+        } else if (invitation.status === 'cancelled') {
+          statusBadge = '<span class="badge badge-secondary">Cancelled</span>';
+        }
+        
+        // Action buttons (only show cancel if pending)
+        let actionButtons = '';
+        if (invitation.status === 'pending') {
+          actionButtons = `
+            <button class="btn btn-sm btn-danger cancel-invite-btn" data-invitation-id="${invitation.id}">
+              <i class="fas fa-ban mr-1"></i> Cancel
+            </button>
+          `;
+        }
+        
+        // Parse skills if they exist
+        const requiredSkills = invitation.key_research_area ? 
+          parseJsonField(invitation.key_research_area) : [];
+        
+        // Parse messages if they exist
+        const messages = invitation.messages ? 
+          parseJsonField(invitation.messages) : [];
+        
+        return `
+          <div class="invitation-card">
+            <div class="invitation-header">
+              <h3 class="invitation-project-title">${invitation.projectTitle || 'Project Invitation'}</h3>
+              ${statusBadge}
+            </div>
+            <div class="invitation-body">
+              <div class="invitation-recipient">
+                <span class="recipient-label">To:</span>
+                <a href="#" class="recipient-name view-researcher" data-researcher-id="${invitation.email}">
+                  ${invitation.name || 'Researcher'}
+                </a>
+                <span class="recipient-title">${invitation.projectTitle || ''}</span>
+                <span class="recipient-institution">${invitation.university || ''}</span>
+              </div>
+              <div class="invitation-info">
+                <div class="info-item">
+                  <i class="fas fa-calendar-alt"></i> Sent on ${date}
+                </div>
+                <div class="info-item">
+                  <i class="fas fa-clock"></i> Duration: ${invitation.duration || 'Not specified'}
+                </div>
+              </div>
+              <p class="invitation-description">${invitation.description || 'No description provided.'}</p>
+              ${requiredSkills.length > 0 ? `
+                <div class="required-skills">
+                  <span class="skills-label">Required Skills:</span>
+                  <div class="skills-list">
+                    ${requiredSkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${invitation.status !== 'pending' && messages.length > 0 ? `
+                <div class="invitation-response">
+                  <span class="response-label">Response:</span>
+                  <p class="response-message">${messages[messages.length - 1].text || 'No message provided.'}</p>
+                </div>
+              ` : ''}
+            </div>
+            <div class="invitation-footer">
+              <button class="btn btn-outline btn-sm view-project-btn" data-project-id="${invitation.projectId}">
+                <i class="fas fa-eye mr-1"></i> View Project
+              </button>
+              <div class="invitation-actions">
+                ${actionButtons}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      sentContainer.innerHTML = invitationsHTML;
+      
+      // Add event listeners to the newly created buttons
+      attachEventListeners();
     }
   }
 
@@ -381,12 +484,26 @@ document.addEventListener('DOMContentLoaded', function() {
     researcherProfile.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading researcher profile...</span></div>';
     
     // Find the researcher in our data
-    const researcher = receivedInvitations.find(invitation => 
+    let researcher = receivedInvitations.find(invitation => 
       invitation.invitedByEmail === researcherId
     );
     
+    // If not found in received invitations, try sent invitations
+    if (!researcher) {
+      researcher = sentInvitations.find(invitation => 
+        invitation.invitedEmail === researcherId
+      );
+    }
+    
     if (researcher) {
-      document.getElementById('researcher-name-title').textContent = researcher.invitedByName || 'Researcher';
+      // Set the header based on whether we're viewing a sender or recipient
+      const isRecipient = !!researcher.invitedEmail;
+      const name = isRecipient ? researcher.invitedName : researcher.invitedByName;
+      const title = isRecipient ? researcher.invitedTitle : researcher.invitedByTitle;
+      const institution = isRecipient ? researcher.invitedInstitution : researcher.invitedByInstitution;
+      const email = isRecipient ? researcher.invitedEmail : researcher.invitedByEmail;
+      
+      document.getElementById('researcher-name-title').textContent = name || 'Researcher';
       
       setTimeout(() => {
         researcherProfile.innerHTML = `
@@ -395,16 +512,16 @@ document.addEventListener('DOMContentLoaded', function() {
               <i class="fas fa-user-circle fa-3x"></i>
             </div>
             <div class="researcher-basic-info">
-              <h3 class="researcher-name">${researcher.invitedByName || 'Researcher'}</h3>
-              <p class="researcher-title">${researcher.invitedByTitle || 'Researcher'}</p>
-              <p class="researcher-institution">${researcher.invitedByInstitution || 'Institution not specified'}</p>
-              <p class="researcher-contact"><i class="fas fa-envelope"></i> ${researcher.invitedByEmail}</p>
+              <h3 class="researcher-name">${name || 'Researcher'}</h3>
+              <p class="researcher-title">${title || 'Researcher'}</p>
+              <p class="researcher-institution">${institution || 'Institution not specified'}</p>
+              <p class="researcher-contact"><i class="fas fa-envelope"></i> ${email}</p>
             </div>
           </div>
           
           <div class="researcher-section">
             <h4 class="section-title">About</h4>
-            <p>Researcher at ${researcher.invitedByInstitution || 'their institution'}.</p>
+            <p>Researcher at ${institution || 'their institution'}.</p>
           </div>
           
           <div class="researcher-section">
@@ -432,15 +549,28 @@ document.addEventListener('DOMContentLoaded', function() {
     viewResearcherModal.classList.add('active');
   }
   
-  // Open cancel invitation modal (placeholder for future implementation)
+  // Open cancel invitation modal
   function openCancelModal(invitationId) {
     currentInvitationId = invitationId;
-    cancelInvitationModal.classList.add('active');
-    document.getElementById('cancel-invitation-details').innerHTML = `
-      <div class="alert alert-info">
-        Cancel invitation functionality coming soon.
-      </div>
-    `;
+    
+    // Find the invitation in our data
+    const invitation = sentInvitations.find(inv => inv.id === invitationId);
+    
+    if (invitation) {
+      document.getElementById('cancel-invitation-details').innerHTML = `
+        <div>
+          <p>Are you sure you want to cancel this invitation?</p>
+          <p><strong>Project:</strong> ${invitation.projectTitle || 'Research Project'}</p>
+          <p><strong>To:</strong> ${invitation.invitedName || 'Researcher'}, ${invitation.invitedInstitution || 'Institution'}</p>
+          <p><strong>Status:</strong> ${invitation.status}</p>
+          <p class="text-danger">This action cannot be undone.</p>
+        </div>
+      `;
+      
+      cancelInvitationModal.classList.add('active');
+    } else {
+      showToast('Invitation not found', 'error');
+    }
   }
   
   // Open respond to invitation modal
@@ -502,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Delete invitation from API (placeholder for future implementation)
+  // Delete invitation from API
   async function deleteInvitation(invitationId) {
     try {
       // First try to delete on the server
@@ -532,13 +662,13 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmCancelBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
     
     try {
-      // Make API call to delete the invitation
-      await deleteInvitation(currentInvitationId);
+      // Instead of actually deleting, just update status to 'cancelled'
+      await updateInvitationStatus(currentInvitationId, 'cancelled', 'Invitation cancelled by sender');
       
       // Update local data
       const index = sentInvitations.findIndex(inv => inv.id === currentInvitationId);
       if (index !== -1) {
-        sentInvitations.splice(index, 1);
+        sentInvitations[index].status = 'cancelled';
       }
       
       // Close modal and refresh view
@@ -615,87 +745,87 @@ document.addEventListener('DOMContentLoaded', function() {
       renderReceivedInvitations(statusFilterReceived.value);
       
       const actionText = response === 'accepted' ? 'accepted' : 'declined';
-      showToast(`Invitation ${actionText} successfully`, 'success');
-    } catch (error) {
-      console.error(`Error ${response} invitation:`, error);
-      showToast(`Failed to ${response} invitation. Please try again.`, 'error');
-    } finally {
-      // Reset buttons
-      acceptInvitationBtn.disabled = false;
-      declineInvitationBtn.disabled = false;
-      actionBtn.innerHTML = originalBtnText;
-      currentInvitationId = null;
-    }
-  }
-  
-  // Close modal handlers
-  function closeAllModals() {
-    viewProjectModal.classList.remove('active');
-    viewResearcherModal.classList.remove('active');
-    cancelInvitationModal.classList.remove('active');
-    respondInvitationModal.classList.remove('active');
+    showToast(`Invitation ${actionText} successfully`, 'success');
+  } catch (error) {
+    console.error(`Error ${response} invitation:`, error);
+    showToast(`Failed to ${response} invitation. Please try again.`, 'error');
+  } finally {
+    // Reset buttons
+    acceptInvitationBtn.disabled = false;
+    declineInvitationBtn.disabled = false;
+    actionBtn.innerHTML = originalBtnText;
     currentInvitationId = null;
   }
-  
-  // Add click event listeners for closing modals
-  closeViewModalBtn.addEventListener('click', closeAllModals);
-  closeViewBtn.addEventListener('click', closeAllModals);
-  closeResearcherModalBtn.addEventListener('click', closeAllModals);
-  closeResearcherBtn.addEventListener('click', closeAllModals);
-  closeCancelModalBtn.addEventListener('click', closeAllModals);
-  cancelCancelBtn.addEventListener('click', closeAllModals);
-  closeRespondModalBtn.addEventListener('click', closeAllModals);
-  closeRespondBtn.addEventListener('click', closeAllModals);
-  
-  // Also close modals when clicking outside the modal content
-  document.querySelectorAll('.modal-overlay').forEach(modal => {
-    modal.addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeAllModals();
-      }
-    });
-  });
-  
-  // Toast notification system
-  function showToast(message, type = 'info') {
-    const toastContainer = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    let icon = '';
-    if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
-    else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
-    else if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle"></i>';
-    else icon = '<i class="fas fa-info-circle"></i>';
-    
-    toast.innerHTML = `
-      ${icon}
-      <span class="toast-message">${message}</span>
-    `;
-    
-    toastContainer.appendChild(toast);
-    
-    // Show the toast
-    setTimeout(() => toast.classList.add('show'), 10);
-    
-    // Remove the toast after 3 seconds
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => {
-        if (toastContainer.contains(toast)) {
-          toastContainer.removeChild(toast);
-        }
-      }, 300);
-    }, 3000);
-  }
-  
-  // Handle escape key to close modals
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
+}
+
+// Close modal handlers
+function closeAllModals() {
+  viewProjectModal.classList.remove('active');
+  viewResearcherModal.classList.remove('active');
+  cancelInvitationModal.classList.remove('active');
+  respondInvitationModal.classList.remove('active');
+  currentInvitationId = null;
+}
+
+// Add click event listeners for closing modals
+closeViewModalBtn.addEventListener('click', closeAllModals);
+closeViewBtn.addEventListener('click', closeAllModals);
+closeResearcherModalBtn.addEventListener('click', closeAllModals);
+closeResearcherBtn.addEventListener('click', closeAllModals);
+closeCancelModalBtn.addEventListener('click', closeAllModals);
+cancelCancelBtn.addEventListener('click', closeAllModals);
+closeRespondModalBtn.addEventListener('click', closeAllModals);
+closeRespondBtn.addEventListener('click', closeAllModals);
+
+// Also close modals when clicking outside the modal content
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
       closeAllModals();
     }
   });
+});
+
+// Toast notification system
+function showToast(message, type = 'info') {
+  const toastContainer = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
   
-  // Initialize the invitations
-  initInvitations();
+  let icon = '';
+  if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+  else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+  else if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle"></i>';
+  else icon = '<i class="fas fa-info-circle"></i>';
+  
+  toast.innerHTML = `
+    ${icon}
+    <span class="toast-message">${message}</span>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  // Show the toast
+  setTimeout(() => toast.classList.add('show'), 10);
+  
+  // Remove the toast after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (toastContainer.contains(toast)) {
+        toastContainer.removeChild(toast);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// Handle escape key to close modals
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeAllModals();
+  }
+});
+
+// Initialize the invitations
+initInvitations();
 });

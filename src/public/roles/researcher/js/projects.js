@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
     
     const PROJECTS_API = `${API_BASE_URL}/projects`;
+    const USERS_API = `${API_BASE_URL}/users`;
     
     // DOM Elements
     const projectsContainer = document.getElementById('projects-container');
@@ -598,68 +599,69 @@ document.addEventListener('DOMContentLoaded', () => {
         collaboratorsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading collaborators...</div>';
         
         try {
-            const response = await fetch(`${API_BASE_URL}/collaborators`);
+            const response = await fetch(USERS_API);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             
-            const collaborators = await response.json();
+            const users = await response.json();
             
-            if (collaborators.length === 0) {
-                collaboratorsList.innerHTML = '<div class="no-results">No collaborators found.</div>';
+            if (users.length === 0) {
+                collaboratorsList.innerHTML = '<div class="no-results">No users found.</div>';
                 return;
             }
             
             // Clear loading message
             collaboratorsList.innerHTML = '';
             
-            // Display each collaborator
-            collaborators.forEach(collaborator => {
-                const collaboratorCard = document.createElement('div');
-                collaboratorCard.className = 'collaborator-card';
+            // Display each user as a potential collaborator
+            users.forEach(user => {
+                const userCard = document.createElement('div');
+                userCard.className = 'collaborator-card';
                 
-                // Format skills as tags
-                let skillsTags = '<span class="tag">No skills specified</span>';
-                if (collaborator.skills) {
-                    skillsTags = collaborator.skills
+                // Format research area as tags
+                let researchAreaTags = '<span class="tag">No research area specified</span>';
+                if (user.research_area) {
+                    researchAreaTags = user.research_area
                         .split(',')
-                        .map(skill => `<span class="tag">${skill.trim()}</span>`)
+                        .map(area => `<span class="tag">${area.trim()}</span>`)
                         .join('');
                 }
                 
-                collaboratorCard.innerHTML = `
+                userCard.innerHTML = `
                     <div class="collaborator-info">
-                        <h4>${collaborator.name || 'No name provided'}</h4>
-                        <p>${collaborator.department || 'No department specified'}</p>
+                        <h4>${user.name || 'No name provided'}</h4>
+                        <p>${user.department || 'No department specified'}</p>
+                        <p>${user.role || 'No role specified'}</p>
                         <div class="skills">
-                            ${skillsTags}
+                            ${researchAreaTags}
                         </div>
                     </div>
                     <div class="collaborator-actions">
-                        <button class="btn view-profile-btn" data-id="${collaborator.id}" data-name="${collaborator.name}">
+                        <button class="btn view-profile-btn" data-id="${user.id}" data-name="${user.name}">
                             <i class="fas fa-id-card"></i> View Profile
                         </button>
-                        <button class="btn invite-user-btn" data-id="${collaborator.id}" data-name="${collaborator.name}">
+                        <button class="btn invite-user-btn" data-id="${user.id}" data-name="${user.name}">
                             <i class="fas fa-paper-plane"></i> Invite
                         </button>
                     </div>
                 `;
                 
-                collaboratorsList.appendChild(collaboratorCard);
+                collaboratorsList.appendChild(userCard);
                 
                 // Add event listeners to buttons
-                collaboratorCard.querySelector('.view-profile-btn').addEventListener('click', () => 
-                    viewCollaboratorProfile(collaborator.id, collaborator.name));
-                collaboratorCard.querySelector('.invite-user-btn').addEventListener('click', () => 
-                    sendInvitation(projectId, collaborator.id, collaborator.name));
+                userCard.querySelector('.view-profile-btn').addEventListener('click', () => 
+                    viewCollaboratorProfile(user.id, user.name));
+                userCard.querySelector('.invite-user-btn').addEventListener('click', () => 
+                    sendInvitation(projectId, user.id, user.name));
             });
             
         } catch (error) {
-            console.error('Error loading collaborators:', error);
+            console.error('Error loading users:', error);
             collaboratorsList.innerHTML = `
                 <div class="error">
-                    <i class="fas fa-exclamation-triangle"></i> Error loading collaborators. Please try again later.
+                    <i class="fas fa-exclamation-triangle"></i> Error loading users. Please try again later.
                 </div>
             `;
         }
@@ -673,118 +675,93 @@ document.addEventListener('DOMContentLoaded', () => {
             // Trim the userId to remove any whitespace or newline characters
             const trimmedUserId = userId.trim();
             
-            const response = await fetch(`${API_BASE_URL}/collaborators/${trimmedUserId}`);
+            const response = await fetch(`${USERS_API}/${trimmedUserId}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             
-            const data = await response.json();
+            const user = await response.json();
             
-            // Handle case where API returns an array instead of single object
-            const profile = Array.isArray(data) ? data[0] : data;
-            
-            if (!profile) {
-                throw new Error('Collaborator not found');
-            }
-    
             // Format research areas as tags
             let researchAreas = '<span class="tag">None specified</span>';
-            if (profile.research_areas) {
-                researchAreas = profile.research_areas
+            if (user.research_area) {
+                researchAreas = user.research_area
                     .split(',')
                     .map(area => `<span class="tag">${area.trim()}</span>`)
                     .join('');
             }
             
-            // Format education as list items
-            let educationList = '<li>No education information</li>';
-            if (profile.education) {
-                educationList = profile.education
+            // Format qualifications as list items
+            let qualificationsList = '<li>No qualifications information</li>';
+            if (user.qualifications) {
+                qualificationsList = user.qualifications
                     .split('\n')
                     .filter(item => item.trim())
                     .map(item => `<li>${item.trim()}</li>`)
                     .join('');
             }
             
-            // Format skills as tags
-            let skillsTags = '<span class="tag">No skills specified</span>';
-            if (profile.skills) {
-                skillsTags = profile.skills
-                    .split(',')
-                    .map(skill => `<span class="tag">${skill.trim()}</span>`)
-                    .join('');
-            }
-            
-            // Build the profile HTML
+            // Build the profile HTML using the user data from profiles table
             profileContent.innerHTML = `
                 <div class="profile-header">
                     <div class="profile-avatar">
                         <i class="fas fa-user-circle"></i>
                     </div>
                     <div class="profile-title">
-                        <h3>${profile.name || userName || 'Collaborator'}</h3>
-                        <p>${profile.title || ''}</p>
-                        <p>${profile.institution || 'No institution specified'}</p>
+                        <h3>${user.name || userName || 'User'}</h3>
+                        <p>${user.role || ''}</p>
+                        <p>${user.department || 'No department specified'}</p>
                     </div>
                 </div>
                 
                 <div class="profile-section">
                     <h4>Contact Information</h4>
                     <div class="profile-contact">
-                        <p><i class="fas fa-envelope"></i> ${profile.email || 'No email provided'}</p>
-                        <p><i class="fas fa-phone"></i> ${profile.phone || 'No phone provided'}</p>
-                        <p><i class="fas fa-map-marker-alt"></i> ${profile.location || 'No location provided'}</p>
+                        <p><i class="fas fa-envelope"></i> ${user.email || 'No email provided'}</p>
+                        <p><i class="fas fa-phone"></i> ${user.phone || 'No phone provided'}</p>
                     </div>
                 </div>
                 
                 <div class="profile-section">
-                    <h4>Bio</h4>
-                    <div class="profile-bio">${profile.bio || 'No bio provided.'}</div>
+                    <h4>Academic Information</h4>
+                    <div class="profile-row">
+                        <span class="label">Academic Role:</span>
+                        <span class="value">${user.academic_role || 'Not specified'}</span>
+                    </div>
+                    <div class="profile-row">
+                        <span class="label">Research Experience:</span>
+                        <span class="value">${user.research_experience ? `${user.research_experience} years` : 'Not specified'}</span>
+                    </div>
                 </div>
                 
                 <div class="profile-section">
                     <h4>Research Areas</h4>
                     <div class="profile-tags">
-                        ${profile.research_area}
+                        ${researchAreas}
                     </div>
                 </div>
                 
                 <div class="profile-section">
-                    <h4>Skills</h4>
-                    <div class="profile-tags">
-                        ${skillsTags}
-                    </div>
-                </div>
-                
-                <div class="profile-section">
-                    <h4>Education</h4>
+                    <h4>Qualifications</h4>
                     <ul class="profile-list">
-                        ${educationList}
+                        ${qualificationsList}
                     </ul>
                 </div>
                 
                 <div class="profile-section">
-                    <h4>Experience</h4>
-                    <ul class="profile-list">
-                        ${profile.experience ? 
-                            profile.experience.split('\n').filter(item => item.trim()).map(item => `<li>${item.trim()}</li>`).join('') : 
-                            '<li>No experience information</li>'}
-                    </ul>
+                    <h4>Current Project</h4>
+                    <p>${user.current_project || 'No current project specified'}</p>
                 </div>
                 
                 <div class="profile-stats">
                     <div class="stat-item">
-                        <div class="stat-value">${profile.publications || 0}</div>
-                        <div class="stat-label">Publications</div>
+                        <div class="stat-value">${user.research_experience || 0}</div>
+                        <div class="stat-label">Years Experience</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">${profile.citations || 0}</div>
-                        <div class="stat-label">Citations</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${profile.collaborations || 0}</div>
-                        <div class="stat-label">Collaborations</div>
+                        <div class="stat-value">${user.projects_created || 0}</div>
+                        <div class="stat-label">Projects Created</div>
                     </div>
                 </div>
             `;
@@ -795,13 +772,13 @@ document.addEventListener('DOMContentLoaded', () => {
             inviteFromProfileBtn.addEventListener('click', () => {
                 profileModal.style.display = 'none';
                 const projectId = document.getElementById('invite-project-id').value;
-                sendInvitation(projectId, trimmedUserId, profile.name || userName);
+                sendInvitation(projectId, trimmedUserId, user.name || userName);
             });
             
             profileModal.style.display = 'block';
             
         } catch (error) {
-            console.error('Error loading collaborator profile:', error);
+            console.error('Error loading user profile:', error);
             profileContent.innerHTML = `
                 <div class="error">
                     <i class="fas fa-exclamation-triangle"></i> Error loading profile: ${error.message}

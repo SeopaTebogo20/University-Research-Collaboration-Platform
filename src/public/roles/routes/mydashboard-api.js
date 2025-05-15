@@ -22,7 +22,7 @@ router.get('/widgets/:userId', async (req, res) => {
     
     // Get widgets for the specific user
     const { data: widgets, error } = await supabase
-      .from('dashboard_widgets')
+      .from('dashboard-widg')
       .select('*')
       .eq('user_id', req.params.userId)
       .order('position_y', { ascending: true })
@@ -59,7 +59,7 @@ router.post('/widgets', async (req, res) => {
     
     // Check if widget already exists for this user
     const { data: existingWidgets, error: queryError } = await supabase
-      .from('dashboard_widgets')
+      .from('dashboard-widg')
       .select('id')
       .eq('user_id', widget.user_id)
       .eq('widget_type', widget.widget_type);
@@ -72,7 +72,7 @@ router.post('/widgets', async (req, res) => {
       console.log(`[${new Date().toISOString()}] Widget exists, updating:`, existingWidgets[0].id);
       // Update existing widget
       const { data, error } = await supabase
-        .from('dashboard_widgets')
+        .from('dashboard-widg')
         .update(widget)
         .eq('id', existingWidgets[0].id)
         .select()
@@ -84,7 +84,7 @@ router.post('/widgets', async (req, res) => {
       console.log(`[${new Date().toISOString()}] Widget doesn't exist, creating new`);
       // Create new widget
       const { data, error } = await supabase
-        .from('dashboard_widgets')
+        .from('dashboard-widg')
         .insert([widget])
         .select()
         .single();
@@ -115,7 +115,7 @@ router.put('/widgets/position', async (req, res) => {
     // Update each widget position
     const results = await Promise.all(widgets.map(async (widget) => {
       const { data, error } = await supabase
-        .from('dashboard_widgets')
+        .from('dashboard-widg')
         .update({
           position_x: widget.position_x,
           position_y: widget.position_y,
@@ -143,7 +143,7 @@ router.delete('/widgets/:id', async (req, res) => {
     
     // Check if widget exists
     const { data: existingWidget, error: checkError } = await supabase
-      .from('dashboard_widgets')
+      .from('dashboard-widg')
       .select('*')
       .eq('id', req.params.id)
       .single();
@@ -154,7 +154,7 @@ router.delete('/widgets/:id', async (req, res) => {
     
     // Delete widget
     const { error } = await supabase
-      .from('dashboard_widgets')
+      .from('dashboard-widg')
       .delete()
       .eq('id', req.params.id);
     
