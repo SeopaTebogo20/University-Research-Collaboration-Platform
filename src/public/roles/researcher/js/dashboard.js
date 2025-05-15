@@ -493,3 +493,77 @@ document.addEventListener('DOMContentLoaded', function() {
         return string.charAt(0).toUpperCase() + string.slice(1);
     }
 });
+// Add this to your existing dashboard.js file
+function setupWidgetEventListeners(widget, widgetType) {
+    // Hover effects
+    widget.addEventListener('mouseenter', () => {
+        widget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.12)';
+    });
+    
+    widget.addEventListener('mouseleave', () => {
+        widget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+    });
+
+    // Refresh button
+    const refreshBtn = widget.querySelector('.widget-refresh');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            refreshBtn.querySelector('i').classList.add('fa-spin');
+            showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)}...`, 'info');
+            
+            // Simulate refresh
+            setTimeout(() => {
+                refreshBtn.querySelector('i').classList.remove('fa-spin');
+                showNotification(`${capitalizeFirstLetter(widgetType)} refreshed`, 'success');
+            }, 1500);
+        });
+    }
+
+    // Remove button
+    const removeBtn = widget.querySelector('.widget-remove');
+    if (removeBtn) {
+        removeBtn.addEventListener('click', async () => {
+            const gridItem = widget.closest('.grid-stack-item');
+            const widgetId = gridItem.getAttribute('gs-id');
+            
+            // Add animation
+            gridItem.style.transform = 'scale(0.95)';
+            gridItem.style.opacity = '0.8';
+            
+            setTimeout(async () => {
+                try {
+                    await removeWidgetFromDatabase(widgetId);
+                    grid.removeWidget(gridItem, true);
+                    
+                    // Update local state
+                    userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
+                    localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
+                    
+                    showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
+                    
+                    if (grid.engine.nodes.length === 0) {
+                        emptyDashboard.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error(`Error removing ${widgetType} widget:`, error);
+                    gridItem.style.transform = '';
+                    gridItem.style.opacity = '';
+                    showNotification(`Error removing ${widgetType} widget`, 'error');
+                }
+            }, 200);
+        });
+    }
+}
+
+// Update the current date in calendar widget
+function updateCurrentDate() {
+    const dateElement = document.getElementById('current-date');
+    if (dateElement) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateElement.textContent = new Date().toLocaleDateString(undefined, options);
+    }
+}
+
+// Call this in your init function
+updateCurrentDate();
+setInterval(updateCurrentDate, 60000); // Update every minute

@@ -2034,4 +2034,262 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--neutral-400);
   }
+  /* Widget Container */
+.grid-stack-item {
+  transition: all 0.3s ease;
+}
+
+.widget-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: none;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.widget-content:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Widget Type Specific Styles */
+.projects-widget {
+  background: linear-gradient(135deg, #f6f9ff 0%, #e0e9ff 100%);
+  border-left: 4px solid #4a80f0;
+}
+
+.milestones-widget {
+  background: linear-gradient(135deg, #fff9f6 0%, #ffeae0 100%);
+  border-left: 4px solid #f08a4a;
+}
+
+.funding-widget {
+  background: linear-gradient(135deg, #f6fff9 0%, #e0ffe8 100%);
+  border-left: 4px solid #4af07e;
+}
+
+.calendar-widget {
+  background: linear-gradient(135deg, #f9f6ff 0%, #e8e0ff 100%);
+  border-left: 4px solid #8a4af0;
+}
+
+.activity-widget {
+  background: linear-gradient(135deg, #fff6f9 0%, #ffe0eb 100%);
+  border-left: 4px solid #f04a7e;
+}
+
+.ai-suggestions-widget {
+  background: linear-gradient(135deg, #f0f6ff 0%, #d0e4ff 100%);
+  border-left: 4px solid #4ac8f0;
+}
+
+/* Widget Header */
+.widget-header {
+  padding: 16px 16px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.widget-icon {
+  font-size: 18px;
+  color: inherit;
+}
+
+.widget-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.widget-actions button {
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #4a5568;
+  transition: all 0.2s ease;
+}
+
+.widget-actions button:hover {
+  background: rgba(255, 255, 255, 0.8);
+  color: #2d3748;
+}
+
+/* Widget Body */
+.widget-body {
+  padding: 16px;
+  color: #333;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.projects-list, .milestones-list, .activity-list, .ai-suggestions-list {
+  display: grid;
+  gap: 12px;
+}
+
+.project-item, .milestone-item, .activity-item, .ai-suggestion-item {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.project-item:hover, .milestone-item:hover, 
+.activity-item:hover, .ai-suggestion-item:hover {
+  transform: translateX(4px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Chart Widgets */
+.funding-chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: calc(100% - 40px);
+}
+
+/* Loading States */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #555;
+  gap: 8px;
+}
+
+.loading i {
+  font-size: 24px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.6; transform: scale(0.95); }
+}
+
+/* Widget Footer */
+.widget-footer {
+  background: rgba(0, 0, 0, 0.03);
+  padding: 12px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.view-all {
+  color: #4a80f0;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s ease;
+}
+
+.view-all:hover {
+  color: #2a60d0;
+}
+
+/* Current Date in Calendar Widget */
+#current-date {
+  font-size: 13px;
+  color: #4a5568;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .widget-content {
+      border-radius: 8px;
+  }
   
+  .widget-header {
+      padding: 12px;
+  }
+  
+  .widget-title h3 {
+      font-size: 16px;
+  }
+  
+  .widget-body {
+      padding: 12px;
+  }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  .widget-content {
+      background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+      color: #e2e8f0;
+  }
+  
+  .widget-title h3 {
+      color: #f7fafc;
+  }
+  
+  .project-item, .milestone-item, 
+  .activity-item, .ai-suggestion-item {
+      background: rgba(45, 55, 72, 0.7);
+      color: #e2e8f0;
+  }
+  
+  .view-all {
+      color: #63b3ed;
+  }
+  
+  .view-all:hover {
+      color: #4299e1;
+  }
+  
+  .widget-actions button {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e0;
+  }
+  
+  .widget-actions button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #f7fafc;
+  }
+  
+  .funding-chart-container {
+      background: #2d3748;
+  }
+  
+  #current-date {
+      color: #a0aec0;
+  }
+}
