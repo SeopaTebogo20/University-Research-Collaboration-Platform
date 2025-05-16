@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyDashboard = document.getElementById('empty-dashboard');
     const emptyAddWidgetBtn = document.getElementById('empty-add-widget-btn');
     const loadingIndicator = document.getElementById('loading-indicator');
+    const widgetConfigModal = document.getElementById('widget-config-modal');
+    const saveConfigBtn = document.getElementById('save-widget-config');
+    const cancelConfigBtn = document.getElementById('cancel-widget-config');
+    const widgetSizeSelect = document.getElementById('widget-size');
+    const customSizeFields = document.getElementById('custom-size-fields');
     
     let grid;
     let userWidgets = [];
@@ -71,19 +76,198 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         window.addEventListener('click', (e) => {
-            if (e.target === addWidgetModal) {
-                addWidgetModal.style.display = 'none';
+            if (e.target === addWidgetModal || e.target === widgetConfigModal) {
+                e.target.style.display = 'none';
             }
         });
         
         const widgetOptions = document.querySelectorAll('.widget-option');
         widgetOptions.forEach(option => {
-            option.addEventListener('click', () => {
+            option.addEventListener('click', (e) => {
                 const widgetType = option.getAttribute('data-widget-type');
-                addWidget(widgetType);
-                addWidgetModal.style.display = 'none';
+                // Allow duplicate if Ctrl/Cmd key is pressed
+                if (e.ctrlKey || e.metaKey) {
+                    addWidget(widgetType);
+                    addWidgetModal.style.display = 'none';
+                } else if (!option.classList.contains('disabled')) {
+                    addWidget(widgetType);
+                    addWidgetModal.style.display = 'none';
+                }
             });
         });
+
+        // Widget configuration modal events
+        saveConfigBtn.addEventListener('click', saveWidgetConfig);
+        cancelConfigBtn.addEventListener('click', () => widgetConfigModal.style.display = 'none');
+        widgetSizeSelect.addEventListener('change', toggleCustomSizeFields);
+    }
+    
+    function toggleCustomSizeFields() {
+        if (widgetSizeSelect.value === 'custom') {
+            customSizeFields.classList.remove('hidden');
+        } else {
+            customSizeFields.classList.add('hidden');
+        }
+    }
+
+    function openAddWidgetModal() {
+        addWidgetModal.style.display = 'block';
+        
+        // Remove any existing help text
+        const existingHelp = addWidgetModal.querySelector('.duplicate-help');
+        if (existingHelp) {
+            existingHelp.remove();
+        }
+        
+        const widgetOptions = document.querySelectorAll('.widget-option');
+        widgetOptions.forEach(option => {
+            const widgetType = option.getAttribute('data-widget-type');
+            if (isWidgetOnDashboard(widgetType)) {
+                option.classList.add('disabled');
+                option.title = 'This widget is already on your dashboard (hold Ctrl/Cmd to add another)';
+            } else {
+                option.classList.remove('disabled');
+                option.title = '';
+            }
+        });
+        
+        // Add help text about duplicates
+        const helpText = document.createElement('p');
+        helpText.className = 'duplicate-help';
+        helpText.textContent = 'Tip: Hold Ctrl/Cmd while clicking to add duplicate widgets';
+        addWidgetModal.querySelector('.modal-body').appendChild(helpText);
+    }
+
+    function isWidgetOnDashboard(widgetType) {
+        return grid.engine.nodes.some(node => 
+            node.el && node.el.getAttribute('data-widget-type') === widgetType
+        );
+    }
+
+    function getWidgetSpecificFields(widgetType) {
+        // Return different fields based on widget type
+        switch(widgetType) {
+            case 'projects':
+                return `
+                    <fieldset class="form-group">
+                        <label>Display Options</label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="show-project-status" checked>
+                            Show project status
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="show-collaborators" checked>
+                            Show collaborators
+                        </label>
+                    </fieldset>
+                `;
+            case 'milestones':
+                return `
+                    <fieldset class="form-group">
+                        <label for="milestone-range">Time Range</label>
+                        <select id="milestone-range" class="styled-input">
+                            <option value="upcoming">Upcoming</option>
+                            <option value="recent">Recent</option>
+                            <option value="all">All</option>
+                        </select>
+                    </fieldset>
+                `;
+            case 'funding':
+                return `
+                    <fieldset class="form-group">
+                        <label for="funding-chart-type">Chart Type</label>
+                        <select id="funding-chart-type" class="styled-input">
+                            <option value="doughnut">Doughnut</option>
+                            <option value="pie">Pie</option>
+                            <option value="bar">Bar</option>
+                        </select>
+                    </fieldset>
+                `;
+            case 'calendar':
+                return `
+                    <fieldset class="form-group">
+                        <label for="calendar-view">View Type</label>
+                        <select id="calendar-view" class="styled-input">
+                            <option value="upcoming">Upcoming Events</option>
+                            <option value="month">Month View</option>
+                            <option value="list">List View</option>
+                        </select>
+                    </fieldset>
+                `;
+            default:
+                return '<p>No additional options for this widget type.</p>';
+        }
+    }
+
+    function saveWidgetConfig() {
+        const widgetElement = widgetConfigModal.currentWidget;
+        if (!widgetElement) return;
+        
+        const newTitle = document.getElementById('widget-title').value;
+        const sizePreset = document.getElementById('widget-size').value;
+        
+        let width, height;
+        if (sizePreset === 'custom') {
+            width = parseInt(document.getElementById('widget-width').value) || 6;
+            height = parseInt(document.getElementById('widget-height').value) || 4;
+        } else {
+            // Set dimensions based on preset
+            switch(sizePreset) {
+                case 'small':
+                    width = 4;
+                    height = 3;
+                    break;
+                case 'medium':
+                    width = 6;
+                    height = 4;
+                    break;
+                case 'large':
+                    width = 8;
+                    height = 6;
+                    break;
+            }
+        }
+        
+        // Update widget title (preserve icon)
+        const titleElement = widgetElement.querySelector('.widget-header h3');
+        const icon = titleElement.querySelector('i');
+        if (icon) {
+            titleElement.innerHTML = `${icon.outerHTML} ${newTitle}`;
+        } else {
+            titleElement.textContent = newTitle;
+        }
+        
+        // Update widget size
+        grid.update(widgetElement, { w: width, h: height });
+        
+        // Save widget-specific config
+        const widgetType = widgetElement.getAttribute('data-widget-type');
+        saveWidgetSpecificConfig(widgetElement, widgetType);
+        
+        widgetConfigModal.style.display = 'none';
+        showNotification('Widget configuration saved', 'success');
+    }
+
+    function saveWidgetSpecificConfig(widgetElement, widgetType) {
+        // Save widget-specific configuration
+        switch(widgetType) {
+            case 'projects':
+                widgetElement.dataset.showStatus = document.getElementById('show-project-status').checked;
+                widgetElement.dataset.showCollaborators = document.getElementById('show-collaborators').checked;
+                break;
+            case 'milestones':
+                widgetElement.dataset.timeRange = document.getElementById('milestone-range').value;
+                break;
+            case 'funding':
+                widgetElement.dataset.chartType = document.getElementById('funding-chart-type').value;
+                break;
+            case 'calendar':
+                widgetElement.dataset.viewType = document.getElementById('calendar-view').value;
+                break;
+        }
+        
+        // Reload widget data to apply changes
+        loadWidgetData(widgetElement, widgetType);
     }
     
     function loadWidgetsFromLocalStorage() {
@@ -145,6 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const widgetElement = document.createElement('div');
             widgetElement.classList.add('grid-stack-item');
+            widgetElement.setAttribute('data-widget-type', widget.widget_type);
             
             const widgetContent = getWidgetTemplate(widget.widget_type);
             
@@ -174,6 +359,78 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('Error adding widget to grid:', error);
             return null;
+        }
+    }
+    
+    function setupWidgetEventListeners(widget, widgetType) {
+        // Hover effects
+        widget.addEventListener('mouseenter', () => {
+            widget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.12)';
+        });
+        
+        widget.addEventListener('mouseleave', () => {
+            widget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+        });
+
+        // Add configuration button to widget actions
+        const actionsMenu = widget.querySelector('.widget-actions');
+        if (actionsMenu) {
+            const configBtn = document.createElement('button');
+            configBtn.className = 'widget-config';
+            configBtn.title = 'Configure Widget';
+            configBtn.innerHTML = '<i class="fas fa-cog"></i>';
+            configBtn.addEventListener('click', () => openWidgetConfigModal(widget, widgetType));
+            actionsMenu.insertBefore(configBtn, actionsMenu.firstChild);
+        }
+
+        // Refresh button
+        const refreshBtn = widget.querySelector('.widget-refresh');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                refreshBtn.querySelector('i').classList.add('fa-spin');
+                showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)}...`, 'info');
+                
+                // Reload widget data
+                loadWidgetData(widget, widgetType).then(() => {
+                    refreshBtn.querySelector('i').classList.remove('fa-spin');
+                    showNotification(`${capitalizeFirstLetter(widgetType)} refreshed`, 'success');
+                });
+            });
+        }
+
+        // Remove button
+        const removeBtn = widget.querySelector('.widget-remove');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', async () => {
+                const gridItem = widget.closest('.grid-stack-item');
+                const widgetId = gridItem.getAttribute('gs-id');
+                
+                // Add animation
+                gridItem.style.transform = 'scale(0.95)';
+                gridItem.style.opacity = '0.8';
+                
+                setTimeout(async () => {
+                    try {
+                        await removeWidgetFromDatabase(widgetId);
+                        grid.removeWidget(gridItem, true);
+                        
+                        // Update local state
+                        userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
+                        localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
+                        
+                        showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
+                        
+                        if (grid.engine.nodes.length === 0) {
+                            emptyDashboard.classList.remove('hidden');
+                        }
+                    } catch (error) {
+                        console.error(`Error removing ${widgetType} widget:`, error);
+                        gridItem.style.transform = '';
+                        gridItem.style.opacity = '';
+                        showNotification(`Error removing ${widgetType} widget`, 'error');
+                    }
+                }, 200);
+            });
         }
     }
     
@@ -263,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
         listContainer.innerHTML = '';
         
         if (projects.length === 0) {
-            listContainer.innerHTML = '<div class="no-data">No projects found</div>';
+            listContainer.innerHTML = '<p class="no-data">No projects found</p>';
             return;
         }
         
@@ -271,22 +528,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const recentProjects = projects.slice(0, 5);
         
         recentProjects.forEach(project => {
-            const projectItem = document.createElement('div');
+            const projectItem = document.createElement('li');
             projectItem.className = 'project-item';
             
             const statusClass = getStatusClass(project.status);
             const startDate = project.start_date ? new Date(project.start_date).toLocaleDateString() : 'No date';
             
-            projectItem.innerHTML = `
-                <div class="project-header">
-                    <span class="project-status ${statusClass}">${project.status || 'Active'}</span>
+            let html = `
+                <section class="project-header">
+                    ${widgetElement.dataset.showStatus !== 'false' ? 
+                        `<mark class="project-status ${statusClass}">${project.status || 'Active'}</mark>` : ''}
                     <h4>${project.project_title || 'Untitled Project'}</h4>
-                </div>
-                <div class="project-meta">
-                    <span><i class="fas fa-calendar"></i> ${startDate}</span>
-                    <span><i class="fas fa-users"></i> ${project.collaborator_count || 0} collaborators</span>
-                </div>
+                </section>
+                <section class="project-meta">
+                    <time datetime="${project.start_date}"><i class="fas fa-calendar"></i> ${startDate}</time>
             `;
+            
+            if (widgetElement.dataset.showCollaborators !== 'false') {
+                html += `<data value="${project.collaborator_count || 0}"><i class="fas fa-users"></i> ${project.collaborator_count || 0} collaborators</data>`;
+            }
+            
+            html += `</section>`;
+            
+            projectItem.innerHTML = html;
             
             projectItem.addEventListener('click', () => {
                 window.location.href = `projects.html?project_id=${project.id}`;
@@ -301,34 +565,43 @@ document.addEventListener('DOMContentLoaded', function() {
         listContainer.innerHTML = '';
         
         if (milestones.length === 0) {
-            listContainer.innerHTML = '<div class="no-data">No milestones found</div>';
+            listContainer.innerHTML = '<p class="no-data">No milestones found</p>';
             return;
         }
         
-        // Sort by upcoming first
-        const sortedMilestones = [...milestones].sort((a, b) => {
-            return new Date(a.end_date) - new Date(b.end_date);
-        });
+        // Filter milestones based on time range setting
+        let filteredMilestones = [...milestones];
+        const timeRange = widgetElement.dataset.timeRange || 'upcoming';
+        const today = new Date();
+        
+        if (timeRange === 'upcoming') {
+            filteredMilestones = filteredMilestones.filter(m => new Date(m.end_date) >= today);
+        } else if (timeRange === 'recent') {
+            filteredMilestones = filteredMilestones.filter(m => new Date(m.end_date) < today);
+        }
+        
+        // Sort by date
+        filteredMilestones.sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
         
         // Show only the most urgent 3-5 milestones
-        const upcomingMilestones = sortedMilestones.slice(0, 5);
+        const displayMilestones = filteredMilestones.slice(0, 5);
         
-        upcomingMilestones.forEach(milestone => {
-            const milestoneItem = document.createElement('div');
+        displayMilestones.forEach(milestone => {
+            const milestoneItem = document.createElement('li');
             milestoneItem.className = 'milestone-item';
             
             const statusClass = getStatusClass(milestone.status);
             const endDate = milestone.end_date ? new Date(milestone.end_date).toLocaleDateString() : 'No date';
             
             milestoneItem.innerHTML = `
-                <div class="milestone-header">
-                    <span class="milestone-status ${statusClass}">${milestone.status || 'Pending'}</span>
+                <section class="milestone-header">
+                    <mark class="milestone-status ${statusClass}">${milestone.status || 'Pending'}</mark>
                     <h4>${milestone.title || 'Untitled Milestone'}</h4>
-                </div>
-                <div class="milestone-meta">
-                    <span><i class="fas fa-calendar"></i> Due: ${endDate}</span>
-                    ${milestone.project_title ? `<span><i class="fas fa-project-diagram"></i> ${milestone.project_title}</span>` : ''}
-                </div>
+                </section>
+                <section class="milestone-meta">
+                    <time datetime="${milestone.end_date}"><i class="fas fa-calendar"></i> Due: ${endDate}</time>
+                    ${milestone.project_title ? `<data value="${milestone.project_title}"><i class="fas fa-project-diagram"></i> ${milestone.project_title}</data>` : ''}
+                </section>
             `;
             
             milestoneItem.addEventListener('click', () => {
@@ -345,7 +618,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const ctx = chartContainer.getContext('2d');
         
         if (fundingRecords.length === 0) {
-            summaryContainer.innerHTML = '<div class="no-data">No funding records found</div>';
+            summaryContainer.innerHTML = '<p class="no-data">No funding records found</p>';
             chartContainer.style.display = 'none';
             return;
         }
@@ -357,20 +630,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update summary
         summaryContainer.innerHTML = `
-            <div class="funding-stats">
-                <div class="stat-item">
-                    <div class="stat-value">R${totalFunding.toLocaleString()}</div>
-                    <div class="stat-label">Total Funding</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">R${totalSpent.toLocaleString()}</div>
-                    <div class="stat-label">Spent</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">R${totalRemaining.toLocaleString()}</div>
-                    <div class="stat-label">Remaining</div>
-                </div>
-            </div>
+            <section class="funding-stats">
+                <section class="stat-item">
+                    <output class="stat-value">R${totalFunding.toLocaleString()}</output>
+                    <label class="stat-label">Total Funding</label>
+                </section>
+                <section class="stat-item">
+                    <output class="stat-value">R${totalSpent.toLocaleString()}</output>
+                    <label class="stat-label">Spent</label>
+                </section>
+                <section class="stat-item">
+                    <output class="stat-value">R${totalRemaining.toLocaleString()}</output>
+                    <label class="stat-label">Remaining</label>
+                </section>
+            </section>
         `;
         
         // Create or update chart
@@ -378,8 +651,10 @@ document.addEventListener('DOMContentLoaded', function() {
             widgetElement.fundingChart.destroy();
         }
         
+        const chartType = widgetElement.dataset.chartType || 'doughnut';
+        
         widgetElement.fundingChart = new Chart(ctx, {
-            type: 'doughnut',
+            type: chartType,
             data: {
                 labels: ['Spent', 'Remaining'],
                 datasets: [{
@@ -408,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function() {
         calendarContainer.innerHTML = '';
         
         if (projects.length === 0 && milestones.length === 0 && funding.length === 0) {
-            calendarContainer.innerHTML = '<div class="no-data">No calendar events found</div>';
+            calendarContainer.innerHTML = '<p class="no-data">No calendar events found</p>';
             return;
         }
         
@@ -473,72 +748,81 @@ document.addEventListener('DOMContentLoaded', function() {
             eventsByDate[dateStr].push(event);
         });
         
-        // Display upcoming events (next 7 days)
-        const today = new Date();
-        const nextWeek = new Date();
-        nextWeek.setDate(today.getDate() + 7);
+        const viewType = widgetElement.dataset.viewType || 'upcoming';
         
-        const upcomingEvents = allEvents.filter(event => {
-            const eventDate = new Date(event.date);
-            return eventDate >= today && eventDate <= nextWeek;
-        });
-        
-        if (upcomingEvents.length === 0) {
-            calendarContainer.innerHTML = '<div class="no-upcoming">No upcoming events in the next 7 days</div>';
+        if (viewType === 'upcoming') {
+            // Display upcoming events (next 7 days)
+            const today = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
             
-            // Show all events button
-            const showAllBtn = document.createElement('button');
-            showAllBtn.className = 'btn btn-secondary show-all-events';
-            showAllBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> View All Events';
-            showAllBtn.addEventListener('click', () => displayAllCalendarEvents(calendarContainer, eventsByDate));
-            calendarContainer.appendChild(showAllBtn);
+            const upcomingEvents = allEvents.filter(event => {
+                const eventDate = new Date(event.date);
+                return eventDate >= today && eventDate <= nextWeek;
+            });
             
-            return;
-        }
-        
-        // Create a list of upcoming events
-        const upcomingList = document.createElement('div');
-        upcomingList.className = 'upcoming-events';
-        
-        upcomingEvents.slice(0, 5).forEach(event => {
-            const eventItem = document.createElement('div');
-            eventItem.className = 'calendar-event';
-            eventItem.style.borderLeft = `3px solid ${event.color}`;
+            if (upcomingEvents.length === 0) {
+                calendarContainer.innerHTML = '<p class="no-upcoming">No upcoming events in the next 7 days</p>';
+                
+                // Show all events button
+                const showAllBtn = document.createElement('button');
+                showAllBtn.className = 'btn btn-secondary show-all-events';
+                showAllBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> View All Events';
+                showAllBtn.addEventListener('click', () => displayAllCalendarEvents(calendarContainer, eventsByDate));
+                calendarContainer.appendChild(showAllBtn);
+                
+                return;
+            }
             
-            const eventDate = new Date(event.date);
-            const isToday = eventDate.toDateString() === today.toDateString();
+            // Create a list of upcoming events
+            const upcomingList = document.createElement('section');
+            upcomingList.className = 'upcoming-events';
             
-            eventItem.innerHTML = `
-                <div class="event-date ${isToday ? 'today' : ''}">
-                    ${isToday ? 'Today' : eventDate.toLocaleDateString()}
-                </div>
-                <div class="event-title">
-                    ${event.title}
-                </div>
-                <div class="event-type" style="color: ${event.color}">
-                    ${event.type}
-                </div>
-            `;
+            upcomingEvents.slice(0, 5).forEach(event => {
+                const eventItem = document.createElement('article');
+                eventItem.className = 'calendar-event';
+                eventItem.style.borderLeft = `3px solid ${event.color}`;
+                
+                const eventDate = new Date(event.date);
+                const isToday = eventDate.toDateString() === today.toDateString();
+                
+                eventItem.innerHTML = `
+                    <time class="event-date ${isToday ? 'today' : ''}" datetime="${event.date}">
+                        ${isToday ? 'Today' : eventDate.toLocaleDateString()}
+                    </time>
+                    <h4 class="event-title">
+                        ${event.title}
+                    </h4>
+                    <data class="event-type" value="${event.type}" style="color: ${event.color}">
+                        ${event.type}
+                    </data>
+                `;
+                
+                upcomingList.appendChild(eventItem);
+            });
             
-            upcomingList.appendChild(eventItem);
-        });
-        
-        calendarContainer.appendChild(upcomingList);
-        
-        // Show all events button if there are more
-        if (allEvents.length > upcomingEvents.length) {
-            const showAllBtn = document.createElement('button');
-            showAllBtn.className = 'btn btn-secondary show-all-events';
-            showAllBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> View All Events';
-            showAllBtn.addEventListener('click', () => displayAllCalendarEvents(calendarContainer, eventsByDate));
-            calendarContainer.appendChild(showAllBtn);
+            calendarContainer.appendChild(upcomingList);
+            
+            // Show all events button if there are more
+            if (allEvents.length > upcomingEvents.length) {
+                const showAllBtn = document.createElement('button');
+                showAllBtn.className = 'btn btn-secondary show-all-events';
+                showAllBtn.innerHTML = '<i class="fas fa-calendar-alt"></i> View All Events';
+                showAllBtn.addEventListener('click', () => displayAllCalendarEvents(calendarContainer, eventsByDate));
+                calendarContainer.appendChild(showAllBtn);
+            }
+        } else if (viewType === 'list') {
+            displayAllCalendarEvents(calendarContainer, eventsByDate);
+        } else if (viewType === 'month') {
+            // Simple month view implementation
+            calendarContainer.innerHTML = '<p class="no-data">Month view coming soon</p>';
         }
     }
     
     function displayAllCalendarEvents(container, eventsByDate) {
         container.innerHTML = '';
         
-        const allEventsList = document.createElement('div');
+        const allEventsList = document.createElement('section');
         allEventsList.className = 'all-events';
         
         Object.keys(eventsByDate).forEach(dateStr => {
@@ -548,17 +832,17 @@ document.addEventListener('DOMContentLoaded', function() {
             allEventsList.appendChild(dateHeader);
             
             eventsByDate[dateStr].forEach(event => {
-                const eventItem = document.createElement('div');
+                const eventItem = document.createElement('article');
                 eventItem.className = 'calendar-event';
                 eventItem.style.borderLeft = `3px solid ${event.color}`;
                 
                 eventItem.innerHTML = `
-                    <div class="event-title">
+                    <h4 class="event-title">
                         ${event.title}
-                    </div>
-                    <div class="event-type" style="color: ${event.color}">
+                    </h4>
+                    <data class="event-type" value="${event.type}" style="color: ${event.color}">
                         ${event.type}
-                    </div>
+                    </data>
                 `;
                 
                 allEventsList.appendChild(eventItem);
@@ -585,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
         listContainer.innerHTML = '';
         
         if (activities.length === 0) {
-            listContainer.innerHTML = '<div class="no-data">No recent activity</div>';
+            listContainer.innerHTML = '<p class="no-data">No recent activity</p>';
             return;
         }
         
@@ -593,22 +877,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const recentActivities = activities.slice(0, 5);
         
         recentActivities.forEach(activity => {
-            const activityItem = document.createElement('div');
+            const activityItem = document.createElement('li');
             activityItem.className = 'activity-item';
             
             const activityDate = activity.timestamp ? new Date(activity.timestamp).toLocaleString() : 'Recently';
             
             activityItem.innerHTML = `
-                <div class="activity-icon">
+                <figure class="activity-icon">
                     <i class="fas ${getActivityIcon(activity.type)}"></i>
-                </div>
-                <div class="activity-content">
+                </figure>
+                <section class="activity-content">
                     <p class="activity-message">${activity.message}</p>
-                    <p class="activity-meta">
-                        <span class="activity-type">${activity.type}</span>
-                        <span class="activity-date">${activityDate}</span>
-                    </p>
-                </div>
+                    <section class="activity-meta">
+                        <data class="activity-type" value="${activity.type}">${activity.type}</data>
+                        <time class="activity-date" datetime="${activity.timestamp}">${activityDate}</time>
+                    </section>
+                </section>
             `;
             
             listContainer.appendChild(activityItem);
@@ -620,7 +904,7 @@ document.addEventListener('DOMContentLoaded', function() {
         listContainer.innerHTML = '';
         
         if (suggestions.length === 0) {
-            listContainer.innerHTML = '<div class="no-data">No AI suggestions available</div>';
+            listContainer.innerHTML = '<p class="no-data">No AI suggestions available</p>';
             return;
         }
         
@@ -628,18 +912,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const topSuggestions = suggestions.slice(0, 3);
         
         topSuggestions.forEach(suggestion => {
-            const suggestionItem = document.createElement('div');
+            const suggestionItem = document.createElement('li');
             suggestionItem.className = 'ai-suggestion-item';
             
             suggestionItem.innerHTML = `
-                <div class="suggestion-header">
+                <header class="suggestion-header">
                     <i class="fas fa-lightbulb"></i>
                     <h4>${suggestion.title}</h4>
-                </div>
-                <div class="suggestion-content">
+                </header>
+                <section class="suggestion-content">
                     <p>${suggestion.description}</p>
                     ${suggestion.action ? `<button class="btn btn-small">${suggestion.action}</button>` : ''}
-                </div>
+                </section>
             `;
             
             listContainer.appendChild(suggestionItem);
@@ -686,93 +970,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return heightMap[widgetType] || 4;
     }
     
-    function setupWidgetEventListeners(widget, widgetType) {
-        // Hover effects
-        widget.addEventListener('mouseenter', () => {
-            widget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.12)';
-        });
-        
-        widget.addEventListener('mouseleave', () => {
-            widget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
-        });
-
-        // Refresh button
-        const refreshBtn = widget.querySelector('.widget-refresh');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', () => {
-                refreshBtn.querySelector('i').classList.add('fa-spin');
-                showNotification(`Refreshing ${capitalizeFirstLetter(widgetType)}...`, 'info');
-                
-                // Reload widget data
-                loadWidgetData(widget, widgetType).then(() => {
-                    refreshBtn.querySelector('i').classList.remove('fa-spin');
-                    showNotification(`${capitalizeFirstLetter(widgetType)} refreshed`, 'success');
-                });
-            });
-        }
-
-        // Remove button
-        const removeBtn = widget.querySelector('.widget-remove');
-        if (removeBtn) {
-            removeBtn.addEventListener('click', async () => {
-                const gridItem = widget.closest('.grid-stack-item');
-                const widgetId = gridItem.getAttribute('gs-id');
-                
-                // Add animation
-                gridItem.style.transform = 'scale(0.95)';
-                gridItem.style.opacity = '0.8';
-                
-                setTimeout(async () => {
-                    try {
-                        await removeWidgetFromDatabase(widgetId);
-                        grid.removeWidget(gridItem, true);
-                        
-                        // Update local state
-                        userWidgets = userWidgets.filter(w => w.id.toString() !== widgetId);
-                        localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
-                        
-                        showNotification(`Removed ${capitalizeFirstLetter(widgetType)} widget`, 'info');
-                        
-                        if (grid.engine.nodes.length === 0) {
-                            emptyDashboard.classList.remove('hidden');
-                        }
-                    } catch (error) {
-                        console.error(`Error removing ${widgetType} widget:`, error);
-                        gridItem.style.transform = '';
-                        gridItem.style.opacity = '';
-                        showNotification(`Error removing ${widgetType} widget`, 'error');
-                    }
-                }, 200);
-            });
-        }
-    }
-    
-    function openAddWidgetModal() {
-        addWidgetModal.style.display = 'block';
-        
-        const widgetOptions = document.querySelectorAll('.widget-option');
-        widgetOptions.forEach(option => {
-            const widgetType = option.getAttribute('data-widget-type');
-            if (isWidgetAdded(widgetType)) {
-                option.classList.add('disabled');
-                option.title = 'Widget already added';
-            } else {
-                option.classList.remove('disabled');
-                option.title = '';
-            }
-        });
-    }
-    
-    function isWidgetAdded(widgetType) {
-        return userWidgets.some(widget => widget.widget_type === widgetType);
-    }
-    
     async function addWidget(widgetType) {
-        if (isWidgetAdded(widgetType)) {
-            showNotification(`${capitalizeFirstLetter(widgetType)} widget already exists`, 'warning');
-            return;
-        }
-        
         emptyDashboard.classList.add('hidden');
         
         const widget = {
@@ -920,19 +1118,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
+        const notification = document.createElement('article');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            <div class="notification-content">
+            <section class="notification-content">
                 <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
+                <output>${message}</output>
+            </section>
             <button class="notification-close"><i class="fas fa-times"></i></button>
         `;
         
         let toastContainer = document.getElementById('toast-container');
         if (!toastContainer) {
-            toastContainer = document.createElement('div');
+            toastContainer = document.createElement('aside');
             toastContainer.id = 'toast-container';
             toastContainer.className = 'toast-container';
             document.body.appendChild(toastContainer);

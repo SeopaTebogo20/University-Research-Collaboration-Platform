@@ -879,13 +879,25 @@ button {
   box-shadow: var(--shadow-md);
   border-color: var(--research-accent);
 }
-
 .widget-option.disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
+  position: relative;
 }
 
+.widget-option.disabled::after {
+  content: '✓ Added';
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: var(--success-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
 .widget-icon-container {
   width: 60px;
   height: 60px;
@@ -1122,3 +1134,32 @@ button {
     color: inherit !important;
   }
 }
+/* Widget Configuration Styles */
+.widget-actions .widget-config {
+  color: #4a5568;
+}
+
+.widget-actions .widget-config:hover {
+  color: #2d3748;
+}
+
+#widget-config-modal .form-group {
+  margin-bottom: 1.5rem;
+}
+
+#widget-config-modal .form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+#widget-config-modal .form-col {
+  flex: 1;
+}
+
+#widget-config-modal label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
