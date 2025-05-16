@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - CollabNexus</title>
+    <link rel="stylesheet" href="css/mydashboard.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gridstack@8.4.0/dist/gridstack.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@8.4.0/dist/gridstack-all.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="dashboard.html" class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+        </a>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+            <li><a href="mydashboard.html" class="active"><i class="fas fa-th"></i> My Dashboard</a></li>
+            <li><a href="projects.html" ><i class="fas fa-project-diagram"></i> My Projects</a></li>
+            <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
+            <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
+            <li><a href="funding.html" ><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
+            <li><a href="aipage.html"><i class="fas fa-robot"></i> AI Suggestions</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+        </ul>
+        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </nav>
+
+    <main class="admin-proposal">
+        <header class="proposal-header">
+            <section class="page-title-container">
+                <h1 class="page-title">My Dashboard</h1>
+                <p class="page-subtitle">Customize your research workspace with the widgets you need.</p>
+            </section>
+            <menu class="dashboard-actions">
+                <button id="export-dashboard-btn" class="btn btn-secondary">
+                    <i class="fas fa-file-export"></i> Export PDF
+                </button>
+                <button id="add-widget-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Widget
+                </button>
+            </menu>
+        </header>
+
+        <section class="dashboard-content">
+            <section class="grid-container">
+                <section class="grid-stack"></section>
+            </section>
+        </section>
+
+        <section id="empty-dashboard" class="empty-dashboard hidden">
+            <article class="empty-dashboard-content">
+                <i class="fas fa-th-large"></i>
+                <h2>Your dashboard is empty</h2>
+                <p>Add widgets to customize your research dashboard</p>
+                <button id="empty-add-widget-btn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Your First Widget
+                </button>
+            </article>
+        </section>
+
+        <section id="loading-indicator" class="loading-indicator">
+            <article class="spinner"></article>
+            <p>Loading your dashboard...</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <section class="container">
+            <section class="footer-content">
+                <article class="footer-column">
+                    <header class="footer-logo">
+                        <i class="fas fa-book-open book-logo"></i>
+                        CollabNexus
+                    </header>
+                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
+                </article>
+                <article class="footer-column">
+                    <h3>Solutions</h3>
+                    <nav>
+                        <ul class="footer-links">
+                            <li><a href="#">For Researchers</a></li>
+                            <li><a href="#">For Universities</a></li>
+                            <li><a href="#">For Industry</a></li>
+                            <li><a href="#">For Funding Agencies</a></li>
+                        </ul>
+                    </nav>
+                </article>
+                <article class="footer-column">
+                    <h3>Resources</h3>
+                    <nav>
+                        <ul class="footer-links">
+                            <li><a href="#">Blog</a></li>
+                            <li><a href="#">Research Guides</a></li>
+                            <li><a href="#">Webinars</a></li>
+                            <li><a href="#">Case Studies</a></li>
+                        </ul>
+                    </nav>
+                </article>
+                <article class="footer-column">
+                    <h3>Company</h3>
+                    <nav>
+                        <ul class="footer-links">
+                            <li><a href="#">About Us</a></li>
+                            <li><a href="#">Careers</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </nav>
+                </article>
+            </section>
+            <section class="footer-bottom">
+                <small>&copy; 2025 CollabNexus Research Hub. All rights reserved.</small>
+            </section>
+        </section>
+    </footer>
+
+    <dialog id="add-widget-modal" class="modal">
+        <article class="modal-content">
+            <header class="modal-header">
+                <h3>Add Widget</h3>
+                <button class="close">&times;</button>
+            </header>
+            <section class="modal-body">
+                <menu class="widget-options">
+                    <button class="widget-option" data-widget-type="projects">
+                        <figure class="widget-icon">
+                            <i class="fas fa-users"></i>
+                        </figure>
+                        <section class="widget-info">
+                            <h4>Projects</h4>
+                            <p>View and manage your ongoing projects</p>
+                        </section>
+                    </button>
+                    
+                    <button class="widget-option" data-widget-type="milestones">
+                        <figure class="widget-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </figure>
+                        <section class="widget-info">
+                            <h4>Milestones</h4>
+                            <p>Track your upcoming and recent milestones</p>
+                        </section>
+                    </button>
+                    
+                    <button class="widget-option" data-widget-type="funding">
+                        <figure class="widget-icon">
+                            <i class="fas fa-coins"></i>
+                        </figure>
+                        <section class="widget-info">
+                            <h4>Funding</h4>
+                            <p>Monitor your project funding status</p>
+                        </section>
+                    </button>
+                    
+                    <button class="widget-option" data-widget-type="calendar">
+                        <figure class="widget-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </figure>
+                        <section class="widget-info">
+                            <h4>Calendar</h4>
+                            <p>View upcoming deadlines and events</p>
+                        </section>
+                    </button>
+                    
+                    <button class="widget-option" data-widget-type="recent_activity">
+                        <figure class="widget-icon">
+                            <i class="fas fa-history"></i>
+                        </figure>
+                        <section class="widget-info">
+                            <h4>Recent Activity</h4>
+                            <p>See recent updates across all projects</p>
+                        </section>
+                    </button>
+
+                    <button class="widget-option" data-widget-type="ai_suggestions">
+                        <figure class="widget-icon ai-icon">
+                            <i class="fas fa-robot"></i>
+                        </figure>
+                        <section class="widget-info">
+                            <h4>AI Suggestions</h4>
+                            <p>Get AI-powered collaboration suggestions</p>
+                        </section>
+                    </button>
+                </menu>
+            </section>
+        </article>
+    </dialog>
+
+    <template id="projects-widget-template">
+        <article class="widget-content projects-widget">
+            <header class="widget-header">
+                <h3><i class="fas fa-users"></i> My Projects</h3>
+                <menu class="widget-actions">
+                    <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
+                </menu>
+            </header>
+            <section class="widget-body">
+                <ul class="projects-list">
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</li>
+                </ul>
+            </section>
+            <footer class="widget-footer">
+                <a href="projects.html" class="view-all">View all projects <i class="fas fa-arrow-right"></i></a>
+            </footer>
+        </article>
+    </template>
+
+    <template id="milestones-widget-template">
+        <article class="widget-content milestones-widget">
+            <header class="widget-header">
+                <h3><i class="fas fa-clipboard-list"></i> Milestones</h3>
+                <menu class="widget-actions">
+                    <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
+                </menu>
+            </header>
+            <section class="widget-body">
+                <ul class="milestones-list">
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</li>
+                </ul>
+            </section>
+            <footer class="widget-footer">
+                <a href="milestones.html" class="view-all">View all milestones <i class="fas fa-arrow-right"></i></a>
+            </footer>
+        </article>
+    </template>
+
+    <template id="funding-widget-template">
+        <article class="widget-content funding-widget">
+            <header class="widget-header">
+                <h3><i class="fas fa-coins"></i> Funding</h3>
+                <menu class="widget-actions">
+                    <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
+                </menu>
+            </header>
+            <section class="widget-body">
+                <section class="funding-summary">
+                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading funding data...</p>
+                </section>
+                <figure class="funding-chart-container">
+                    <canvas class="funding-chart"></canvas>
+                </figure>
+            </section>
+            <footer class="widget-footer">
+                <a href="funding.html" class="view-all">View all funding <i class="fas fa-arrow-right"></i></a>
+            </footer>
+        </article>
+    </template>
+
+    <template id="calendar-widget-template">
+        <article class="widget-content calendar-widget">
+            <header class="widget-header">
+                <h3><i class="fas fa-calendar-alt"></i> Calendar</h3>
+                <menu class="widget-actions">
+                    <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
+                </menu>
+            </header>
+            <section class="widget-body">
+                <section class="calendar-container">
+                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading calendar...</p>
+                </section>
+            </section>
+            <footer class="widget-footer">
+                <time id="current-date"></time>
+            </footer>
+        </article>
+    </template>
+
+    <template id="recent-activity-widget-template">
+        <article class="widget-content activity-widget">
+            <header class="widget-header">
+                <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                <menu class="widget-actions">
+                    <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
+                </menu>
+            </header>
+            <section class="widget-body">
+                <ul class="activity-list">
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Loading activity...</li>
+                </ul>
+            </section>
+            <footer class="widget-footer">
+                <a href="#" class="view-all">View all activity <i class="fas fa-arrow-right"></i></a>
+            </footer>
+        </article>
+    </template>
+
+    <template id="ai-suggestions-widget-template">
+        <article class="widget-content ai-suggestions-widget">
+            <header class="widget-header">
+                <h3><i class="fas fa-robot"></i> AI Collaboration Suggestions</h3>
+                <menu class="widget-actions">
+                    <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
+                </menu>
+            </header>
+            <section class="widget-body">
+                <ul class="ai-suggestions-list">
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Generating AI suggestions...</li>
+                </ul>
+            </section>
+            <footer class="widget-footer">
+                <p><i class="fas fa-lightbulb"></i> Powered by AI Analysis</p>
+            </footer>
+        </article>
+    </template>
+
+    <aside id="toast-container" class="toast-container"></aside>
+
+    <script src="js/mydashboard.js"></script>
+</body>
+</html>
