@@ -24,10 +24,10 @@
         <ul class="nav-links">
             <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
             <li><a href="mydashboard.html" class="active"><i class="fas fa-th"></i> My Dashboard</a></li>
-            <li><a href="projects.html" ><i class="fas fa-project-diagram"></i> My Projects</a></li>
+            <li><a href="projects.html"><i class="fas fa-project-diagram"></i> My Projects</a></li>
             <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
             <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
-            <li><a href="funding.html" ><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
+            <li><a href="funding.html"><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
             <li><a href="aipage.html"><i class="fas fa-robot"></i> AI Suggestions</a></li>
             <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
         </ul>
@@ -195,11 +195,57 @@
         </article>
     </dialog>
 
+    <dialog id="widget-config-modal" class="modal">
+        <article class="modal-content">
+            <header class="modal-header">
+                <h3>Configure Widget</h3>
+                <button class="close">&times;</button>
+            </header>
+            <section class="modal-body">
+                <form id="widget-config-form">
+                    <fieldset class="form-group">
+                        <label for="widget-title">Widget Title</label>
+                        <input type="text" id="widget-title" class="styled-input" placeholder="Custom title">
+                    </fieldset>
+                    <fieldset class="form-group">
+                        <label for="widget-size">Size</label>
+                        <select id="widget-size" class="styled-input">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="large">Large</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </fieldset>
+                    <fieldset id="custom-size-fields" class="form-group hidden">
+                        <section class="form-row">
+                            <fieldset class="form-col">
+                                <label for="widget-width">Width</label>
+                                <input type="number" id="widget-width" class="styled-input" min="2" max="12" placeholder="Columns">
+                            </fieldset>
+                            <fieldset class="form-col">
+                                <label for="widget-height">Height</label>
+                                <input type="number" id="widget-height" class="styled-input" min="2" max="12" placeholder="Rows">
+                            </fieldset>
+                        </section>
+                    </fieldset>
+                    <fieldset id="widget-specific-fields" class="form-group">
+                        <!-- Dynamic fields will be inserted here based on widget type -->
+                    </fieldset>
+                </form>
+            </section>
+            <footer class="modal-footer">
+                <button id="save-widget-config" class="btn btn-primary">Save Changes</button>
+                <button id="cancel-widget-config" class="btn btn-secondary">Cancel</button>
+            </footer>
+        </article>
+    </dialog>
+
     <template id="projects-widget-template">
         <article class="widget-content projects-widget">
             <header class="widget-header">
                 <h3><i class="fas fa-users"></i> My Projects</h3>
                 <menu class="widget-actions">
+                    <button class="widget-config" title="Configure"><i class="fas fa-cog"></i></button>
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
                 </menu>
@@ -220,6 +266,7 @@
             <header class="widget-header">
                 <h3><i class="fas fa-clipboard-list"></i> Milestones</h3>
                 <menu class="widget-actions">
+                    <button class="widget-config" title="Configure"><i class="fas fa-cog"></i></button>
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
                 </menu>
@@ -240,6 +287,7 @@
             <header class="widget-header">
                 <h3><i class="fas fa-coins"></i> Funding</h3>
                 <menu class="widget-actions">
+                    <button class="widget-config" title="Configure"><i class="fas fa-cog"></i></button>
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
                 </menu>
@@ -263,6 +311,7 @@
             <header class="widget-header">
                 <h3><i class="fas fa-calendar-alt"></i> Calendar</h3>
                 <menu class="widget-actions">
+                    <button class="widget-config" title="Configure"><i class="fas fa-cog"></i></button>
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
                 </menu>
@@ -283,6 +332,7 @@
             <header class="widget-header">
                 <h3><i class="fas fa-history"></i> Recent Activity</h3>
                 <menu class="widget-actions">
+                    <button class="widget-config" title="Configure"><i class="fas fa-cog"></i></button>
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
                 </menu>
@@ -303,6 +353,7 @@
             <header class="widget-header">
                 <h3><i class="fas fa-robot"></i> AI Collaboration Suggestions</h3>
                 <menu class="widget-actions">
+                    <button class="widget-config" title="Configure"><i class="fas fa-cog"></i></button>
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
                 </menu>
