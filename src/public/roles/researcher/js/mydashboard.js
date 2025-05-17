@@ -983,7 +983,6 @@ document.addEventListener('DOMContentLoaded', function() {
             id: `temp_${Date.now().toString()}`
         };
         
-        // Add to local state immediately
         userWidgets.push(widget);
         const gridItem = addWidgetToGrid(widget);
         
@@ -1016,24 +1015,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (localIndex !== -1) {
                 userWidgets[localIndex] = savedWidget;
                 
-                // Update the grid item ID
                 const gridItemElement = gridItem.el;
                 if (gridItemElement) {
                     gridItemElement.setAttribute('gs-id', savedWidget.id.toString());
                 }
             }
             
-            // Update localStorage with the server data
             localStorage.setItem(`dashboard_widgets_${CURRENT_USER_ID}`, JSON.stringify(userWidgets));
             
         } catch (error) {
             console.error('Error saving widget to server:', error);
-            // Widget remains in local state even if server save fails
         }
     }
     
     async function removeWidgetFromDatabase(widgetId) {
-        // Skip if it's a local/temporary widget
         if (widgetId.startsWith('temp_') || widgetId.startsWith('local_')) {
             return;
         }
@@ -1044,7 +1039,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } catch (error) {
             console.error('Error removing widget from server:', error);
-            // Continue with local removal even if server fails
         }
     }
     
