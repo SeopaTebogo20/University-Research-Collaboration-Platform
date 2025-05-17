@@ -302,8 +302,8 @@ app.get('/signupGoogle', (req, res) => {
           console.error(`[${new Date().toISOString()}] Error saving session: ${err.message}`);
         }
         
-        console.log(`[${new Date().toISOString()}] Serving signupGoogle.html for: ${googleProfile.email}`);
-        res.sendFile(path.join(__dirname, 'public', 'signupGoogle.html'));
+        console.log(`[${new Date().toISOString()}] Serving signup.html for: ${googleProfile.email}`);
+        res.sendFile(path.join(__dirname, 'public', 'signup.html'));
       });
       return;
     } catch (err) {
@@ -318,8 +318,8 @@ app.get('/signupGoogle', (req, res) => {
     return res.redirect('/login?error=missing_google_profile');
   }
   
-  console.log(`[${new Date().toISOString()}] Serving signupGoogle.html for: ${req.session.googleProfile.email}`);
-  res.sendFile(path.join(__dirname, 'public', 'signupGoogle.html'));
+  console.log(`[${new Date().toISOString()}] Serving signup.html for: ${req.session.googleProfile.email}`);
+  res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
 // Add new endpoint to complete Google signup with additional profile information
