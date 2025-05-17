@@ -75,6 +75,48 @@ document.addEventListener('DOMContentLoaded', () => {
         // Export buttons
         exportOverviewBtn.addEventListener('click', () => exportToPDF('overview'));
         exportDetailsBtn.addEventListener('click', () => exportToPDF('details'));
+        
+        // Add event listeners for budget calculation
+        document.querySelectorAll('#funding-personnel-budget, #funding-equipment-budget, #funding-consumables-budget, #funding-other-budget, ' +
+                                 '#funding-personnel-spent, #funding-equipment-spent, #funding-consumables-spent, #funding-other-spent').forEach(input => {
+            input.addEventListener('input', calculateFundingTotals);
+        });
+    }
+    
+    function calculateFundingTotals() {
+        // Calculate total budget
+        const personnelBudget = parseFloat(document.getElementById('funding-personnel-budget').value) || 0;
+        const equipmentBudget = parseFloat(document.getElementById('funding-equipment-budget').value) || 0;
+        const consumablesBudget = parseFloat(document.getElementById('funding-consumables-budget').value) || 0;
+        const otherBudget = parseFloat(document.getElementById('funding-other-budget').value) || 0;
+        
+        const totalBudget = personnelBudget + equipmentBudget + consumablesBudget + otherBudget;
+        document.getElementById('funding-amount').value = totalBudget.toFixed(2);
+        
+        // Calculate total spent
+        const personnelSpent = parseFloat(document.getElementById('funding-personnel-spent').value) || 0;
+        const equipmentSpent = parseFloat(document.getElementById('funding-equipment-spent').value) || 0;
+        const consumablesSpent = parseFloat(document.getElementById('funding-consumables-spent').value) || 0;
+        const otherSpent = parseFloat(document.getElementById('funding-other-spent').value) || 0;
+        
+        const totalSpent = personnelSpent + equipmentSpent + consumablesSpent + otherSpent;
+        document.getElementById('funding-spent').value = totalSpent.toFixed(2);
+        
+        // Validate that spent doesn't exceed budget in each category
+        validateCategorySpending('personnel', personnelBudget, personnelSpent);
+        validateCategorySpending('equipment', equipmentBudget, equipmentSpent);
+        validateCategorySpending('consumables', consumablesBudget, consumablesSpent);
+        validateCategorySpending('other', otherBudget, otherSpent);
+    }
+    
+    function validateCategorySpending(category, budget, spent) {
+        const spentInput = document.getElementById(`funding-${category}-spent`);
+        if (spent > budget) {
+            spentInput.classList.add('input-error');
+            showNotification(`${capitalize(category)} spent cannot exceed budget`, 'error');
+        } else {
+            spentInput.classList.remove('input-error');
+        }
     }
     
     async function loadProjects() {
@@ -300,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (records.length === 0) {
             tbody.innerHTML = '';
             noRecordsMessage.style.display = 'block';
-            return;total_amount
+            return;
         }
         
         noRecordsMessage.style.display = 'none';
@@ -536,6 +578,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('funding-start-date').value = today;
         document.getElementById('funding-expiration-date').value = nextYear.toISOString().split('T')[0];
         
+        // Calculate totals
+        calculateFundingTotals();
+        
         // Show modal
         fundingModal.style.display = 'flex';
     }
@@ -594,10 +639,31 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('funding-consumables-spent').value = record.consumables_spent || '0';
         document.getElementById('funding-other-budget').value = record.other_budget || '0';
         document.getElementById('funding-other-spent').value = record.other_spent || '0';
+        
+        // Calculate totals
+        calculateFundingTotals();
     }
     
     async function handleFundingFormSubmit(e) {
         e.preventDefault();
+        
+        // Validate category spending first
+        const personnelBudget = parseFloat(document.getElementById('funding-personnel-budget').value) || 0;
+        const personnelSpent = parseFloat(document.getElementById('funding-personnel-spent').value) || 0;
+        const equipmentBudget = parseFloat(document.getElementById('funding-equipment-budget').value) || 0;
+        const equipmentSpent = parseFloat(document.getElementById('funding-equipment-spent').value) || 0;
+        const consumablesBudget = parseFloat(document.getElementById('funding-consumables-budget').value) || 0;
+        const consumablesSpent = parseFloat(document.getElementById('funding-consumables-spent').value) || 0;
+        const otherBudget = parseFloat(document.getElementById('funding-other-budget').value) || 0;
+        const otherSpent = parseFloat(document.getElementById('funding-other-spent').value) || 0;
+        
+        if (personnelSpent > personnelBudget || 
+            equipmentSpent > equipmentBudget || 
+            consumablesSpent > consumablesBudget || 
+            otherSpent > otherBudget) {
+            showNotification('Spent amount cannot exceed budget in any category', 'error');
+            return;
+        }
         
         const fundingId = document.getElementById('funding-id').value;
         const isNewFunding = !fundingId;
@@ -617,14 +683,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 notes: document.getElementById('funding-notes').value,
                 
                 // Budget categories
-                personnel_budget: parseFloat(document.getElementById('funding-personnel-budget').value) || 0,
-            personnel_spent: parseFloat(document.getElementById('funding-personnel-spent').value) || 0,
-            equipment_budget: parseFloat(document.getElementById('funding-equipment-budget').value) || 0,
-            equipment_spent: parseFloat(document.getElementById('funding-equipment-spent').value) || 0,
-            consumables_budget: parseFloat(document.getElementById('funding-consumables-budget').value) || 0,
-            consumables_spent: parseFloat(document.getElementById('funding-consumables-spent').value) || 0,
-            other_budget: parseFloat(document.getElementById('funding-other-budget').value) || 0,
-            other_spent: parseFloat(document.getElementById('funding-other-spent').value) || 0
+                personnel_budget: personnelBudget,
+                personnel_spent: personnelSpent,
+                equipment_budget: equipmentBudget,
+                equipment_spent: equipmentSpent,
+                consumables_budget: consumablesBudget,
+                consumables_spent: consumablesSpent,
+                other_budget: otherBudget,
+                other_spent: otherSpent
             };
             
             let response;
