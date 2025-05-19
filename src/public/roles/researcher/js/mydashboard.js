@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelConfigBtn = document.getElementById('cancel-widget-config');
     const widgetSizeSelect = document.getElementById('widget-size');
     const customSizeFields = document.getElementById('custom-size-fields');
+    const widgetSpecificConfigArea = document.getElementById('widget-specific-config');
     
     let grid;
     let userWidgets = [];
@@ -197,6 +198,58 @@ document.addEventListener('DOMContentLoaded', function() {
             default:
                 return '<p>No additional options for this widget type.</p>';
         }
+    }
+
+    function openWidgetConfigModal(widgetElement, widgetType) {
+        widgetConfigModal.currentWidget = widgetElement;
+        
+        // Set current title
+        const titleElement = widgetElement.querySelector('.widget-header h3');
+        const titleText = titleElement.textContent.trim();
+        document.getElementById('widget-title').value = titleText.replace(/^[^a-zA-Z0-9]+/, '').trim();
+        
+        // Set current size
+        const node = grid.engine.nodes.find(n => n.el === widgetElement);
+        if (node) {
+            const width = node.w;
+            const height = node.h;
+            
+            // Set size preset or custom
+            if (width === 4 && height === 3) {
+                widgetSizeSelect.value = 'small';
+            } else if (width === 6 && height === 4) {
+                widgetSizeSelect.value = 'medium';
+            } else if (width === 8 && height === 6) {
+                widgetSizeSelect.value = 'large';
+            } else {
+                widgetSizeSelect.value = 'custom';
+                document.getElementById('widget-width').value = width;
+                document.getElementById('widget-height').value = height;
+                customSizeFields.classList.remove('hidden');
+            }
+        }
+        
+        // Set widget-specific configuration
+        widgetSpecificConfigArea.innerHTML = getWidgetSpecificFields(widgetType);
+        
+        // Set current values for widget-specific config
+        switch(widgetType) {
+            case 'projects':
+                document.getElementById('show-project-status').checked = widgetElement.dataset.showStatus !== 'false';
+                document.getElementById('show-collaborators').checked = widgetElement.dataset.showCollaborators !== 'false';
+                break;
+            case 'milestones':
+                document.getElementById('milestone-range').value = widgetElement.dataset.timeRange || 'upcoming';
+                break;
+            case 'funding':
+                document.getElementById('funding-chart-type').value = widgetElement.dataset.chartType || 'doughnut';
+                break;
+            case 'calendar':
+                document.getElementById('calendar-view').value = widgetElement.dataset.viewType || 'upcoming';
+                break;
+        }
+        
+        widgetConfigModal.style.display = 'block';
     }
 
     function saveWidgetConfig() {
