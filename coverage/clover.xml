@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1747623043466" clover="3.2.0">
-  <project timestamp="1747623043467" name="All files">
+<coverage generated="1747644677470" clover="3.2.0">
+  <project timestamp="1747644677470" name="All files">
     <metrics statements="857" coveredstatements="0" conditionals="549" coveredconditionals="0" methods="118" coveredmethods="0" elements="1524" coveredelements="0" complexity="0" loc="857" ncloc="857" packages="1" files="5" classes="5"/>
-    <file name="auth.js" path="C:\Users\Tshego\software_design\University-Research-Collaboration-Platform\src\public\js\auth.js">
+    <file name="auth.js" path="/home/vmuser/University-Research-Collaboration-Platform/src/public/js/auth.js">
       <metrics statements="132" coveredstatements="0" conditionals="96" coveredconditionals="0" methods="23" coveredmethods="0"/>
       <line num="3" count="0" type="stmt"/>
       <line num="5" count="0" type="cond" truecount="0" falsecount="2"/>
@@ -137,7 +137,7 @@
       <line num="314" count="0" type="stmt"/>
       <line num="321" count="0" type="stmt"/>
     </file>
-    <file name="login.js" path="C:\Users\Tshego\software_design\University-Research-Collaboration-Platform\src\public\js\login.js">
+    <file name="login.js" path="/home/vmuser/University-Research-Collaboration-Platform/src/public/js/login.js">
       <metrics statements="119" coveredstatements="0" conditionals="66" coveredconditionals="0" methods="10" coveredmethods="0"/>
       <line num="3" count="0" type="stmt"/>
       <line num="4" count="0" type="stmt"/>
@@ -259,7 +259,7 @@
       <line num="276" count="0" type="stmt"/>
       <line num="277" count="0" type="stmt"/>
     </file>
-    <file name="main.js" path="C:\Users\Tshego\software_design\University-Research-Collaboration-Platform\src\public\js\main.js">
+    <file name="main.js" path="/home/vmuser/University-Research-Collaboration-Platform/src/public/js/main.js">
       <metrics statements="56" coveredstatements="0" conditionals="30" coveredconditionals="0" methods="13" coveredmethods="0"/>
       <line num="2" count="0" type="stmt"/>
       <line num="4" count="0" type="stmt"/>
@@ -318,7 +318,7 @@
       <line num="108" count="0" type="cond" truecount="0" falsecount="2"/>
       <line num="109" count="0" type="cond" truecount="0" falsecount="2"/>
     </file>
-    <file name="signup-google.js" path="C:\Users\Tshego\software_design\University-Research-Collaboration-Platform\src\public\js\signup-google.js">
+    <file name="signup-google.js" path="/home/vmuser/University-Research-Collaboration-Platform/src/public/js/signup-google.js">
       <metrics statements="137" coveredstatements="0" conditionals="92" coveredconditionals="0" methods="16" coveredmethods="0"/>
       <line num="2" count="0" type="stmt"/>
       <line num="4" count="0" type="stmt"/>
@@ -458,7 +458,7 @@
       <line num="304" count="0" type="stmt"/>
       <line num="308" count="0" type="stmt"/>
     </file>
-    <file name="signup.js" path="C:\Users\Tshego\software_design\University-Research-Collaboration-Platform\src\public\js\signup.js">
+    <file name="signup.js" path="/home/vmuser/University-Research-Collaboration-Platform/src/public/js/signup.js">
       <metrics statements="413" coveredstatements="0" conditionals="265" coveredconditionals="0" methods="56" coveredmethods="0"/>
       <line num="1" count="0" type="stmt"/>
       <line num="2" count="0" type="stmt"/>
