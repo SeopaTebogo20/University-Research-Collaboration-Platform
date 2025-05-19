@@ -93,15 +93,16 @@ body {
     background-color: var(--light-purple);
 }
 
-/* Main Content - Updated to match proposal style */
 .admin-proposal {
     margin-top: 4rem;
     padding: 2rem;
     flex: 1;
     min-height: calc(100vh - 4rem);
-    max-width: 1400px;
+    width: 100%;               /* Ensures it stretches to fill available width */
+    max-width: 2000px;         /* Constrains to a reasonable max width */
     margin-left: auto;
-    margin-right: auto;
+    margin-right: auto;        /* Centers the content */
+    box-sizing: border-box;    /* Ensures padding doesn’t exceed width */
 }
 
 

@@ -1,5 +1,5 @@
 TN:
-SF:src\public\js\auth.js
+SF:src/public/js/auth.js
 FN:3,(anonymous_0)
 FN:7,(anonymous_1)
 FN:12,(anonymous_2)
@@ -282,7 +282,7 @@ BRF:96
 BRH:0
 end_of_record
 TN:
-SF:src\public\js\login.js
+SF:src/public/js/login.js
 FN:11,(anonymous_0)
 FN:32,(anonymous_1)
 FN:41,(anonymous_2)
@@ -496,7 +496,7 @@ BRF:66
 BRH:0
 end_of_record
 TN:
-SF:src\public\js\main.js
+SF:src/public/js/main.js
 FN:2,(anonymous_0)
 FN:6,(anonymous_1)
 FN:16,(anonymous_2)
@@ -617,7 +617,7 @@ BRF:30
 BRH:0
 end_of_record
 TN:
-SF:src\public\js\signup-google.js
+SF:src/public/js/signup-google.js
 FN:2,(anonymous_0)
 FN:27,getDashboardUrlByRole
 FN:45,fetchGoogleProfile
@@ -887,7 +887,7 @@ BRF:92
 BRH:0
 end_of_record
 TN:
-SF:src\public\js\signup.js
+SF:src/public/js/signup.js
 FN:1,(anonymous_0)
 FN:13,(anonymous_1)
 FN:14,(anonymous_2)
