@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function() {
   // DOM Elements
   const receivedSection = document.getElementById('invitations-received-section');
@@ -41,8 +40,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // API endpoints
   const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-  ? 'http://localhost:3000/api' 
-  : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
+    ? 'http://localhost:3000/api' 
+    : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
 
   const RECEIVED_INVITATIONS_ENDPOINT = `${API_BASE_URL}/received_invitations`;
   const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/project_invitations`; 
@@ -602,36 +601,65 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Make API calls to update invitation status
+  // Update invitation status using RECEIVED_INVITATIONS_ENDPOINT
   async function updateInvitationStatus(invitationId, status, message = '') {
     try {
-      // First try to update on the server
-      const response = await fetch(`${INVITATIONS_ENDPOINT}/${invitationId}/status`, {
+      // First get the current invitation to update
+      const getResponse = await fetch(`${RECEIVED_INVITATIONS_ENDPOINT}/${invitationId}`);
+      if (!getResponse.ok) {
+        throw new Error('Failed to fetch invitation details');
+      }
+      
+      const currentInvitation = await getResponse.json();
+      
+      // Prepare the updated data
+      const updatedData = {
+        ...currentInvitation,
+        status: status
+      };
+      
+      // Add message to messages if provided
+      if (message) {
+        let messages = [];
+        if (currentInvitation.messages) {
+          try {
+            messages = JSON.parse(currentInvitation.messages);
+          } catch (e) {
+            messages = [];
+          }
+        }
+        
+        messages.push({
+          sender: 'you',
+          text: message,
+          date: new Date().toISOString()
+        });
+        
+        updatedData.messages = JSON.stringify(messages);
+      }
+      
+      // Update the invitation using PUT
+      const updateResponse = await fetch(`${RECEIVED_INVITATIONS_ENDPOINT}/${invitationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          status: status,
-          message: message
-        }),
+        body: JSON.stringify(updatedData),
       });
       
-      // If the server request fails, update locally for demo purposes
-      if (!response.ok) {
-        console.warn('API call failed, updating state locally for demo purposes');
-        return { success: true, message: 'Updated locally (demo mode)' };
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update invitation status');
       }
       
-      const data = await response.json();
-      return data;
+      const data = await updateResponse.json();
+      return { success: true, data };
     } catch (error) {
       console.error('Error updating invitation status:', error);
-      // For demo purposes, allow the UI to update even if API fails
-      return { success: true, message: 'Updated locally (demo mode)' };
+      throw error;
     }
   }
   
+
   // Delete invitation from API
   async function deleteInvitation(invitationId) {
     try {
@@ -739,93 +767,119 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
-      // Close modal and refresh view
+      // Also update the corresponding sent invitation if it exists
+      const sentIndex = sentInvitations.findIndex(inv => inv.id === currentInvitationId);
+      if (sentIndex !== -1) {
+        sentInvitations[sentIndex].status = response;
+        
+        if (responseMessage) {
+          let sentMessages = [];
+          if (sentInvitations[sentIndex].messages) {
+            try {
+              sentMessages = JSON.parse(sentInvitations[sentIndex].messages);
+            } catch (e) {
+              sentMessages = [];
+            }
+          }
+          
+          sentMessages.push({
+            sender: 'recipient',
+            text: responseMessage,
+            date: new Date().toISOString()
+          });
+          
+          sentInvitations[sentIndex].messages = JSON.stringify(sentMessages);
+        }
+      }
+      
+      // Close modal and refresh views
       respondInvitationModal.classList.remove('active');
       document.getElementById('response-message').value = '';
       renderReceivedInvitations(statusFilterReceived.value);
+      renderSentInvitations(statusFilterSent.value);
       
       const actionText = response === 'accepted' ? 'accepted' : 'declined';
-    showToast(`Invitation ${actionText} successfully`, 'success');
-  } catch (error) {
-    console.error(`Error ${response} invitation:`, error);
-    showToast(`Failed to ${response} invitation. Please try again.`, 'error');
-  } finally {
-    // Reset buttons
-    acceptInvitationBtn.disabled = false;
-    declineInvitationBtn.disabled = false;
-    actionBtn.innerHTML = originalBtnText;
+      showToast(`Invitation ${actionText} successfully`, 'success');
+    } catch (error) {
+      console.error(`Error ${response} invitation:`, error);
+      showToast(`Failed to ${response} invitation. Please try again.`, 'error');
+    } finally {
+      // Reset buttons
+      acceptInvitationBtn.disabled = false;
+      declineInvitationBtn.disabled = false;
+      actionBtn.innerHTML = originalBtnText;
+      currentInvitationId = null;
+    }
+  }
+
+  // Close modal handlers
+  function closeAllModals() {
+    viewProjectModal.classList.remove('active');
+    viewResearcherModal.classList.remove('active');
+    cancelInvitationModal.classList.remove('active');
+    respondInvitationModal.classList.remove('active');
     currentInvitationId = null;
   }
-}
 
-// Close modal handlers
-function closeAllModals() {
-  viewProjectModal.classList.remove('active');
-  viewResearcherModal.classList.remove('active');
-  cancelInvitationModal.classList.remove('active');
-  respondInvitationModal.classList.remove('active');
-  currentInvitationId = null;
-}
+  // Add click event listeners for closing modals
+  closeViewModalBtn.addEventListener('click', closeAllModals);
+  closeViewBtn.addEventListener('click', closeAllModals);
+  closeResearcherModalBtn.addEventListener('click', closeAllModals);
+  closeResearcherBtn.addEventListener('click', closeAllModals);
+  closeCancelModalBtn.addEventListener('click', closeAllModals);
+  cancelCancelBtn.addEventListener('click', closeAllModals);
+  closeRespondModalBtn.addEventListener('click', closeAllModals);
+  closeRespondBtn.addEventListener('click', closeAllModals);
 
-// Add click event listeners for closing modals
-closeViewModalBtn.addEventListener('click', closeAllModals);
-closeViewBtn.addEventListener('click', closeAllModals);
-closeResearcherModalBtn.addEventListener('click', closeAllModals);
-closeResearcherBtn.addEventListener('click', closeAllModals);
-closeCancelModalBtn.addEventListener('click', closeAllModals);
-cancelCancelBtn.addEventListener('click', closeAllModals);
-closeRespondModalBtn.addEventListener('click', closeAllModals);
-closeRespondBtn.addEventListener('click', closeAllModals);
+  // Also close modals when clicking outside the modal content
+  document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeAllModals();
+      }
+    });
+  });
 
-// Also close modals when clicking outside the modal content
-document.querySelectorAll('.modal-overlay').forEach(modal => {
-  modal.addEventListener('click', function(e) {
-    if (e.target === this) {
+  // Toast notification system
+  function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = '';
+    if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+    else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
+    else if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle"></i>';
+    else icon = '<i class="fas fa-info-circle"></i>';
+    
+    toast.innerHTML = `
+      ${icon}
+      <span class="toast-message">${message}</span>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Show the toast
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Remove the toast after 3 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => {
+        if (toastContainer.contains(toast)) {
+          toastContainer.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+
+  // Handle escape key to close modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
       closeAllModals();
     }
   });
-});
 
-// Toast notification system
-function showToast(message, type = 'info') {
-  const toastContainer = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  
-  let icon = '';
-  if (type === 'success') icon = '<i class="fas fa-check-circle"></i>';
-  else if (type === 'error') icon = '<i class="fas fa-exclamation-circle"></i>';
-  else if (type === 'warning') icon = '<i class="fas fa-exclamation-triangle"></i>';
-  else icon = '<i class="fas fa-info-circle"></i>';
-  
-  toast.innerHTML = `
-    ${icon}
-    <span class="toast-message">${message}</span>
-  `;
-  
-  toastContainer.appendChild(toast);
-  
-  // Show the toast
-  setTimeout(() => toast.classList.add('show'), 10);
-  
-  // Remove the toast after 3 seconds
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => {
-      if (toastContainer.contains(toast)) {
-        toastContainer.removeChild(toast);
-      }
-    }, 300);
-  }, 3000);
-}
-
-// Handle escape key to close modals
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    closeAllModals();
-  }
-});
-
-// Initialize the invitations
-initInvitations();
+  // Initialize the invitations
+  initInvitations();
 });

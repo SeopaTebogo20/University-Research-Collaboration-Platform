@@ -34,237 +34,231 @@
 
     <main class="admin-proposal">
         <section class="proposal-header">
-            <header class="page-title-container">
+            <div class="page-title-container">
                 <h1 class="page-title">Research Projects</h1>
                 <p class="page-subtitle">Create and manage your research projects, invite collaborators, and track progress.</p>
-            </header>
+            </div>
           </section>
           
-        <nav class="action-bar">
+        <div class="action-bar">
             <button id="create-project-btn" class="btn primary"><i class="fas fa-plus"></i> New Project</button>
-            <section class="search-box">
+            <div class="search-box">
                 <input type="text" id="search-input" placeholder="Search projects...">
                 <button id="search-btn"><i class="fas fa-search"></i></button>
-            </section>
-        </nav>
+            </div>
+        </div>
 
-        <section class="projects-container" id="projects-container">
+        <div class="projects-container" id="projects-container">
             <!-- Projects will be loaded here -->
-            <article class="loading">
+            <div class="loading">
                 <i class="fas fa-spinner fa-spin"></i> Loading projects...
-            </article>
-        </section>
+            </div>
+        </div>
 
         <!-- Create/Edit Project Modal -->
-        <dialog id="project-modal" class="modal">
-            <article class="modal-content">
-                <header class="modal-header">
+        <div id="project-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h2 id="modal-title">Add New Project</h2>
                     <span class="close">&times;</span>
-                </header>
-                <section class="modal-body">
+                </div>
+                <div class="modal-body">
                     <form id="project-form">
                         <input type="hidden" id="project-id">
                         
-                        <fieldset>
-                            <legend>Project Details</legend>
-                            <section class="form-group">
-                                <label for="researcher-name">Researcher Name</label>
-                                <input type="text" id="researcher-name" required>
-                            </section>
-                            
-                            <section class="form-group">
-                                <label for="project-title">Project Title</label>
-                                <input type="text" id="project-title" required>
-                            </section>
-                            
-                            <section class="form-group">
-                                <label for="description">Description</label>
-                                <textarea id="description" rows="3" required></textarea>
-                            </section>
-                            
-                            <section class="form-group">
-                                <label for="key-research-area">Key Research Areas</label>
-                                <input type="text" id="key-research-area" placeholder="Separate by commas" required>
-                            </section>
-                            
-                            <section class="form-row">
-                                <section class="form-group">
-                                    <label for="start-date">Start Date</label>
-                                    <input type="date" id="start-date" required>
-                                </section>
-                                
-                                <section class="form-group">
-                                    <label for="end-date">End Date</label>
-                                    <input type="date" id="end-date" required>
-                                </section>
-                            </section>
-                            
-                            <section class="form-group checkbox">
-                                <input type="checkbox" id="funding-available">
-                                <label for="funding-available">Funding Available</label>
-                            </section>
-                        </fieldset>
+                        <h3>Project Details</h3>
+                        <div class="form-group">
+                            <label for="researcher-name">Researcher Name</label>
+                            <input type="text" id="researcher-name" required>
+                        </div>
                         
-                        <fieldset>
-                            <legend>Collaboration Requirements</legend>
-                            <section class="form-group">
-                                <label for="skills">Skills & Expertise Required</label>
-                                <input type="text" id="skills" placeholder="Separate by commas" required>
-                            </section>
-                            
-                            <section class="form-group">
-                                <label for="experience-level">Experience Level</label>
-                                <select id="experience-level" required>
-                                    <option value="Entry">Entry Level</option>
-                                    <option value="Intermediate">Intermediate</option>
-                                    <option value="Expert">Expert</option>
-                                </select>
-                            </section>
-                            
-                            <section class="form-group">
-                                <label for="positions">Positions Required</label>
-                                <input type="text" id="positions" placeholder="Separate by commas" required>
-                            </section>
-                            
-                            <section class="form-group">
-                                <label for="technical-requirements">Technical Requirements</label>
-                                <input type="text" id="technical-requirements" placeholder="Separate by commas" required>
-                            </section>
-                        </fieldset>
+                        <div class="form-group">
+                            <label for="project-title">Project Title</label>
+                            <input type="text" id="project-title" required>
+                        </div>
                         
-                        <nav class="form-actions">
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="key-research-area">Key Research Areas</label>
+                            <input type="text" id="key-research-area" placeholder="Separate by commas" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="start-date">Start Date</label>
+                                <input type="date" id="start-date" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="end-date">End Date</label>
+                                <input type="date" id="end-date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group checkbox">
+                            <input type="checkbox" id="funding-available">
+                            <label for="funding-available">Funding Available</label>
+                        </div>
+                        
+                        <h3>Collaboration Requirements</h3>
+                        <div class="form-group">
+                            <label for="skills">Skills & Expertise Required</label>
+                            <input type="text" id="skills" placeholder="Separate by commas" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="experience-level">Experience Level</label>
+                            <select id="experience-level" required>
+                                <option value="Entry">Entry Level</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Expert">Expert</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="positions">Positions Required</label>
+                            <input type="text" id="positions" placeholder="Separate by commas" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="technical-requirements">Technical Requirements</label>
+                            <input type="text" id="technical-requirements" placeholder="Separate by commas" required>
+                        </div>
+                        
+                        <div class="form-actions">
                             <button type="submit" class="btn primary">Save Project</button>
                             <button type="button" class="btn secondary" id="cancel-btn">Cancel</button>
-                        </nav>
+                        </div>
                     </form>
-                </section>
-            </article>
-        </dialog>
+                </div>
+            </div>
+        </div>
 
         <!-- Invite Collaborators Modal -->
-        <dialog id="invite-modal" class="modal">
-            <article class="modal-content invite-modal-content">
-                <header class="modal-header">
+        <div id="invite-modal" class="modal">
+            <div class="modal-content invite-modal-content">
+                <div class="modal-header">
                     <h2>Invite Collaborators</h2>
                     <span class="close">&times;</span>
-                </header>
-                <section class="modal-body">
-                    <header class="invite-project-info">
+                </div>
+                <div class="modal-body">
+                    <div class="invite-project-info">
                         <h3>Project: <span id="invite-project-title"></span></h3>
                         <input type="hidden" id="invite-project-id">
-                    </header>
+                    </div>
                     
-                    <nav class="tabs">
+                    <div class="tabs">
                         <button class="tab-btn active" data-tab="available-collaborators">Available Collaborators</button>
                         <button class="tab-btn" data-tab="manual-invite">Manual Invite</button>
-                    </nav>
+                    </div>
                     
-                    <section class="tab-content" id="available-collaborators">
-                        <section class="search-collaborators">
+                    <div class="tab-content" id="available-collaborators">
+                        <div class="search-collaborators">
                             <input type="text" id="collaborator-search" placeholder="Search collaborators...">
                             <button id="search-collaborator-btn"><i class="fas fa-search"></i></button>
-                        </section>
+                        </div>
                         
-                        <section class="collaborators-list" id="collaborators-list">
-                            <article class="loading">
+                        <div class="collaborators-list" id="collaborators-list">
+                            <div class="loading">
                                 <i class="fas fa-spinner fa-spin"></i> Loading collaborators...
-                            </article>
-                        </section>
-                    </section>
+                            </div>
+                        </div>
+                    </div>
                     
-                    <section class="tab-content hidden" id="manual-invite">
+                    <div class="tab-content hidden" id="manual-invite">
                         <form id="invite-form">
-                            <fieldset class="form-group">
+                            <div class="form-group">
                                 <label for="collaborator-email">Collaborator Email</label>
                                 <input type="email" id="collaborator-email" required placeholder="email@example.com">
-                            </fieldset>
+                            </div>
                             
-                            <fieldset class="form-group">
+                            <div class="form-group">
                                 <label for="collaborator-position">Position</label>
                                 <select id="collaborator-position" required>
                                     <!-- Will be populated dynamically -->
                                 </select>
-                            </fieldset>
+                            </div>
                             
-                            <fieldset class="form-group">
+                            <div class="form-group">
                                 <label for="collaboration-message">Invitation Message</label>
                                 <textarea id="collaboration-message" rows="5" required></textarea>
-                            </fieldset>
+                            </div>
                             
-                            <nav class="form-actions">
+                            <div class="form-actions">
                                 <button type="submit" class="btn primary">Send Invitation</button>
                                 <button type="button" class="btn secondary" id="cancel-invite-btn">Cancel</button>
-                            </nav>
+                            </div>
                         </form>
-                    </section>
-                </section>
-            </article>
-        </dialog>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- Collaborator Profile Modal -->
-        <dialog id="profile-modal" class="modal">
-            <article class="modal-content profile-modal-content">
-                <header class="modal-header">
+        <div id="profile-modal" class="modal">
+            <div class="modal-content profile-modal-content">
+                <div class="modal-header">
                     <h2>Collaborator Profile</h2>
                     <span class="close">&times;</span>
-                </header>
-                <section class="modal-body" id="collaborator-profile">
+                </div>
+                <div class="modal-body" id="collaborator-profile">
                     <!-- Collaborator profile will be loaded here -->
-                    <article class="loading">
+                    <div class="loading">
                         <i class="fas fa-spinner fa-spin"></i> Loading profile...
-                    </article>
-                </section>
-                <footer class="modal-footer">
+                    </div>
+                </div>
+                <div class="modal-footer">
                     <button class="btn primary" id="invite-from-profile-btn">
                         <i class="fas fa-user-plus"></i> Invite to Project
                     </button>
                     <button class="btn secondary" id="close-profile-btn">Close</button>
-                </footer>
-            </article>
-        </dialog>
+                </div>
+            </div>
+        </div>
 
         <!-- Delete Confirmation Modal -->
-        <dialog id="delete-modal" class="modal">
-            <article class="modal-content delete-modal">
-                <header class="modal-header">
+        <div id="delete-modal" class="modal">
+            <div class="modal-content delete-modal">
+                <div class="modal-header">
                     <h2>Confirm Deletion</h2>
                     <span class="close">&times;</span>
-                </header>
-                <section class="modal-body">
+                </div>
+                <div class="modal-body">
                     <p>Are you sure you want to delete this project? This action cannot be undone.</p>
-                    <aside class="project-to-delete"></aside>
-                    <nav class="form-actions">
+                    <div class="project-to-delete"></div>
+                    <div class="form-actions">
                         <button type="button" class="btn danger" id="confirm-delete-btn">Delete Project</button>
                         <button type="button" class="btn secondary" id="cancel-delete-btn">Cancel</button>
-                    </nav>
-                </section>
-            </article>
-        </dialog>
-        
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Project Details Modal -->
-        <dialog id="details-modal" class="modal">
-            <article class="modal-content details-modal-content">
-                <header class="modal-header">
-                    <h2 id="details-project-title">Project Details</h2>
-                    <span class="close">&times;</span>
-                </header>
-                <section class="modal-body" id="details-container">
-                    <!-- Project details will be loaded here -->
-                    <article class="loading">
-                        <i class="fas fa-spinner fa-spin"></i> Loading project details...
-                    </article>
-                </section>
-                <footer class="modal-footer">
-                    <button type="button" class="btn primary" id="edit-from-details-btn">
-                        <i class="fas fa-edit"></i> Edit Project
-                    </button>
-                    <button type="button" class="btn secondary" id="close-details-btn">Close</button>
-                </footer>
-            </article>
-        </dialog>
+<div id="details-modal" class="modal">
+    <div class="modal-content details-modal-content">
+        <div class="modal-header">
+            <h2 id="details-project-title">Project Details</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body" id="details-container">
+            <!-- Project details will be loaded here -->
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading project details...
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn primary" id="edit-from-details-btn">
+                <i class="fas fa-edit"></i> Edit Project
+            </button>
+            <button type="button" class="btn secondary" id="close-details-btn">Close</button>
+        </div>
+    </div>
+</div>
     </main>
-
 <!-- Footer -->
 <footer class="footer">
   <section class="container">
