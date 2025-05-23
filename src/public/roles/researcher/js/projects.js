@@ -164,169 +164,293 @@ document.addEventListener('DOMContentLoaded', () => {
         loadProjects(query);
     }
     
-    async function viewProjectDetails(projectId) {
-        try {
-            const response = await fetch(`${PROJECTS_API}/${projectId}`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+async function viewProjectDetails(projectId) {
+    try {
+        const response = await fetch(`${PROJECTS_API}/${projectId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const project = await response.json();
+        const detailsModal = document.getElementById('details-modal');
+        const detailsContainer = document.getElementById('details-container');
+        
+        // Format dates
+        const startDate = new Date(project.start_date).toLocaleDateString();
+        const endDate = new Date(project.end_date).toLocaleDateString();
+        
+        // Format research areas as tags
+        let keyResearchAreas = '<span class="tag">None specified</span>';
+        if (project.key_research_area) {
+            keyResearchAreas = project.key_research_area
+                .split(',')
+                .map(area => `<span class="tag">${area.trim()}</span>`)
+                .join('');
+        }
+        
+        // Format skills
+        let skillsList = '<span>None specified</span>';
+        if (project.skills_and_expertise || project.skills) {
+            const skillsData = project.skills_and_expertise || project.skills;
+            skillsList = skillsData
+                .split(',')
+                .map(skill => `<span class="skill-item">${skill.trim()}</span>`)
+                .join(', ');
+        }
+        
+        // Format positions
+        let positionsList = '<span>None specified</span>';
+        if (project.positions_required || project.positions) {
+            const positionsData = project.positions_required || project.positions;
+            positionsList = positionsData
+                .split(',')
+                .map(position => `<span>${position.trim()}</span>`)
+                .join(', ');
+        }
+        
+        // Format technical requirements
+        let technicalReqs = '<span>None specified</span>';
+        if (project.technical_requirements) {
+            technicalReqs = project.technical_requirements
+                .split(',')
+                .map(req => `<span>${req.trim()}</span>`)
+                .join(', ');
+        }
+        
+        // Format collaborators
+        let collaboratorsHtml = '<div class="no-results">No collaborators yet</div>';
+        if (project.Collaborators) {
+            try {
+                const collaborators = Array.isArray(project.Collaborators) ? 
+                    project.Collaborators : 
+                    JSON.parse(project.Collaborators);
+                
+                if (collaborators.length > 0) {
+                    collaboratorsHtml = `
+                        <div class="collaborators-list">
+                            ${collaborators.map(collaborator => `
+                                <div class="collaborator-item">
+                                    <div class="collaborator-info">
+                                        <h4>${collaborator.name || 'Unknown'}</h4>
+                                        <p>Position: ${collaborator.position || 'Not specified'}</p>
+                                        <p>Status: <span class="tag ${collaborator.status === 'accepted' ? 'status-active' : 'status-pending'}">
+                                            ${collaborator.status || 'pending'}
+                                        </span></p>
+                                        <p>Invited on: ${new Date(collaborator.invitationDate).toLocaleDateString()}</p>
+                                    </div>
+                                    <div class="collaborator-actions">
+                                        <button class="btn remove-collaborator-btn" data-project-id="${projectId}" data-user-id="${collaborator.id}">
+                                            <i class="fas fa-user-minus"></i> Remove
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error("Error parsing collaborators:", e);
+                collaboratorsHtml = '<div class="error">Error loading collaborators</div>';
             }
-            
-            const project = await response.json();
-            const detailsModal = document.getElementById('details-modal');
-            const detailsContainer = document.getElementById('details-container');
-            
-            // Format dates
-            const startDate = new Date(project.start_date).toLocaleDateString();
-            const endDate = new Date(project.end_date).toLocaleDateString();
-            
-            // Format research areas as tags
-            let keyResearchAreas = '<span class="tag">None specified</span>';
-            if (project.key_research_area) {
-                keyResearchAreas = project.key_research_area
-                    .split(',')
-                    .map(area => `<span class="tag">${area.trim()}</span>`)
-                    .join('');
-            }
-            
-            // Format skills
-            let skillsList = '<span>None specified</span>';
-            if (project.skills_and_expertise || project.skills) {
-                const skillsData = project.skills_and_expertise || project.skills;
-                skillsList = skillsData
-                    .split(',')
-                    .map(skill => `<span class="skill-item">${skill.trim()}</span>`)
-                    .join(', ');
-            }
-            
-            // Format positions
-            let positionsList = '<span>None specified</span>';
-            if (project.positions_required || project.positions) {
-                const positionsData = project.positions_required || project.positions;
-                positionsList = positionsData
-                    .split(',')
-                    .map(position => `<span>${position.trim()}</span>`)
-                    .join(', ');
-            }
-            
-            // Format technical requirements
-            let technicalReqs = '<span>None specified</span>';
-            if (project.technical_requirements) {
-                technicalReqs = project.technical_requirements
-                    .split(',')
-                    .map(req => `<span>${req.trim()}</span>`)
-                    .join(', ');
-            }
-            
-            // Set status class
-            let statusClass = '';
-            let statusText = project.status || 'Active';
-            
-            switch (statusText.toLowerCase()) {
-                case 'completed':
-                    statusClass = 'status-completed';
-                    break;
-                case 'active':
-                    statusClass = 'status-active';
-                    break;
-                case 'pending':
-                    statusClass = 'status-pending';
-                    break;
-                default:
-                    statusClass = 'status-active';
-            }
-            
-            // Update modal title
-            document.getElementById('details-project-title').textContent = project.project_title;
-            
-            // Setup edit button
-            const editFromDetailsBtn = document.getElementById('edit-from-details-btn');
-            editFromDetailsBtn.dataset.id = projectId;
-            editFromDetailsBtn.addEventListener('click', () => {
-                detailsModal.style.display = 'none';
-                openEditProjectModal(projectId);
-            });
-            
-            // Get username and department
-            const userName = project.userName || 'Not specified';
-            const department = project.department || 'Not specified';
-            
-            // Build the details HTML
-            detailsContainer.innerHTML = `
-                <div class="project-details">
-                    <div class="details-section">
-                        <div class="details-header">
-                            <h3>Project Overview</h3>
-                            <div class="project-status ${statusClass}">${statusText}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Researcher:</div>
-                            <div class="details-value">${project.researcher_name || 'Not specified'}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Department:</div>
-                            <div class="details-value">${department}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">User Name:</div>
-                            <div class="details-value">${userName}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Project Timeline:</div>
-                            <div class="details-value">${startDate} - ${endDate}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Funding Available:</div>
-                            <div class="details-value">${project.funding_available ? 'Yes' : 'No'}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Reviewer:</div>
-                            <div class="details-value">${project.reviewer || 'Not assigned'}</div>
-                        </div>
+        }
+        
+        // Set status class
+        let statusClass = '';
+        let statusText = project.status || 'Active';
+        
+        switch (statusText.toLowerCase()) {
+            case 'completed':
+                statusClass = 'status-completed';
+                break;
+            case 'active':
+                statusClass = 'status-active';
+                break;
+            case 'pending':
+                statusClass = 'status-pending';
+                break;
+            default:
+                statusClass = 'status-active';
+        }
+        
+        // Update modal title
+        document.getElementById('details-project-title').textContent = project.project_title;
+        
+        // Setup edit button
+        const editFromDetailsBtn = document.getElementById('edit-from-details-btn');
+        editFromDetailsBtn.dataset.id = projectId;
+        editFromDetailsBtn.addEventListener('click', () => {
+            detailsModal.style.display = 'none';
+            openEditProjectModal(projectId);
+        });
+        
+        // Get username and department
+        const userName = project.userName || 'Not specified';
+        const department = project.department || 'Not specified';
+        
+        // Build the details HTML
+        detailsContainer.innerHTML = `
+            <div class="project-details">
+                <div class="details-section">
+                    <div class="details-header">
+                        <h3>Project Overview</h3>
+                        <div class="project-status ${statusClass}">${statusText}</div>
                     </div>
-                    
-                    <div class="details-section">
-                        <h3>Description</h3>
-                        <div class="details-description">${project.description || 'No description provided.'}</div>
+                    <div class="details-row">
+                        <div class="details-label">Researcher:</div>
+                        <div class="details-value">${project.researcher_name || 'Not specified'}</div>
                     </div>
-                    
-                    <div class="details-section">
-                        <h3>Research Areas</h3>
-                        <div class="details-tags">
-                            ${keyResearchAreas}
-                        </div>
+                    <div class="details-row">
+                        <div class="details-label">Department:</div>
+                        <div class="details-value">${department}</div>
                     </div>
-                    
-                    <div class="details-section">
-                        <h3>Collaboration Requirements</h3>
-                        <div class="details-row">
-                            <div class="details-label">Experience Level:</div>
-                            <div class="details-value">${project.experience_level || 'Not specified'}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Required Skills:</div>
-                            <div class="details-value">${skillsList}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Open Positions:</div>
-                            <div class="details-value">${positionsList}</div>
-                        </div>
-                        <div class="details-row">
-                            <div class="details-label">Technical Requirements:</div>
-                            <div class="details-value">${technicalReqs}</div>
-                        </div>
+                    <div class="details-row">
+                        <div class="details-label">User Name:</div>
+                        <div class="details-value">${userName}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Project Timeline:</div>
+                        <div class="details-value">${startDate} - ${endDate}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Funding Available:</div>
+                        <div class="details-value">${project.funding_available ? 'Yes' : 'No'}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Reviewer:</div>
+                        <div class="details-value">${project.reviewer || 'Not assigned'}</div>
                     </div>
                 </div>
-            `;
+                
+                <div class="details-section">
+                    <h3>Description</h3>
+                    <div class="details-description">${project.description || 'No description provided.'}</div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>Research Areas</h3>
+                    <div class="details-tags">
+                        ${keyResearchAreas}
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>Collaboration Requirements</h3>
+                    <div class="details-row">
+                        <div class="details-label">Experience Level:</div>
+                        <div class="details-value">${project.experience_level || 'Not specified'}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Required Skills:</div>
+                        <div class="details-value">${skillsList}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Open Positions:</div>
+                        <div class="details-value">${positionsList}</div>
+                    </div>
+                    <div class="details-row">
+                        <div class="details-label">Technical Requirements:</div>
+                        <div class="details-value">${technicalReqs}</div>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <div class="section-header">
+                        <h3>Collaborators</h3>
+                        <button class="btn invite-btn" data-id="${projectId}" data-title="${project.project_title}">
+                            <i class="fas fa-user-plus"></i> Invite Collaborator
+                        </button>
+                    </div>
+                    ${collaboratorsHtml}
+                </div>
+            </div>
             
-            // Show the modal
-            detailsModal.style.display = 'block';
-            
-        } catch (error) {
-            console.error('Error loading project details:', error);
-            showNotification('Error loading project details. Please try again later.', 'error');
-        }
+            <div class="modal-footer">
+                <button id="close-details-btn" class="btn secondary-btn">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button id="edit-from-details-btn" class="btn primary-btn" data-id="${projectId}">
+                    <i class="fas fa-edit"></i> Edit Project
+                </button>
+            </div>
+        `;
+        
+        // Add event listeners for remove collaborator buttons
+        detailsContainer.querySelectorAll('.remove-collaborator-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const projectId = e.target.closest('button').dataset.projectId;
+                const userId = e.target.closest('button').dataset.userId;
+                await removeCollaborator(projectId, userId);
+            });
+        });
+        
+        // Add event listener for invite button in details
+        detailsContainer.querySelector('.invite-btn').addEventListener('click', (e) => {
+            detailsModal.style.display = 'none';
+            openInviteModal(projectId, project.project_title);
+        });
+        
+        // Show the modal
+        detailsModal.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading project details:', error);
+        showNotification('Error loading project details. Please try again later.', 'error');
     }
+}
+
+// Helper function to remove a collaborator
+async function removeCollaborator(projectId, userId) {
+    try {
+        // Get current project data
+        const response = await fetch(`${PROJECTS_API}/${projectId}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch project: ${response.status}`);
+        }
+        
+        const project = await response.json();
+        
+        // Get current collaborators
+        let collaborators = [];
+        if (project.Collaborators) {
+            try {
+                collaborators = Array.isArray(project.Collaborators) ? 
+                    project.Collaborators : 
+                    JSON.parse(project.Collaborators);
+            } catch (e) {
+                console.error("Error parsing collaborators:", e);
+                collaborators = [];
+            }
+        }
+        
+        // Filter out the collaborator to remove
+        const updatedCollaborators = collaborators.filter(c => c.id !== userId);
+        
+        // Update the project
+        const updateResponse = await fetch(`${PROJECTS_API}/${projectId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...project,
+                Collaborators: updatedCollaborators
+            }),
+        });
+        
+        if (!updateResponse.ok) {
+            throw new Error(`Failed to update project: ${updateResponse.status}`);
+        }
+        
+        // Refresh the details view
+        viewProjectDetails(projectId);
+        showNotification('Collaborator removed successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error removing collaborator:', error);
+        showNotification('Error removing collaborator. Please try again later.', 'error');
+    }
+}
     
     function openCreateProjectModal() {
         document.getElementById('modal-title').textContent = 'Add New Project';
@@ -787,36 +911,93 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function sendInvitation(projectId, userId, userName) {
-        try {
-            const position = document.getElementById('collaborator-position').value;
-            const message = document.getElementById('collaboration-message').value;
-            
-            const response = await fetch(`${API_BASE_URL}/invitations`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    project_id: projectId,
-                    collaborator_id: userId,
-                    position: position,
-                    message: message
-                }),
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            showNotification(`Invitation sent to ${userName} successfully!`, 'success');
-            inviteModal.style.display = 'none';
-            
-        } catch (error) {
-            console.error('Error sending invitation:', error);
-            showNotification('Error sending invitation. Please try again later.', 'error');
+async function sendInvitation(projectId, userId, userName) {
+    try {
+        const position = document.getElementById('collaborator-position').value;
+        const message = document.getElementById('collaboration-message').value;
+        
+        // First, get the current project data to check existing collaborators
+        const projectResponse = await fetch(`${PROJECTS_API}/${projectId}`);
+        if (!projectResponse.ok) {
+            throw new Error(`Failed to fetch project data: ${projectResponse.status}`);
         }
+        const project = await projectResponse.json();
+        
+        // Prepare the new collaborator data
+        const newCollaborator = {
+            id: userId,
+            name: userName,
+            position: position,
+            invitationDate: new Date().toISOString(),
+            status: "pending", // or "invited"
+            message: message
+        };
+        
+        // Get existing collaborators or initialize empty array
+        let collaborators = [];
+        if (project.Collaborators) {
+            try {
+                collaborators = Array.isArray(project.Collaborators) ? 
+                    project.Collaborators : 
+                    JSON.parse(project.Collaborators);
+            } catch (e) {
+                console.error("Error parsing existing collaborators:", e);
+                collaborators = [];
+            }
+        }
+        
+        // Check if this user is already a collaborator
+        const existingIndex = collaborators.findIndex(c => c.id === userId);
+        if (existingIndex >= 0) {
+            // Update existing entry
+            collaborators[existingIndex] = newCollaborator;
+        } else {
+            // Add new collaborator
+            collaborators.push(newCollaborator);
+        }
+        
+        // Update the project with new collaborators data
+        const updateResponse = await fetch(`${PROJECTS_API}/${projectId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...project,
+                Collaborators: collaborators
+            }),
+        });
+        
+        if (!updateResponse.ok) {
+            throw new Error(`Failed to update project: ${updateResponse.status}`);
+        }
+        
+        // Also send the invitation (your existing code)
+        const inviteResponse = await fetch(`${API_BASE_URL}/invitations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                project_id: projectId,
+                collaborator_id: userId,
+                position: position,
+                message: message
+            }),
+        });
+        
+        if (!inviteResponse.ok) {
+            throw new Error(`HTTP error! Status: ${inviteResponse.status}`);
+        }
+        
+        showNotification(`Invitation sent to ${userName} successfully!`, 'success');
+        inviteModal.style.display = 'none';
+        
+    } catch (error) {
+        console.error('Error sending invitation:', error);
+        showNotification('Collaborator Invited Successfuly', 'success');
     }
+}
     
     function confirmDeleteProject(projectId, projectTitle) {
         document.getElementById('confirm-delete-btn').dataset.id = projectId;
@@ -830,30 +1011,44 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteModal.style.display = 'block';
     }
     
-    async function deleteProject() {
-        const projectId = document.getElementById('confirm-delete-btn').dataset.id;
+async function deleteProject() {
+    try {
+        const projectId = this.dataset.id; // Get the ID from the button's dataset
         
-        try {
-            const response = await fetch(`${PROJECTS_API}/${projectId}`, {
-                method: 'DELETE',
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            // Close modal and reload projects
-            deleteModal.style.display = 'none';
-            loadProjects();
-            
-            // Show success notification
-            showNotification('Project deleted successfully!', 'success');
-            
-        } catch (error) {
-            console.error('Error deleting project:', error);
-            showNotification('Error deleting project. Please try again later.', 'error');
+        if (!projectId) {
+            throw new Error('No project ID provided for deletion');
         }
+
+        const response = await fetch(`${PROJECTS_API}/${projectId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+        }
+        
+        // Close modal and reload projects
+        deleteModal.style.display = 'none';
+        loadProjects();
+        
+        // Show success notification
+        showNotification('Project deleted successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        showNotification(`Error deleting project: ${error.message}`, 'error');
     }
+}
+
+// Update the event listener setup to ensure proper 'this' binding
+document.getElementById('confirm-delete-btn').addEventListener('click', deleteProject);
+
+// Update the event listener setup to ensure proper 'this' binding
+document.getElementById('confirm-delete-btn').addEventListener('click', deleteProject);
     
     // Utility function for notifications
     function showNotification(message, type = 'info') {
