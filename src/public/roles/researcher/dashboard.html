@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,63 +18,64 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-        <!-- Navigation Bar -->
-        <nav class="navbar">
-            <a href="dashboard.html" class="logo">
-                <i class="fas fa-book-open book-logo"></i>
-                CollabNexus
-            </a>
-            <ul class="nav-links">
-                <li><a href="dashboard.html" class="active"><i class="fas fa-th"></i> My Dashboard</a></li>
-                <li><a href="projects.html"><i class="fas fa-project-diagram"></i> My Projects</a></li>
-                <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
-                <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
-                <li><a href="funding.html"><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
-                <li><a href="aipage.html"><i class="fas fa-robot"></i> AI Suggestions</a></li>
-                <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-            </ul>
-            <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </nav>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="dashboard.html" class="logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+        </a>
+        <ul class="nav-links">
+            <li><a href="dashboard.html" class="active"><i class="fas fa-th"></i> My Dashboard</a></li>
+            <li><a href="projects.html"><i class="fas fa-project-diagram"></i> My Projects</a></li>
+            <li><a href="milestones.html"><i class="fas fa-clipboard-list"></i> Milestones</a></li>
+            <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
+            <li><a href="funding.html"><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
+            <li><a href="aipage.html"><i class="fas fa-robot"></i> AI Suggestions</a></li>
+            <li><a href="messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+        </ul>
+        <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </nav>
+
     <!-- Main Content -->
     <main class="admin-proposal">
-        <section  class="proposal-header">
-            <div class="page-title-container">
+        <header class="proposal-header">
+            <section class="page-title-container">
                 <h1 class="page-title">My Dashboard</h1>
                 <p class="page-subtitle">Customize your research workspace with the widgets you need.</p>
-            </div>
-            <div class="dashboard-actions">
+            </section>
+            <nav class="dashboard-actions">
                 <button id="export-dashboard-btn" class="btn btn-secondary">
                     <i class="fas fa-file-export"></i> Export PDF
                 </button>
                 <button id="add-widget-btn" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add Widget
                 </button>
-            </div>
-        </section>
+            </nav>
+        </header>
 
         <section class="dashboard-content">
-            <div class="grid-container">
-                <div class="grid-stack"></div>
-            </div>
+            <section class="grid-container">
+                <section class="grid-stack" role="grid" aria-label="Dashboard widgets"></section>
+            </section>
         </section>
 
         <!-- Empty Dashboard State -->
-        <div id="empty-dashboard" class="empty-dashboard hidden">
-            <div class="empty-dashboard-content">
-                <i class="fas fa-th-large"></i>
+        <section id="empty-dashboard" class="empty-dashboard hidden" aria-live="polite">
+            <article class="empty-dashboard-content">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
                 <h2>Your dashboard is empty</h2>
                 <p>Add widgets to customize your research dashboard</p>
                 <button id="empty-add-widget-btn" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add Your First Widget
                 </button>
-            </div>
-        </div>
+            </article>
+        </section>
 
         <!-- Loading Indicator -->
-        <div id="loading-indicator" class="loading-indicator">
-            <div class="spinner"></div>
+        <section id="loading-indicator" class="loading-indicator" aria-live="polite">
+            <figure class="spinner" aria-hidden="true"></figure>
             <p>Loading your dashboard...</p>
-        </div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -130,231 +130,234 @@
     </footer>
 
     <!-- Add Widget Modal -->
-    <div id="add-widget-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <dialog id="add-widget-modal" class="modal">
+        <article class="modal-content">
+            <header class="modal-header">
                 <h3>Add Widget</h3>
-                <button class="close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="widget-options">
-                    <div class="widget-option" data-widget-type="projects">
-                        <div class="widget-icon">
+                <button class="close" aria-label="Close modal">&times;</button>
+            </header>
+            <section class="modal-body">
+                <fieldset class="widget-options">
+                    <legend class="sr-only">Select widget type</legend>
+                    <article class="widget-option" data-widget-type="projects">
+                        <figure class="widget-icon" aria-hidden="true">
                             <i class="fas fa-users"></i>
-                        </div>
-                        <div class="widget-info">
+                        </figure>
+                        <section class="widget-info">
                             <h4>Projects</h4>
                             <p>View and manage your ongoing projects</p>
-                        </div>
-                    </div>
+                        </section>
+                    </article>
                     
-                    <div class="widget-option" data-widget-type="milestones">
-                        <div class="widget-icon">
+                    <article class="widget-option" data-widget-type="milestones">
+                        <figure class="widget-icon" aria-hidden="true">
                             <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <div class="widget-info">
+                        </figure>
+                        <section class="widget-info">
                             <h4>Milestones</h4>
                             <p>Track your upcoming and recent milestones</p>
-                        </div>
-                    </div>
+                        </section>
+                    </article>
                     
-                    <div class="widget-option" data-widget-type="funding">
-                        <div class="widget-icon">
+                    <article class="widget-option" data-widget-type="funding">
+                        <figure class="widget-icon" aria-hidden="true">
                             <i class="fas fa-coins"></i>
-                        </div>
-                        <div class="widget-info">
+                        </figure>
+                        <section class="widget-info">
                             <h4>Funding</h4>
                             <p>Monitor your project funding status</p>
-                        </div>
-                    </div>
+                        </section>
+                    </article>
                     
-                    <div class="widget-option" data-widget-type="calendar">
-                        <div class="widget-icon">
+                    <article class="widget-option" data-widget-type="calendar">
+                        <figure class="widget-icon" aria-hidden="true">
                             <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="widget-info">
+                        </figure>
+                        <section class="widget-info">
                             <h4>Calendar</h4>
                             <p>View upcoming deadlines and events</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
+                        </section>
+                    </article>
+                </fieldset>
+            </section>
+        </article>
+    </dialog>
 
     <!-- Widget Configuration Modal -->
-    <div id="widget-config-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <dialog id="widget-config-modal" class="modal">
+        <article class="modal-content">
+            <header class="modal-header">
                 <h3>Configure Widget</h3>
-                <button class="close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="widget-title">Widget Title</label>
-                    <input type="text" id="widget-title" class="styled-input" placeholder="Enter widget title">
-                </div>
-                
-                <div class="form-group">
-                    <label for="widget-size">Widget Size</label>
-                    <select id="widget-size" class="styled-input">
-                        <option value="small">Small</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="large">Large</option>
-                        <option value="custom">Custom Size</option>
-                    </select>
-                </div>
-                
-                <div id="custom-size-fields" class="hidden">
-                    <div class="form-group">
-                        <label for="widget-width">Width (1-12)</label>
-                        <input type="number" id="widget-width" class="styled-input" min="1" max="12" value="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="widget-height">Height (1-12)</label>
-                        <input type="number" id="widget-height" class="styled-input" min="1" max="12" value="4">
-                    </div>
-                </div>
-                
-                <div id="widget-specific-config">
-                    <!-- This area will be populated dynamically based on widget type -->
-                </div>
-            </div>
-            <div class="modal-footer">
+                <button class="close" aria-label="Close modal">&times;</button>
+            </header>
+            <section class="modal-body">
+                <form id="widget-config-form">
+                    <fieldset class="form-group">
+                        <label for="widget-title">Widget Title</label>
+                        <input type="text" id="widget-title" class="styled-input" placeholder="Enter widget title">
+                    </fieldset>
+                    
+                    <fieldset class="form-group">
+                        <label for="widget-size">Widget Size</label>
+                        <select id="widget-size" class="styled-input">
+                            <option value="small">Small</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="large">Large</option>
+                            <option value="custom">Custom Size</option>
+                        </select>
+                    </fieldset>
+                    
+                    <fieldset id="custom-size-fields" class="hidden">
+                        <legend>Custom Size Settings</legend>
+                        <section class="form-group">
+                            <label for="widget-width">Width (1-12)</label>
+                            <input type="number" id="widget-width" class="styled-input" min="1" max="12" value="6">
+                        </section>
+                        <section class="form-group">
+                            <label for="widget-height">Height (1-12)</label>
+                            <input type="number" id="widget-height" class="styled-input" min="1" max="12" value="4">
+                        </section>
+                    </fieldset>
+                    
+                    <section id="widget-specific-config">
+                        <!-- This area will be populated dynamically based on widget type -->
+                    </section>
+                </form>
+            </section>
+            <footer class="modal-footer">
                 <button id="cancel-widget-config" class="btn btn-outline">Cancel</button>
                 <button id="save-widget-config" class="btn btn-primary">Save Configuration</button>
-            </div>
-        </div>
-    </div>
+            </footer>
+        </article>
+    </dialog>
 
     <!-- Widget Templates (Hidden) -->
     <template id="projects-widget-template">
-        <div class="widget-content projects-widget">
-            <div class="widget-header">
+        <article class="widget-content projects-widget">
+            <header class="widget-header">
                 <h3><i class="fas fa-users"></i> My Projects</h3>
-                <div class="widget-actions">
+                <nav class="widget-actions">
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-body">
+                </nav>
+            </header>
+            <section class="widget-body">
                 <ul class="projects-list">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</div>
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</li>
                 </ul>
-            </div>
-            <div class="widget-footer">
+            </section>
+            <footer class="widget-footer">
                 <a href="projects.html" class="view-all">View all projects <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
+            </footer>
+        </article>
     </template>
 
     <template id="milestones-widget-template">
-        <div class="widget-content milestones-widget">
-            <div class="widget-header">
+        <article class="widget-content milestones-widget">
+            <header class="widget-header">
                 <h3><i class="fas fa-clipboard-list"></i> Milestones</h3>
-                <div class="widget-actions">
+                <nav class="widget-actions">
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-body">
+                </nav>
+            </header>
+            <section class="widget-body">
                 <ul class="milestones-list">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</div>
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</li>
                 </ul>
-            </div>
-            <div class="widget-footer">
+            </section>
+            <footer class="widget-footer">
                 <a href="milestones.html" class="view-all">View all milestones <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
+            </footer>
+        </article>
     </template>
 
     <template id="funding-widget-template">
-        <div class="widget-content funding-widget">
-            <div class="widget-header">
+        <article class="widget-content funding-widget">
+            <header class="widget-header">
                 <h3><i class="fas fa-coins"></i> Funding</h3>
-                <div class="widget-actions">
+                <nav class="widget-actions">
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-body">
-                <div class="funding-summary">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading funding data...</div>
-                </div>
-                <div class="funding-chart-container">
-                    <canvas class="funding-chart"></canvas>
-                </div>
-            </div>
-            <div class="widget-footer">
+                </nav>
+            </header>
+            <section class="widget-body">
+                <section class="funding-summary">
+                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading funding data...</p>
+                </section>
+                <figure class="funding-chart-container">
+                    <canvas class="funding-chart" aria-label="Funding chart"></canvas>
+                </figure>
+            </section>
+            <footer class="widget-footer">
                 <a href="funding.html" class="view-all">View all funding <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
+            </footer>
+        </article>
     </template>
 
     <template id="calendar-widget-template">
-        <div class="widget-content calendar-widget">
-            <div class="widget-header">
+        <article class="widget-content calendar-widget">
+            <header class="widget-header">
                 <h3><i class="fas fa-calendar-alt"></i> Calendar</h3>
-                <div class="widget-actions">
+                <nav class="widget-actions">
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-body">
-                <div class="calendar-container">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading calendar...</div>
-                </div>
-            </div>
-            <div class="widget-footer">
-                <span id="current-date"></span>
-            </div>
-        </div>
+                </nav>
+            </header>
+            <section class="widget-body">
+                <section class="calendar-container" role="grid" aria-label="Calendar">
+                    <p class="loading"><i class="fas fa-spinner fa-spin"></i> Loading calendar...</p>
+                </section>
+            </section>
+            <footer class="widget-footer">
+                <time id="current-date"></time>
+            </footer>
+        </article>
     </template>
 
     <template id="recent-activity-widget-template">
-        <div class="widget-content activity-widget">
-            <div class="widget-header">
+        <article class="widget-content activity-widget">
+            <header class="widget-header">
                 <h3><i class="fas fa-history"></i> Recent Activity</h3>
-                <div class="widget-actions">
+                <nav class="widget-actions">
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-body">
+                </nav>
+            </header>
+            <section class="widget-body">
                 <ul class="activity-list">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading activity...</div>
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Loading activity...</li>
                 </ul>
-            </div>
-            <div class="widget-footer">
+            </section>
+            <footer class="widget-footer">
                 <a href="#" class="view-all">View all activity <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </div>
+            </footer>
+        </article>
     </template>
 
     <!-- AI Suggestions Template -->
     <template id="ai-suggestions-widget-template">
-        <div class="widget-content ai-suggestions-widget">
-            <div class="widget-header">
+        <article class="widget-content ai-suggestions-widget">
+            <header class="widget-header">
                 <h3><i class="fas fa-robot"></i> AI Collaboration Suggestions</h3>
-                <div class="widget-actions">
+                <nav class="widget-actions">
                     <button class="widget-refresh" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="widget-remove" title="Remove Widget"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-body">
+                </nav>
+            </header>
+            <section class="widget-body">
                 <ul class="ai-suggestions-list">
-                    <div class="loading"><i class="fas fa-spinner fa-spin"></i> Generating AI suggestions...</div>
+                    <li class="loading"><i class="fas fa-spinner fa-spin"></i> Generating AI suggestions...</li>
                 </ul>
-            </div>
-            <div class="widget-footer">
+            </section>
+            <footer class="widget-footer">
                 <span><i class="fas fa-lightbulb"></i> Powered by AI Analysis</span>
-            </div>
-        </div>
+            </footer>
+        </article>
     </template>
 
     <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
+    <aside id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></aside>
 
     <script src="js/mydashboard.js"></script>  
     <script src="../../js/auth.js"></script>
