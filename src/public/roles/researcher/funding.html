@@ -37,34 +37,34 @@
     <!-- Main Content -->
     <main class="admin-proposal">
         <section class="proposal-header">
-            <div class="page-title-container">
+            <nav class="page-title-container">
                 <h1 class="page-title">Funding Dashboard</h1>
                 <p class="page-subtitle">Manage your project grants, track expenditures and monitor budget allocations.</p>
-            </div>
+            </nav>
         </section>
         
         <!-- Projects Overview -->
         <section class="projects-overview">
-            <div class="section-header">
+            <nav class="section-header">
                 <h2>Project Funding Overview</h2>
                 <button id="export-overview-btn" class="btn btn-outline">
                     <i class="fas fa-file-export"></i> Export Report
                 </button>
-            </div>
-            <div class="projects-grid" id="projects-grid">
+            </nav>
+            <nav class="projects-grid" id="projects-grid">
                 <!-- Projects will be loaded dynamically -->
-                <div class="loading-indicator">
+                <nav class="loading-indicator">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Loading project data...</p>
-                </div>
-            </div>
+                </nav>
+            </nav>
         </section>
         
         <!-- Project Details Section (Hidden initially) -->
         <section class="project-details" id="project-details-section">
-            <div class="section-header">
+            <nav class="section-header">
                 <h2 id="project-title">Project: [Project Title]</h2>
-                <div class="section-actions">
+                <nav class="section-actions">
                     <button id="add-funding-btn" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Add Funding
                     </button>
@@ -74,112 +74,112 @@
                     <button id="export-details-btn" class="btn btn-outline">
                         <i class="fas fa-file-export"></i> Export Report
                     </button>
-                </div>
-            </div>
+                </nav>
+            </nav>
             
-            <div class="funding-details-container">
+            <nav class="funding-details-container">
                 <!-- Summary Cards -->
-                <div class="funding-summary">
-                    <div class="summary-card total-funding">
-                        <div class="card-icon">
+                <nav class="funding-summary">
+                    <nav class="summary-card total-funding">
+                        <nav class="card-icon">
                             <i class="fas fa-hand-holding-usd"></i>
-                        </div>
-                        <div class="card-content">
+                        </nav>
+                        <aside class="card-content">
                             <h3>Total Funding</h3>
                             <p id="total-funding-amount">R0.00</p>
-                        </div>
-                    </div>
-                    <div class="summary-card spent-funding">
-                        <div class="card-icon">
+                        </aside>
+                    </nav>
+                    <nav class="summary-card spent-funding">
+                        <nav class="card-icon">
                             <i class="fas fa-file-invoice-dollar"></i>
-                        </div>
-                        <div class="card-content">
+                        </nav>
+                        <nav class="card-content">
                             <h3>Spent</h3>
                             <p id="spent-funding-amount">R0.00</p>
-                        </div>
-                    </div>
-                    <div class="summary-card remaining-funding">
-                        <div class="card-icon">
+                        </nav>
+                    </nav>
+                    <nav class="summary-card remaining-funding">
+                        <nav class="card-icon">
                             <i class="fas fa-piggy-bank"></i>
-                        </div>
-                        <div class="card-content">
+                        </nav>
+                        <nav class="card-content">
                             <h3>Remaining</h3>
                             <p id="remaining-funding-amount">R0.00</p>
-                        </div>
-                    </div>
-                    <div class="summary-card active-grants">
-                        <div class="card-icon">
+                        </nav>
+                    </nav>
+                    <nav class="summary-card active-grants">
+                        <nav class="card-icon">
                             <i class="fas fa-clipboard-check"></i>
-                        </div>
-                        <div class="card-content">
+                        </nav>
+                        <nav class="card-content">
                             <h3>Active Grants</h3>
                             <p id="active-grants-count">0</p>
-                        </div>
-                    </div>
-                </div>
+                        </nav>
+                    </nav>
+                </nav>
                 
                 <!-- Charts Section -->
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <div class="chart-header">
+                <nav class="charts-container">
+                    <nav class="chart-card">
+                        <nav class="chart-header">
                             <h3>Spend vs. Remaining</h3>
-                        </div>
-                        <div class="chart-body">
+                        </nav>
+                        <nav class="chart-body">
                             <canvas id="funding-pie-chart"></canvas>
-                            <div class="chart-legend">
-                                <div class="legend-item">
-                                    <span class="legend-color spent"></span>
-                                    <span>Spent</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color remaining"></span>
-                                    <span>Remaining</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <div class="chart-header">
+                            <nav class="chart-legend">
+                                <nav class="legend-item">
+                                    <nav class="legend-color spent"></nav>
+                                    <nav>Spent</nav>
+                                </nav>
+                                <nav class="legend-item">
+                                    <nav class="legend-color remaining"></nav>
+                                    <nav>Remaining</nav>
+                                </nav>
+                            </nav>
+                        </nav>
+                    </nav>
+                    <nav class="chart-card">
+                        <nav class="chart-header">
                             <h3>Budget Allocation</h3>
-                        </div>
-                        <div class="chart-body">
+                        </nav>
+                        <nav class="chart-body">
                             <canvas id="category-budget-chart"></canvas>
-                            <div class="chart-legend">
-                                <div class="legend-item">
-                                    <span class="legend-color personnel"></span>
-                                    <span>Personnel</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color equipment"></span>
-                                    <span>Equipment</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color consumables"></span>
-                                    <span>Consumables</span>
-                                </div>
-                                <div class="legend-item">
-                                    <span class="legend-color other"></span>
-                                    <span>Other</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            <nav class="chart-legend">
+                                <nav class="legend-item">
+                                    <nav class="legend-color personnel"></nav>
+                                    <nav>Personnel</nav>
+                                </nav>
+                                <nav class="legend-item">
+                                    <nav class="legend-color equipment"></nav>
+                                    <nav>Equipment</nav>
+                                </nav>
+                                <nav class="legend-item">
+                                    <nav class="legend-color consumables"></nav>
+                                    <nav>Consumables</nav>
+                                </nav>
+                                <nav class="legend-item">
+                                    <nav class="legend-color other"></nav>
+                                    <nav>Other</nav>
+                                </nav>
+                            </nav>
+                        </nav>
+                    </nav>
+                </nav>
                 
                 <!-- Funding Records Table -->
-                <div class="funding-records-section">
-                    <div class="section-header">
+                <section class="funding-records-section">
+                    <nav class="section-header">
                         <h3>Funding Records</h3>
-                        <div class="filter-container">
+                        <nav class="filter-container">
                             <select id="status-filter">
                                 <option value="all">All Records</option>
                                 <option value="active">Active Only</option>
                                 <option value="expired">Expired Only</option>
                                 <option value="pending">Pending</option>
                             </select>
-                        </div>
-                    </div>
-                    <div class="funding-table-container" id="funding-table-container">
+                        </nav>
+                    </nav>
+                    <nav class="funding-table-container" id="funding-table-container">
                         <table class="funding-table">
                             <thead>
                                 <tr>
@@ -197,105 +197,105 @@
                                 <!-- Funding records will be loaded dynamically -->
                             </tbody>
                         </table>
-                        <div class="no-records-message" id="no-records-message" style="display:none;">
+                        <nav class="no-records-message" id="no-records-message" style="display:none;">
                             <i class="fas fa-file-invoice-dollar"></i>
                             <p>No funding records found</p>
-                        </div>
-                    </div>
-                </div>
+                        </nav>
+                    </nav>
+                </section>
                 
                 <!-- Category Breakdown Section -->
-                <div class="category-breakdown-section">
-                    <div class="section-header">
+                <section class="category-breakdown-section">
+                    <nav class="section-header">
                         <h3>Category Breakdown</h3>
-                    </div>
-                    <div class="category-cards">
-                        <div class="category-card" id="personnel-category">
-                            <div class="category-header">
+                    </nav>
+                    <article class="category-cards">
+                        <article class="category-card" id="personnel-category">
+                            <figure class="category-header">
                                 <h4>Personnel</h4>
                                 <i class="fas fa-users"></i>
-                            </div>
-                            <div class="category-progress">
-                                <div class="progress-indicator">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="personnel-progress" style="width: 0%"></div>
-                                    </div>
-                                    <div class="progress-numbers">
-                                        <span id="personnel-spent">R0</span>
-                                        <span id="personnel-budget">R0</span>
-                                    </div>
-                                </div>
-                                <div class="category-percentages">
-                                    <span id="personnel-percent">0%</span> used
-                                </div>
-                            </div>
-                        </div>
+                            </figure>
+                            <figure class="category-progress">
+                                <figure class="progress-indicator">
+                                    <figure class="progress-bar">
+                                        <figure class="progress-fill" id="personnel-progress" style="width: 0%"></figure>
+                                    </figure>
+                                    <figure class="progress-numbers">
+                                        <nav id="personnel-spent">R0</nav>
+                                        <nav id="personnel-budget">R0</nav>
+                                    </figure>
+                                </figure>
+                                <figure class="category-percentages">
+                                    <nav id="personnel-percent">0%</nav> used
+                                </figure>
+                            </figure>
+                        </article>
                         
-                        <div class="category-card" id="equipment-category">
-                            <div class="category-header">
+                        <article class="category-card" id="equipment-category">
+                            <figure class="category-header">
                                 <h4>Equipment</h4>
                                 <i class="fas fa-wrench"></i>
-                            </div>
-                            <div class="category-progress">
-                                <div class="progress-indicator">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="equipment-progress" style="width: 0%"></div>
-                                    </div>
-                                    <div class="progress-numbers">
-                                        <span id="equipment-spent">R0</span>
-                                        <span id="equipment-budget">R0</span>
-                                    </div>
-                                </div>
-                                <div class="category-percentages">
-                                    <span id="equipment-percent">0%</span> used
-                                </div>
-                            </div>
-                        </div>
+                            </figure>
+                            <figure class="category-progress">
+                                <figure class="progress-indicator">
+                                    <figure class="progress-bar">
+                                        <figure class="progress-fill" id="equipment-progress" style="width: 0%"></figure>
+                                    </figure>
+                                    <figure class="progress-numbers">
+                                        <nav id="equipment-spent">R0</nav>
+                                        <nav id="equipment-budget">R0</nav>
+                                    </figure>
+                                </figure>
+                                <figure class="category-percentages">
+                                    <nav id="equipment-percent">0%</nav> used
+                                </figure>
+                            </figure>
+                        </article>
                         
-                        <div class="category-card" id="consumables-category">
-                            <div class="category-header">
+                        <article class="category-card" id="consumables-category">
+                            <figure class="category-header">
                                 <h4>Consumables</h4>
                                 <i class="fas fa-flask"></i>
-                            </div>
-                            <div class="category-progress">
-                                <div class="progress-indicator">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="consumables-progress" style="width: 0%"></div>
-                                    </div>
-                                    <div class="progress-numbers">
-                                        <span id="consumables-spent">R0</span>
-                                        <span id="consumables-budget">R0</span>
-                                    </div>
-                                </div>
-                                <div class="category-percentages">
-                                    <span id="consumables-percent">0%</span> used
-                                </div>
-                            </div>
-                        </div>
+                            </figure>
+                            <figure class="category-progress">
+                                <figure class="progress-indicator">
+                                    <figure class="progress-bar">
+                                        <figure class="progress-fill" id="consumables-progress" style="width: 0%"></figure>
+                                    </figure>
+                                    <figure class="progress-numbers">
+                                        <nav id="consumables-spent">R0</nav>
+                                        <nav id="consumables-budget">R0</nav>
+                                    </figure>
+                                </figure>
+                                <figure class="category-percentages">
+                                    <nav id="consumables-percent">0%</nav> used
+                                </figure>
+                            </figure>
+                        </article>
                         
-                        <div class="category-card" id="other-category">
-                            <div class="category-header">
+                        <article class="category-card" id="other-category">
+                            <figure class="category-header">
                                 <h4>Other</h4>
                                 <i class="fas fa-folder"></i>
-                            </div>
-                            <div class="category-progress">
-                                <div class="progress-indicator">
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="other-progress" style="width: 0%"></div>
-                                    </div>
-                                    <div class="progress-numbers">
-                                        <span id="other-spent">R0</span>
-                                        <span id="other-budget">R0</span>
-                                    </div>
-                                </div>
-                                <div class="category-percentages">
-                                    <span id="other-percent">0%</span> used
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            </figure>
+                            <figure class="category-progress">
+                                <figure class="progress-indicator">
+                                    <figure class="progress-bar">
+                                        <figure class="progress-fill" id="other-progress" style="width: 0%"></figure>
+                                    </figure>
+                                    <figure class="progress-numbers">
+                                        <nav id="other-spent">R0</nav>
+                                        <nav id="other-budget">R0</nav>
+                                    </figure>
+                                </figure>
+                                <figure class="category-percentages">
+                                    <nav id="other-percent">0%</nav> used
+                                </figure>
+                            </figure>
+                        </article>
+                    </article>
+                </section>
+            </nav>
         </section>
     </main>
     
@@ -352,33 +352,33 @@
     
     <!-- Modals -->
     <!-- Add/Edit Funding Modal -->
-    <div id="funding-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <main id="funding-modal" class="modal">
+        <article class="modal-content">
+            <nav class="modal-header">
                 <h3 id="funding-modal-title">Add New Funding</h3>
                 <button class="close">&times;</button>
-            </div>
-            <div class="modal-body">
+            </nav>
+            <nav class="modal-body">
                 <form id="funding-form">
                     <input type="hidden" id="funding-id">
                     <input type="hidden" id="funding-project-id">
                     
-                    <div class="form-group">
+                    <nav class="form-group">
                         <label for="funding-title">Grant Title</label>
                         <input type="text" id="funding-title" required placeholder="Enter grant title">
-                    </div>
+                    </nav>
                     
-                    <div class="form-group">
+                    <nav class="form-group">
                         <label for="funding-description">Description</label>
                         <textarea id="funding-description" rows="2" placeholder="Describe this grant"></textarea>
-                    </div>
+                    </nav>
                     
-                    <div class="form-row">
-                        <div class="form-group half">
+                    <nav class="form-row">
+                        <nav class="form-group half">
                             <label for="funding-funder">Funding Agency/Funder</label>
                             <input type="text" id="funding-funder" required placeholder="Enter funder name">
-                        </div>
-                        <div class="form-group half">
+                        </nav>
+                        <nav class="form-group half">
                             <label for="funding-status">Status</label>
                             <select id="funding-status" required>
                                 <option value="active">Active</option>
@@ -386,115 +386,115 @@
                                 <option value="expired">Expired</option>
                                 <option value="rejected">Rejected</option>
                             </select>
-                        </div>
-                    </div>
+                        </nav>
+                    </nav>
                     
-                    <div class="form-row">
-                        <div class="form-group half">
+                    <nav class="form-row">
+                        <nav class="form-group half">
                             <label for="funding-start-date">Start Date</label>
                             <input type="date" id="funding-start-date" required>
-                        </div>
-                        <div class="form-group half">
+                        </nav>
+                        <nav class="form-group half">
                             <label for="funding-expiration-date">Expiration Date</label>
                             <input type="date" id="funding-expiration-date" required>
-                        </div>
-                    </div>
+                        </nav>
+                    </nav>
                     
-                    <div class="form-row">
-                        <div class="form-group half">
+                    <nav class="form-row">
+                        <nav class="form-group half">
                             <label for="funding-amount">Total Amount (R)</label>
                             <input type="number" id="funding-amount" min="0" step="0.01" readonly placeholder="0.00">
-                        </div>
-                        <div class="form-group half">
+                        </nav>
+                        <nav class="form-group half">
                             <label for="funding-spent">Total Spent (R)</label>
                             <input type="number" id="funding-spent" min="0" step="0.01" readonly placeholder="0.00">
-                        </div>
-                    </div>
+                        </nav>
+                    </nav>
                     
-                    <div class="form-group">
+                    <nav class="form-group">
                         <h4>Budget Categories</h4>
-                        <div class="budget-categories">
-                            <div class="form-row">
-                                <div class="form-group half">
+                        <nav class="budget-categories">
+                            <nav class="form-row">
+                                <nav class="form-group half">
                                     <label for="personnel-budget">Personnel Budget (R)</label>
                                     <input type="number" id="funding-personnel-budget" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                                <div class="form-group half">
+                                </nav>
+                                <nav class="form-group half">
                                     <label for="personnel-spent">Personnel Spent (R)</label>
                                     <input type="number" id="funding-personnel-spent" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                            </div>
+                                </nav>
+                            </nav>
                             
-                            <div class="form-row">
-                                <div class="form-group half">
+                            <nav class="form-row">
+                                <nav class="form-group half">
                                     <label for="equipment-budget">Equipment Budget (R)</label>
                                     <input type="number" id="funding-equipment-budget" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                                <div class="form-group half">
+                                </nav>
+                                <nav class="form-group half">
                                     <label for="equipment-spent">Equipment Spent (R)</label>
                                     <input type="number" id="funding-equipment-spent" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                            </div>
+                                </nav>
+                            </nav>
                             
-                            <div class="form-row">
-                                <div class="form-group half">
+                            <nav class="form-row">
+                                <nav class="form-group half">
                                     <label for="consumables-budget">Consumables Budget (R)</label>
                                     <input type="number" id="funding-consumables-budget" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                                <div class="form-group half">
+                                </nav>
+                                <nav class="form-group half">
                                     <label for="consumables-spent">Consumables Spent (R)</label>
                                     <input type="number" id="funding-consumables-spent" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                            </div>
+                                </nav>
+                            </nav>
                             
-                            <div class="form-row">
-                                <div class="form-group half">
+                            <nav class="form-row">
+                                <nav class="form-group half">
                                     <label for="other-budget">Other Budget (R)</label>
                                     <input type="number" id="funding-other-budget" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                                <div class="form-group half">
+                                </nav>
+                                <nav class="form-group half">
                                     <label for="other-spent">Other Spent (R)</label>
                                     <input type="number" id="funding-other-spent" min="0" step="0.01" placeholder="0.00">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                </nav>
+                            </nav>
+                        </nav>
+                    </nav>
                     
-                    <div class="form-group">
+                    <nav class="form-group">
                         <label for="funding-notes">Notes</label>
                         <textarea id="funding-notes" rows="2" placeholder="Additional notes about this funding"></textarea>
-                    </div>
+                    </nav>
                     
-                    <div class="form-actions">
+                    <nav class="form-actions">
                         <button type="button" id="cancel-funding-btn" class="btn btn-outline">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save Funding</button>
-                    </div>
+                    </nav>
                 </form>
-            </div>
-        </div>
-    </div>
+            </nav>
+        </article>
+    </main>
     
     <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <section id="delete-modal" class="modal">
+        <nav class="modal-content">
+            <nav class="modal-header">
                 <h3>Delete Funding Record</h3>
                 <button class="close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="delete-confirmation">
+            </nav>
+            <nav class="modal-body">
+                <nav class="delete-confirmation">
                     <i class="fas fa-exclamation-triangle warning-icon"></i>
                     <p>Are you sure you want to delete this funding record?</p>
                     <p class="warning-text">This action cannot be undone.</p>
-                    <div class="funding-to-delete"></div>
-                </div>
-                <div class="form-actions">
+                    <nav class="funding-to-delete"></nav>
+                </nav>
+                <nav class="form-actions">
                     <button type="button" id="cancel-delete-btn" class="btn btn-outline">Cancel</button>
                     <button type="button" id="confirm-delete-btn" class="btn btn-destructive">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
+                </nav>
+            </nav>
+        </nav>
+    </section>
     
     <script src="js/funding.js"></script>
     <script src="../../js/auth.js"></script>

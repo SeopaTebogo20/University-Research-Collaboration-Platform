@@ -122,10 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadProjects() {
         try {
             projectsGrid.innerHTML = `
-                <div class="loading-indicator">
+                <nav class="loading-indicator">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Loading project data...</p>
-                </div>
+                </nav>
             `;
             
             const response = await fetch(PROJECTS_API);
@@ -138,10 +138,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (projects.length === 0) {
                 projectsGrid.innerHTML = `
-                    <div class="no-records-message">
+                    <nav class="no-records-message">
                         <i class="fas fa-folder-open"></i>
                         <p>No projects found. Create a project to get started.</p>
-                    </div>
+                    </nav>
                 `;
                 return;
             }
@@ -160,10 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error loading projects:', error);
             projectsGrid.innerHTML = `
-                <div class="error-message">
+                <nav class="error-message">
                     <i class="fas fa-exclamation-triangle"></i>
                     <p>Error loading projects. Please try again later.</p>
-                </div>
+                </nav>
             `;
         }
     }
@@ -201,44 +201,44 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
             
-            const card = document.createElement('div');
+            const card = document.createElement('nav');
             card.className = 'project-card';
             card.dataset.id = project.id;
             
             card.innerHTML = `
-                <div class="project-card-header">
-                    <span class="project-status ${statusClass}">${statusText}</span>
+                <nav class="project-card-header">
+                    <nav class="project-status ${statusClass}">${statusText}</nav>
                     <h3>${project.project_title}</h3>
-                </div>
-                <div class="project-card-content">
-                    <div class="project-stats">
-                        <div class="stat-item">
+                </nav>
+                <nav class="project-card-content">
+                    <nav class="project-stats">
+                        <nav class="stat-item">
                             <p class="stat-value">R${totalFunding.toLocaleString()}</p>
                             <p class="stat-label">Total Funding</p>
-                        </div>
-                        <div class="stat-item">
+                        </nav>
+                        <nav class="stat-item">
                             <p class="stat-value">R${totalSpent.toLocaleString()}</p>
                             <p class="stat-label">Spent</p>
-                        </div>
-                    </div>
-                    <div class="funding-progress">
-                        <div class="progress-label">
-                            <span>Funding Spent</span>
-                            <span>${percentSpent}%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${percentSpent}%"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card-footer">
-                    <div class="project-funding-count">
-                        <span>${summary.funding_count}</span> funding sources
-                    </div>
-                    <div class="project-action">
+                        </nav>
+                    </nav>
+                    <nav class="funding-progress">
+                        <nav class="progress-label">
+                            <nav>Funding Spent</nav>
+                            <nav>${percentSpent}%</nav>
+                        </nav>
+                        <nav class="progress-bar">
+                            <nav class="progress-fill" style="width: ${percentSpent}%"></nav>
+                        </nav>
+                    </nav>
+                </nav>
+                <nav class="project-card-footer">
+                    <nav class="project-funding-count">
+                        <nav>${summary.funding_count}</nav> funding sources
+                    </nav>
+                    <nav class="project-action">
                         View Details <i class="fas fa-arrow-right"></i>
-                    </div>
-                </div>
+                    </nav>
+                </nav>
             `;
             
             // Add event listener to the card
@@ -291,10 +291,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('funding-records-body').innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center;">
-                        <div class="loading-indicator" style="min-height: 100px;">
+                        <nav class="loading-indicator" style="min-height: 100px;">
                             <i class="fas fa-spinner fa-spin"></i>
                             <p>Loading funding records...</p>
-                        </div>
+                        </nav>
                     </td>
                 </tr>
             `;
@@ -325,10 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('funding-records-body').innerHTML = `
                 <tr>
                     <td colspan="8" style="text-align: center;">
-                        <div class="error-message" style="padding: 2rem;">
+                        <nav class="error-message" style="padding: 2rem;">
                             <i class="fas fa-exclamation-triangle"></i>
                             <p>Error loading funding records. Please try again later.</p>
-                        </div>
+                        </nav>
                     </td>
                 </tr>
             `;
@@ -360,16 +360,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>R${parseFloat(record.amount_spent).toLocaleString()}</td>
                 <td>R${remaining.toLocaleString()}</td>
                 <td>${expirationDate}</td>
-                <td><span class="funding-status status-${record.status}">${capitalize(record.status)}</span></td>
+                <td><nav class="funding-status status-${record.status}">${capitalize(record.status)}</nav></td>
                 <td>
-                    <div class="table-actions">
+                    <nav class="table-actions">
                         <button class="action-btn edit-btn" title="Edit" data-id="${record.id}">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="action-btn delete-btn" title="Delete" data-id="${record.id}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
-                    </div>
+                    </nav>
                 </td>
             `;
             
@@ -742,10 +742,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const fundingToDelete = document.querySelector('.funding-to-delete');
         fundingToDelete.innerHTML = `
-            <div class="delete-funding-info">
+            <nav class="delete-funding-info">
                 <h4>${fundingTitle || 'Unnamed Funding'}</h4>
                 <p>ID: ${fundingId}</p>
-            </div>
+            </nav>
         `;
         
         deleteModal.style.display = 'flex';
@@ -1084,13 +1084,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Notification function
     function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
+        const notification = document.createElement('nav');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            <div class="notification-content">
+            <nav class="notification-content">
                 <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
+                <p>${message}</p>
+            </nav>
             <button class="notification-close"><i class="fas fa-times"></i></button>
         `;
         
