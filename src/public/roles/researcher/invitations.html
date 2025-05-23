@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invitations - CollabNexus</title>
   <link rel="stylesheet" href="css/invitations.css">
-  <link rel="stylesheet" href="css/milestones3.css">
   <link rel="stylesheet" href="css/header.css">
   <link rel="stylesheet" href="css/footer.css">
   <link rel="stylesheet" href="css/errors.css">
@@ -180,28 +179,33 @@
     </div>
     
     <!-- Response to Invitation Modal -->
-    <div id="respond-invitation-modal" class="modal-overlay">
-      <div class="modal">
-        <div class="modal-header">
-          <h2 class="modal-title">Respond to Invitation</h2>
-          <button class="modal-close" id="close-respond-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div id="respond-invitation-details" class="mb-4 p-4 bg-gray-100 rounded-lg">
-            <!-- Invitation details will be populated by JavaScript -->
-          </div>
-          <div class="mt-4">
-            <label for="response-message" class="form-label">Response Message (Optional):</label>
-            <textarea id="response-message" class="form-control" rows="3" placeholder="Add a personal message with your response..."></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id="close-respond-btn" class="btn btn-outline">Cancel</button>
-          <button id="decline-invitation" class="btn btn-danger">Decline Invitation</button>
-          <button id="accept-invitation" class="btn btn-success">Accept Invitation</button>
-        </div>
+<!-- Response to Invitation Modal -->
+<div id="respond-invitation-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">Respond to Invitation</h2>
+      <button class="modal-close" id="close-respond-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="respond-invitation-details" class="mb-4 p-4 bg-gray-100 rounded-lg">
+        <!-- Invitation details will be populated by JavaScript -->
+      </div>
+      <div class="mt-4">
+        <label for="response-message" class="form-label">Response Message (Optional):</label>
+        <textarea id="response-message" class="form-control" rows="3" placeholder="Add a personal message with your response..."></textarea>
       </div>
     </div>
+    <div class="modal-footer">
+      <button id="close-respond-btn" class="btn btn-outline">Cancel</button>
+      <button id="decline-invitation" class="btn btn-danger">
+        <i class="fas fa-times mr-1"></i> Decline Invitation
+      </button>
+      <button id="accept-invitation" class="btn btn-success">
+        <i class="fas fa-check mr-1"></i> Accept Invitation
+      </button>
+    </div>
+  </div>
+</div>
     
     <!-- Toast Notifications -->
     <div id="toast-container" class="toast-container">

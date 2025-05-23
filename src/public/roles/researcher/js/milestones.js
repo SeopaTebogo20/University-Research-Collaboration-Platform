@@ -139,87 +139,114 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function loadProjectDetails(projectId) {
-        try {
-            const response = await fetch(`${PROJECTS_API}/${projectId}`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            const project = await response.json();
-            currentProject = project;
-            
-            // Update project overview
-            const startDate = new Date(project.start_date).toLocaleDateString();
-            const endDate = new Date(project.end_date).toLocaleDateString();
-            
-            // Update status class
-            let statusClass = 'status-active';
-            let statusText = project.status || 'Active';
-            
-            switch (statusText.toLowerCase()) {
-                case 'completed':
-                    statusClass = 'status-completed';
-                    break;
-                case 'pending':
-                    statusClass = 'status-pending';
-                    break;
-                case 'active':
-                    statusClass = 'status-active';
-                    break;
-                default:
-                    statusClass = 'status-active';
-            }
-            
-            document.getElementById('project-status').textContent = statusText;
-            document.getElementById('project-status').className = `status ${statusClass}`;
-            document.getElementById('project-timeline').textContent = `${startDate} - ${endDate}`;
-            document.getElementById('project-lead').textContent = project.researcher_name || 'Not specified';
-            document.getElementById('project-department').textContent = project.department || 'Not specified';
-            
-            // Get collaborators count (assuming there's an endpoint or field for this)
-            // For demo purposes, using a random number
-            document.getElementById('project-collaborators').textContent = project.collaborator_count || Math.floor(Math.random() * 10);
-            
-            // Load collaborators for milestone assignees
-            loadCollaborators(projectId);
-            
-        } catch (error) {
-            console.error('Error loading project details:', error);
-            showNotification('Error loading project details.', 'error');
+async function loadProjectDetails(projectId) {
+    try {
+        const response = await fetch(`${PROJECTS_API}/${projectId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    }
-    
-    async function loadCollaborators(projectId) {
-        try {
-            const response = await fetch(`${COLLABORATORS_API}`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            const collaborators = await response.json();
-            const assigneeSelect = document.getElementById('milestone-assignee');
-            
-            // Clear previous options
-            assigneeSelect.innerHTML = '<option value="">Select Assignee</option>';
-            
-            // Add all collaborators to the dropdown
-            collaborators.forEach(collaborator => {
-                const option = document.createElement('option');
-                option.value = collaborator.id;
-                option.textContent = collaborator.name || `User ${collaborator.id}`;
-                assigneeSelect.appendChild(option);
-            });
-            
-        } catch (error) {
-            console.error('Error loading collaborators:', error);
-            const assigneeSelect = document.getElementById('milestone-assignee');
-            assigneeSelect.innerHTML = '<option value="">Error loading assignees</option>';
+        
+        const project = await response.json();
+        currentProject = project;
+        
+        // Update project overview
+        const startDate = new Date(project.start_date).toLocaleDateString();
+        const endDate = new Date(project.end_date).toLocaleDateString();
+        
+        // Update status class
+        let statusClass = 'status-active';
+        let statusText = project.status || 'Active';
+        
+        switch (statusText.toLowerCase()) {
+            case 'completed':
+                statusClass = 'status-completed';
+                break;
+            case 'pending':
+                statusClass = 'status-pending';
+                break;
+            case 'active':
+                statusClass = 'status-active';
+                break;
+            default:
+                statusClass = 'status-active';
         }
+        
+        document.getElementById('project-status').textContent = statusText;
+        document.getElementById('project-status').className = `status ${statusClass}`;
+        document.getElementById('project-timeline').textContent = `${startDate} - ${endDate}`;
+        document.getElementById('project-lead').textContent = project.researcher_name || 'Not specified';
+        document.getElementById('project-department').textContent = project.department || 'Not specified';
+        
+        // Get actual number of collaborators from project data
+        let collaboratorCount = 0;
+        if (project.Collaborators) {
+            try {
+                const collaborators = Array.isArray(project.Collaborators) ? 
+                    project.Collaborators : 
+                    JSON.parse(project.Collaborators);
+                collaboratorCount = collaborators.length;
+            } catch (e) {
+                console.error("Error parsing collaborators:", e);
+            }
+        }
+        document.getElementById('project-collaborators').textContent = collaboratorCount;
+        
+        // Load collaborators for milestone assignees from project data
+        loadCollaborators(project);
+        
+    } catch (error) {
+        console.error('Error loading project details:', error);
+        showNotification('Error loading project details.', 'error');
     }
+}
     
+async function loadCollaborators(project) {
+    try {
+        const assigneeSelect = document.getElementById('milestone-assignee');
+        
+        // Clear previous options
+        assigneeSelect.innerHTML = '<option value="">Select Assignee</option>';
+        
+        // Add "Unassigned" option
+        const unassignedOption = document.createElement('option');
+        unassignedOption.value = '';
+        unassignedOption.textContent = 'Unassigned';
+        assigneeSelect.appendChild(unassignedOption);
+        
+        // Add project lead as first option
+        if (project.researcher_name) {
+            const leadOption = document.createElement('option');
+            leadOption.value = 'lead';
+            leadOption.textContent = `${project.researcher_name} (Project Lead)`;
+            assigneeSelect.appendChild(leadOption);
+        }
+        
+        // Add collaborators from project data if available
+        if (project.Collaborators) {
+            let collaborators = [];
+            try {
+                collaborators = Array.isArray(project.Collaborators) ? 
+                    project.Collaborators : 
+                    JSON.parse(project.Collaborators);
+                
+                collaborators.forEach(collaborator => {
+                    const option = document.createElement('option');
+                    option.value = collaborator.id;
+                    option.textContent = `${collaborator.name} (${collaborator.position || 'Collaborator'})`;
+                    assigneeSelect.appendChild(option);
+                });
+            } catch (e) {
+                console.error("Error parsing collaborators:", e);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading collaborators:', error);
+        const assigneeSelect = document.getElementById('milestone-assignee');
+        assigneeSelect.innerHTML = '<option value="">Error loading assignees</option>';
+    }
+}
     async function loadMilestones(projectId) {
         try {
             // Show loading state
@@ -260,80 +287,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    function displayMilestones(milestones) {
-        milestonesTimeline.innerHTML = '';
+function displayMilestones(milestones) {
+    milestonesTimeline.innerHTML = '';
+    
+    milestones.forEach(milestone => {
+        const startDate = new Date(milestone.start_date).toLocaleDateString();
+        const endDate = new Date(milestone.end_date).toLocaleDateString();
         
-        milestones.forEach(milestone => {
-            const startDate = new Date(milestone.start_date).toLocaleDateString();
-            const endDate = new Date(milestone.end_date).toLocaleDateString();
-            
-            // Determine milestone status class
-            let statusClass = '';
-            
-            switch (milestone.status?.toLowerCase()) {
-                case 'completed':
-                    statusClass = 'milestone-completed';
-                    break;
-                case 'in-progress':
-                    statusClass = 'milestone-in-progress';
-                    break;
-                case 'pending':
-                    statusClass = 'milestone-pending';
-                    break;
-                case 'delayed':
-                    statusClass = 'milestone-delayed';
-                    break;
-                default:
-                    statusClass = 'milestone-pending';
-            }
-            
-            const milestoneElement = document.createElement('div');
-            milestoneElement.className = `timeline-milestone ${statusClass}`;
-            milestoneElement.dataset.id = milestone.id;
-            
-            milestoneElement.innerHTML = `
-                <div class="timeline-milestone-header">
-                    <h3 class="milestone-title">${milestone.title}</h3>
-                    <div class="milestone-actions">
-                        <button class="action-btn edit-btn" title="Edit Milestone">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete-btn" title="Delete Milestone">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
+        // Determine milestone status class
+        let statusClass = '';
+        
+        switch (milestone.status?.toLowerCase()) {
+            case 'completed':
+                statusClass = 'milestone-completed';
+                break;
+            case 'in-progress':
+                statusClass = 'milestone-in-progress';
+                break;
+            case 'pending':
+                statusClass = 'milestone-pending';
+                break;
+            case 'delayed':
+                statusClass = 'milestone-delayed';
+                break;
+            default:
+                statusClass = 'milestone-pending';
+        }
+        
+        // Format assignee name
+        let assigneeDisplay = milestone.assignee_name || 'Unassigned';
+        if (milestone.assignee_id === 'lead') {
+            assigneeDisplay = `${currentProject.researcher_name || 'Project Lead'} (Lead)`;
+        }
+        
+        const milestoneElement = document.createElement('div');
+        milestoneElement.className = `timeline-milestone ${statusClass}`;
+        milestoneElement.dataset.id = milestone.id;
+        
+        milestoneElement.innerHTML = `
+            <div class="timeline-milestone-header">
+                <h3 class="milestone-title">${milestone.title}</h3>
+                <div class="milestone-actions">
+                    <button class="action-btn edit-btn" title="Edit Milestone">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn delete-btn" title="Delete Milestone">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="milestone-content">
+                <p class="milestone-description">${milestone.description || 'No description provided.'}</p>
+                <div class="milestone-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>${startDate} - ${endDate}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-check"></i>
+                        <span>Status: ${capitalize(milestone.status || 'Pending')}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-user"></i>
+                        <span>Assignee: ${assigneeDisplay}</span>
                     </div>
                 </div>
-                <div class="milestone-content">
-                    <p class="milestone-description">${milestone.description || 'No description provided.'}</p>
-                    <div class="milestone-meta">
-                        <div class="meta-item">
-                            <i class="fas fa-calendar"></i>
-                            <span>${startDate} - ${endDate}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-check"></i>
-                            <span>Status: ${capitalize(milestone.status || 'Pending')}</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-user"></i>
-                            <span>Assignee: ${milestone.assignee_name || 'Unassigned'}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            milestonesTimeline.appendChild(milestoneElement);
-            
-            // Add event listeners to action buttons
-            milestoneElement.querySelector('.edit-btn').addEventListener('click', () => {
-                openEditMilestoneModal(milestone.id);
-            });
-            
-            milestoneElement.querySelector('.delete-btn').addEventListener('click', () => {
-                confirmDeleteMilestone(milestone.id, milestone.title);
-            });
+            </div>
+        `;
+        
+        milestonesTimeline.appendChild(milestoneElement);
+        
+        // Add event listeners to action buttons
+        milestoneElement.querySelector('.edit-btn').addEventListener('click', () => {
+            openEditMilestoneModal(milestone.id);
         });
-    }
+        
+        milestoneElement.querySelector('.delete-btn').addEventListener('click', () => {
+            confirmDeleteMilestone(milestone.id, milestone.title);
+        });
+    });
+}
     
     function loadProjectChart(projectId) {
         // Get milestone stats for the current project
@@ -481,75 +514,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    async function handleMilestoneFormSubmit(e) {
-        e.preventDefault();
-        
-        const milestoneId = document.getElementById('milestone-id').value;
-        const isNewMilestone = !milestoneId;
-        const assigneeSelect = document.getElementById('milestone-assignee');
-        
-        // Get the selected assignee name (for display purposes)
-        let assigneeName = null;
-        if (assigneeSelect.value) {
-            const selectedOption = assigneeSelect.options[assigneeSelect.selectedIndex];
-            assigneeName = selectedOption.textContent;
-        }
-        
-        // Collect form data
-        const milestoneData = {
-            project_id: document.getElementById('milestone-project-id').value,
-            title: document.getElementById('milestone-title').value,
-            description: document.getElementById('milestone-description').value,
-            start_date: document.getElementById('milestone-start-date').value,
-            end_date: document.getElementById('milestone-end-date').value,
-            status: document.getElementById('milestone-status').value,
-            assignee_id: assigneeSelect.value || null,
-            assignee_name: assigneeName
-        };
-        
-        try {
-            let response;
-            
-            if (isNewMilestone) {
-                // Create new milestone
-                response = await fetch(MILESTONES_API, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(milestoneData),
-                });
-            } else {
-                // Update existing milestone
-                response = await fetch(`${MILESTONES_API}/${milestoneId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(milestoneData),
-                });
-            }
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            // Close modal and reload milestones
-            milestoneModal.style.display = 'none';
-            await loadMilestones(currentProjectId);
-            loadProjectChart(currentProjectId);
-            
-            // Show success notification
-            showNotification(
-                isNewMilestone ? 'Milestone created successfully!' : 'Milestone updated successfully!',
-                'success'
-            );
-            
-        } catch (error) {
-            console.error('Error saving milestone:', error);
-            showNotification('Error saving milestone. Please try again.', 'error');
-        }
+async function handleMilestoneFormSubmit(e) {
+    e.preventDefault();
+    
+    const milestoneId = document.getElementById('milestone-id').value;
+    const isNewMilestone = !milestoneId;
+    const assigneeSelect = document.getElementById('milestone-assignee');
+    
+    // Get the selected assignee name (for display purposes)
+    let assigneeName = null;
+    let assigneeId = null;
+    
+    if (assigneeSelect.value === 'lead') {
+        assigneeName = currentProject.researcher_name || 'Project Lead';
+        assigneeId = 'lead';
+    } else if (assigneeSelect.value) {
+        const selectedOption = assigneeSelect.options[assigneeSelect.selectedIndex];
+        assigneeName = selectedOption.textContent.split(' (')[0]; // Remove the position part
+        assigneeId = assigneeSelect.value;
     }
+    
+    // Collect form data
+    const milestoneData = {
+        project_id: document.getElementById('milestone-project-id').value,
+        title: document.getElementById('milestone-title').value,
+        description: document.getElementById('milestone-description').value,
+        start_date: document.getElementById('milestone-start-date').value,
+        end_date: document.getElementById('milestone-end-date').value,
+        status: document.getElementById('milestone-status').value,
+        assignee_id: assigneeId,
+        assignee_name: assigneeName
+    };
+    
+    try {
+        let response;
+        
+        if (isNewMilestone) {
+            // Create new milestone
+            response = await fetch(MILESTONES_API, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(milestoneData),
+            });
+        } else {
+            // Update existing milestone
+            response = await fetch(`${MILESTONES_API}/${milestoneId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(milestoneData),
+            });
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        // Close modal and reload milestones
+        milestoneModal.style.display = 'none';
+        await loadMilestones(currentProjectId);
+        loadProjectChart(currentProjectId);
+        
+        // Show success notification
+        showNotification(
+            isNewMilestone ? 'Milestone created successfully!' : 'Milestone updated successfully!',
+            'success'
+        );
+        
+    } catch (error) {
+        console.error('Error saving milestone:', error);
+        showNotification('Error saving milestone. Please try again.', 'error');
+    }
+}
     
     function confirmDeleteMilestone(milestoneId, milestoneTitle) {
         document.getElementById('confirm-delete-btn').dataset.id = milestoneId;
