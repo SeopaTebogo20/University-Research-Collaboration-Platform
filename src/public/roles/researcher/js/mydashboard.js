@@ -371,10 +371,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             console.error('Error loading user widgets:', error);
-            // Don't show error if we have localStorage data
-            if (userWidgets.length === 0) {
-                showNotification('Error loading dashboard. Using local data.', 'warning');
-            }
         }
     }
     

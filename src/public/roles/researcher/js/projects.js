@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'https://collabnexus-bvgne7b6bqg0cadp.canadacentral-01.azurewebsites.net/api';
     
     const PROJECTS_API = `${API_BASE_URL}/projects`;
+    const SENT_INVITATIONS_API = `${API_BASE_URL}/project_invitations`;
     const USERS_API = `${API_BASE_URL}/users`;
     
     // DOM Elements
@@ -399,7 +400,6 @@ async function viewProjectDetails(projectId) {
     }
 }
 
-// Helper function to remove a collaborator
 async function removeCollaborator(projectId, userId) {
     try {
         // Get current project data
@@ -423,6 +423,9 @@ async function removeCollaborator(projectId, userId) {
             }
         }
         
+        // Find the collaborator to remove (to get their details)
+        const collaboratorToRemove = collaborators.find(c => c.id === userId);
+        
         // Filter out the collaborator to remove
         const updatedCollaborators = collaborators.filter(c => c.id !== userId);
         
@@ -440,6 +443,20 @@ async function removeCollaborator(projectId, userId) {
         
         if (!updateResponse.ok) {
             throw new Error(`Failed to update project: ${updateResponse.status}`);
+        }
+        
+        // Also update the invitations API (optional - depends on your requirements)
+        try {
+            // This assumes you have an endpoint to delete invitations
+            const deleteInviteResponse = await fetch(`${SENT_INVITATIONS_API}/${projectId}/${userId}`, {
+                method: 'DELETE'
+            });
+            
+            if (!deleteInviteResponse.ok) {
+                console.warn("Couldn't delete invitation record, but project was updated");
+            }
+        } catch (inviteError) {
+            console.error("Error updating invitations API:", inviteError);
         }
         
         // Refresh the details view
@@ -910,7 +927,6 @@ async function removeCollaborator(projectId, userId) {
             `;
         }
     }
-    
 async function sendInvitation(projectId, userId, userName) {
     try {
         const position = document.getElementById('collaborator-position').value;
@@ -929,7 +945,7 @@ async function sendInvitation(projectId, userId, userName) {
             name: userName,
             position: position,
             invitationDate: new Date().toISOString(),
-            status: "pending", // or "invited"
+            status: "pending",
             message: message
         };
         
@@ -972,22 +988,46 @@ async function sendInvitation(projectId, userId, userName) {
             throw new Error(`Failed to update project: ${updateResponse.status}`);
         }
         
-        // Also send the invitation (your existing code)
-        const inviteResponse = await fetch(`${API_BASE_URL}/invitations`, {
+        // Also send the invitation to the invitations API
+        const invitationData = {
+            projectId: projectId,
+            created_at: new Date().toISOString().split('T')[0],
+            description: project.description || "No description",
+            key_research_area: project.key_research_area || "Not specified",
+            name: userName,
+            start_date: project.start_date,
+            end_date: project.end_date,
+            funding_available: project.funding_available ? "true" : "false",
+            experience_level: project.experience_level || "Not specified",
+            messages: message,
+            email: "", // Will be populated from user data
+            university: "", // Will be populated from user data
+            projectTitle: project.project_title
+        };
+        
+        // Get user data to populate email and university
+        try {
+            const userResponse = await fetch(`${USERS_API}/${userId}`);
+            if (userResponse.ok) {
+                const userData = await userResponse.json();
+                invitationData.email = userData.email || "";
+                invitationData.university = userData.university || "";
+            }
+        } catch (userError) {
+            console.error("Couldn't fetch user details:", userError);
+        }
+        
+        // Send to invitations API
+        const inviteResponse = await fetch(SENT_INVITATIONS_API, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                project_id: projectId,
-                collaborator_id: userId,
-                position: position,
-                message: message
-            }),
+            body: JSON.stringify(invitationData),
         });
         
         if (!inviteResponse.ok) {
-            throw new Error(`HTTP error! Status: ${inviteResponse.status}`);
+            throw new Error(`Failed to create invitation record: ${inviteResponse.status}`);
         }
         
         showNotification(`Invitation sent to ${userName} successfully!`, 'success');
@@ -995,7 +1035,7 @@ async function sendInvitation(projectId, userId, userName) {
         
     } catch (error) {
         console.error('Error sending invitation:', error);
-        showNotification('Collaborator Invited Successfuly', 'success');
+        showNotification(`Error sending invitation: ${error.message}`, 'error');
     }
 }
     
