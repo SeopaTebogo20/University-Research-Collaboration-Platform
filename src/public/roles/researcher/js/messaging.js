@@ -1,553 +1,843 @@
 document.addEventListener('DOMContentLoaded', function() {
+  try {
     // DOM Elements
-    const todayMessages = document.getElementById('today-section');
-    const yesterdayMessages = document.getElementById('yesterday-notifications');
-    const earlierMessages = document.getElementById('earlier-messages');
-    const searchInput = document.getElementById('search-messages');
+    const todayNotifications = document.getElementById('today-notifications');
+    const yesterdayNotifications = document.getElementById('yesterday-notifications');
+    const earlierNotifications = document.getElementById('earlier-notifications');
+    const searchInput = document.getElementById('search-notifications');
     const filterTags = document.querySelectorAll('.filter-tag');
-    const emptyState = document.getElementById('empty-messages');
+    const emptyState = document.getElementById('empty-notifications');
     const markAllReadBtn = document.getElementById('mark-all-read');
-    const messageModal = document.getElementById('message-modal');
-    const closeModalBtns = document.querySelectorAll('.close-modal, #modal-dismiss');
+    const notificationSettingsBtn = document.getElementById('notifications-settings');
+    const notificationModal = document.querySelector('.notification-modal');
+    const settingsModal = document.querySelector('.settings-modal');
+    const closeModalBtns = document.querySelectorAll('.close-modal');
+    const modalDismissBtn = document.getElementById('modal-dismiss');
     const modalActionBtn = document.getElementById('modal-action');
+    const cancelSettingsBtn = document.querySelector('.cancel-settings');
+    const notificationSettingsForm = document.getElementById('notification-settings-form');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const paginationInfo = document.getElementById('pagination-info');
+    const notificationBadge = document.getElementById('notification-badge');
     
+    // Verify critical elements exist
+    if (!todayNotifications || !yesterdayNotifications || !earlierNotifications || 
+        !searchInput || !notificationModal || !settingsModal) {
+      throw new Error('Critical DOM elements not found');
+    }
+
     // State variables
     let messages = [];
     let filteredMessages = [];
     let currentPage = 1;
     let currentFilter = 'all';
     let currentSearchTerm = '';
-    const itemsPerPage = 5;
+    let itemsPerPage = 10;
+    let currentMessageId = null;
+    let socket = null;
+    let userId = localStorage.getItem('userId') || 'user-' + Math.random().toString(36).substr(2, 9);
+    let pollingInterval = null;
     
-    // Load invitation messages from mock data
-    function loadInvitationMessages() {
-        return [
-            {
-                "id": "INV004",
-                "projectId": "EXT235",
-                "projectTitle": "Biodegradable Polymers for Marine Applications",
-                "invitedBy": {
-                    "name": "Dr. Rebecca Chang",
-                    "title": "Head of Materials Science Division",
-                    "institution": "Ocean Conservation Institute",
-                    "email": "r.chang@oci.org"
-                },
-                "invitedDate": "2025-04-20T08:43:19.502Z",
-                "status": "declined",
-                "description": "Developing novel biodegradable polymers that can replace conventional plastics in marine environments",
-                "requiredSkills": [
-                    "Polymer Chemistry",
-                    "Materials Science",
-                    "Environmental Assessment",
-                    "Biodegradation Testing"
-                ],
-                "duration": "15 months",
-                "messages": [
-                    {
-                        "text": "fsgsfs",
-                        "sender": "you",
-                        "timestamp": "2025-05-23T20:33:33.774Z"
-                    },
-                    {
-                        "text": "gt",
-                        "sender": "you",
-                        "timestamp": "2025-05-23T20:36:01.223Z"
-                    },
-                    {
-                        "text": "gfh",
-                        "sender": "you",
-                        "timestamp": "2025-05-23T20:36:24.803Z"
-                    }
-                ]
-            },
-            {
-                "id": "INV005",
-                "projectId": "EXT367",
-                "projectTitle": "Blockchain Solutions for Academic Publishing",
-                "invitedBy": {
-                    "name": "Prof. David Kim",
-                    "title": "Director of Digital Innovation",
-                    "institution": "National Science Academy",
-                    "email": "d.kim@nsa.edu"
-                },
-                "invitedDate": "2025-04-20T15:22:08.114Z",
-                "status": "accepted",
-                "description": "Creating a blockchain-based platform for transparent peer review and academic publishing processes",
-                "requiredSkills": [
-                    "Blockchain Technology",
-                    "Smart Contracts",
-                    "Academic Publishing",
-                    "Software Architecture"
-                ],
-                "duration": "8 months",
-                "messages": [
-                    {
-                        "text": "This project aligns perfectly with my interests in digital academic infrastructure. I'm excited to join!",
-                        "sender": "you",
-                        "timestamp": "2025-04-21T09:17:32.221Z"
-                    },
-                    {
-                        "text": "Wonderful! We'll schedule a kickoff meeting next week. Looking forward to your contributions.",
-                        "sender": "inviter",
-                        "timestamp": "2025-04-21T10:33:45.667Z"
-                    },
-                    {
-                        "text": "gre",
-                        "sender": "you",
-                        "timestamp": "2025-05-13T22:31:21.313Z"
-                    }
-                ]
-            },
-            {
-                "id": "INV006",
-                "projectId": "EXT498",
-                "projectTitle": "AI-Powered Early Warning Systems for Natural Disasters",
-                "invitedBy": {
-                    "name": "Dr. James Wilson",
-                    "title": "Chief Scientist",
-                    "institution": "Global Disaster Response Network",
-                    "email": "j.wilson@gdrn.org"
-                },
-                "invitedDate": "2025-04-21T07:36:54.327Z",
-                "status": "pending",
-                "description": "Leveraging artificial intelligence to improve early detection and warning systems for earthquakes, tsunamis, and severe weather events",
-                "requiredSkills": [
-                    "Machine Learning",
-                    "Geophysical Modeling",
-                    "Early Warning Systems",
-                    "Data Integration",
-                    "Sensor Networks"
-                ],
-                "duration": "24 months",
-                "messages": [
-                    {
-                        "text": "Your project sounds fascinating. Could you provide more details about the specific AI techniques you're planning to implement?",
-                        "sender": "you",
-                        "timestamp": "2025-04-21T16:42:11.893Z"
-                    },
-                    {
-                        "text": "We're looking at deep learning models trained on seismic data and atmospheric patterns, combined with IoT sensor networks. Happy to discuss more if you're interested in joining us.",
-                        "sender": "inviter",
-                        "timestamp": "2025-04-21T18:05:27.442Z"
-                    }
-                ]
-            },
-            {
-                "id": "INV007",
-                "projectId": "EXT512",
-                "projectTitle": "Precision Medicine Approaches for Neurological Disorders",
-                "invitedBy": {
-                    "name": "Dr. Sarah Nguyen",
-                    "title": "Research Director",
-                    "institution": "Neuroscience Research Foundation",
-                    "email": "s.nguyen@neuro.org"
-                },
-                "invitedDate": "2025-04-21T13:19:22.776Z",
-                "status": "declined",
-                "description": "Developing personalized treatment protocols for complex neurological disorders using genomic profiling and advanced imaging techniques",
-                "requiredSkills": [
-                    "Genomics",
-                    "Neurology",
-                    "Medical Imaging Analysis",
-                    "Precision Medicine",
-                    "Bioinformatics"
-                ],
-                "duration": "36 months",
-                "messages": [
-                    {
-                        "text": "While I'm honored by the invitation, I don't have sufficient expertise in neurological disorders to contribute meaningfully to this project. I suggest reaching out to Dr. Maya Patel, who specializes in this field.",
-                        "sender": "you",
-                        "timestamp": "2025-04-22T10:08:17.332Z"
-                    },
-                    {
-                        "text": "Thank you for your candid response and for suggesting an alternative collaborator. We appreciate your consideration.",
-                        "sender": "inviter",
-                        "timestamp": "2025-04-22T11:15:42.908Z"
-                    }
-                ]
-            },
-            {
-                "id": "INV008",
-                "projectId": "EXT629",
-                "projectTitle": "Sustainable Urban Microgrids",
-                "invitedBy": {
-                    "name": "Prof. Elena Rodriguez",
-                    "title": "Chair of Sustainable Energy Systems",
-                    "institution": "Urban Planning Institute",
-                    "email": "e.rodriguez@upi.edu"
-                },
-                "invitedDate": "2025-04-22T09:45:13.552Z",
-                "status": "pending",
-                "description": "Designing and implementing renewable energy microgrids for urban communities with a focus on resilience and sustainability",
-                "requiredSkills": [
-                    "Renewable Energy",
-                    "Power Systems Engineering",
-                    "Smart Grid Technology",
-                    "Urban Planning",
-                    "Energy Storage Solutions"
-                ],
-                "duration": "18 months",
-                "messages": [
-                    {
-                        "text": "This is an intriguing project that aligns with my research interests. Could you share more about the specific communities you're targeting and any pilot implementations?",
-                        "sender": "you",
-                        "timestamp": "2025-04-22T10:22:37.189Z"
-                    }
-                ]
-            }
-        ];
-    }
+    // Message types with colors and icons
+    const messageTypes = {
+      collaboration: { 
+        icon: 'fa-handshake', 
+        label: 'Collaboration',
+        color: 'var(--info-blue)'
+      },
+      system: { 
+        icon: 'fa-cog', 
+        label: 'System',
+        color: 'var(--primary-purple)'
+      },
+      feedback: { 
+        icon: 'fa-comment-dots', 
+        label: 'Feedback',
+        color: 'var(--success-green)'
+      },
+      assignment: { 
+        icon: 'fa-clipboard-list', 
+        label: 'Assignment',
+        color: 'var(--warning-orange)'
+      },
+      milestone: { 
+        icon: 'fa-flag-checkered', 
+        label: 'Milestone',
+        color: 'var(--info-blue)'
+      },
+      funding: { 
+        icon: 'fa-dollar-sign', 
+        label: 'Funding',
+        color: 'var(--success-green)'
+      },
+      admin: { 
+        icon: 'fa-shield-alt', 
+        label: 'Admin',
+        color: 'var(--danger-red)'
+      },
+      review: { 
+        icon: 'fa-star', 
+        label: 'Review',
+        color: 'var(--warning-orange)'
+      }
+    };
+    
+    // Initialize WebSocket connection
+    function initWebSocket() {
+      if (socket) {
+        socket.close();
+      }
 
-    // Convert invitation messages to message format
-    // Update the convertInvitationMessagesToMessages function
-function convertInvitationMessagesToMessages(invitations) {
-    const allMessages = [];
-    
-    invitations.forEach(invitation => {
-        if (invitation.messages && invitation.messages.length > 0) {
-            invitation.messages.forEach(message => {
-                const messageObj = {
-                    id: `${invitation.id}_${message.timestamp}`,
-                    title: `Message regarding ${invitation.projectTitle}`,
-                    text: message.text,
-                    timestamp: new Date(message.timestamp),
-                    unread: isRecentMessage(message.timestamp),
-                    status: invitation.status,
-                    sender: message.sender,
-                    projectInfo: {
-                        projectTitle: invitation.projectTitle,
-                        invitedBy: invitation.invitedBy,
-                        description: invitation.description,
-                        projectId: invitation.projectId
-                    }
-                };
-                allMessages.push(messageObj);
-            });
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws/notifications?userId=${userId}`;
+      
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          pollingInterval = null;
         }
-    });
-    
-    // Sort messages by timestamp (newest first)
-    return allMessages.sort((a, b) => b.timestamp - a.timestamp);
-}
+      };
 
-    // Check if message is recent (within last 24 hours) to mark as unread
-    function isRecentMessage(timestamp) {
-        const now = new Date();
-        const messageTime = new Date(timestamp);
-        const timeDiff = now - messageTime;
-        const twentyFourHours = 24 * 60 * 60 * 1000;
-        return timeDiff < twentyFourHours;
+      socket.onmessage = (event) => {
+        try {
+          const notification = JSON.parse(event.data);
+          handleNewNotification(notification);
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log('WebSocket connection closed');
+        if (!pollingInterval) {
+          startPolling();
+        }
+        // Attempt to reconnect after delay
+        setTimeout(initWebSocket, 5000);
+      };
+
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        if (!pollingInterval) {
+          startPolling();
+        }
+      };
     }
 
+    // Fallback polling mechanism
+    function startPolling() {
+      console.log('Starting polling for notifications');
+      checkForNewNotifications();
+      pollingInterval = setInterval(checkForNewNotifications, 30000); // Poll every 30 seconds
+    }
+
+    // Check for new notifications from server
+    async function checkForNewNotifications() {
+      try {
+        // In a real app, this would fetch from your API endpoint
+        // const response = await fetch(`/api/notifications?userId=${userId}`);
+        // const data = await response.json();
+        
+        // For demo purposes, we'll simulate occasional new notifications
+        if (Math.random() > 0.7) {
+          const mockNotifications = generateMockNotifications(1);
+          mockNotifications.forEach(notification => {
+            handleNewNotification(notification);
+          });
+        }
+      } catch (error) {
+        console.error('Error checking for notifications:', error);
+      }
+    }
+
+    // Handle new notification from either WS or polling
+    function handleNewNotification(notification) {
+      // Don't add duplicate notifications
+      if (messages.some(msg => msg.id === notification.id)) {
+        return;
+      }
+
+      const newMessage = {
+        id: notification.id || 'msg-' + Date.now(),
+        sender: notification.sender || 'System',
+        title: notification.title || 'New Notification',
+        content: notification.content || 'You have a new notification',
+        timestamp: notification.timestamp ? new Date(notification.timestamp) : new Date(),
+        unread: true,
+        type: notification.type || 'system',
+        actionUrl: notification.actionUrl || null,
+        priority: notification.priority || 'normal'
+      };
+
+      // Add to beginning of array
+      messages.unshift(newMessage);
+      
+      // Update UI
+      renderMessages();
+      updateNotificationBadge();
+      
+      // Show desktop notification if enabled and tab is not active
+      if (Notification.permission === 'granted' && document.hidden) {
+        showDesktopNotification(newMessage);
+      }
+      
+      // Play sound if enabled
+      if (localStorage.getItem('notificationSound') !== 'false') {
+        playNotificationSound();
+      }
+      
+      saveMessagesToLocalStorage();
+    }
+
+    // Show desktop notification
+    function showDesktopNotification(message) {
+      // Check if browser supports notifications
+      if (!('Notification' in window)) {
+        return;
+      }
+
+      const notification = new Notification(message.title, {
+        body: message.content,
+        icon: '/images/logo.png'
+      });
+      
+      notification.onclick = () => {
+        window.focus();
+        openMessageDetail(message);
+        notification.close();
+      };
+    }
+
+    // Play notification sound
+    function playNotificationSound() {
+      try {
+        const sound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+        sound.volume = 0.3;
+        sound.play().catch(e => console.log('Notification sound error:', e));
+      } catch (e) {
+        console.log('Error playing notification sound:', e);
+      }
+    }
+
+    // Update notification badge count
+    function updateNotificationBadge() {
+      if (!notificationBadge) return;
+      const unreadCount = messages.filter(m => m.unread).length;
+      notificationBadge.textContent = unreadCount > 0 ? unreadCount : '';
+      notificationBadge.style.display = unreadCount > 0 ? 'flex' : 'none';
+      
+      // Update document title if there are unread messages
+      document.title = unreadCount > 0 
+        ? `(${unreadCount}) Notifications - CollabNexus` 
+        : 'Notifications - CollabNexus';
+    }
+    
+    // Load messages from server with fallback
+    async function loadMessages() {
+      try {
+        // In a real app, this would fetch from your API endpoint
+        // const response = await fetch('/api/notifications');
+        // const data = await response.json();
+        
+        // For demo purposes, we'll use mock data
+        const data = generateMockNotifications(8);
+        
+        messages = data.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+          unread: !msg.read
+        }));
+        
+        saveMessagesToLocalStorage();
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+        // Fallback to localStorage if available
+        const localMessages = localStorage.getItem('userMessages');
+        if (localMessages) {
+          messages = JSON.parse(localMessages).map(msg => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }));
+        } else {
+          // Load mock data if no messages found
+          messages = generateMockNotifications(5);
+        }
+      }
+      
+      renderMessages();
+      updateNotificationBadge();
+      
+      // Initialize real-time updates
+      if ('WebSocket' in window) {
+        initWebSocket();
+      } else {
+        startPolling();
+      }
+      
+      // Request notification permission
+      if ('Notification' in window && Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+          console.log('Notification permission:', permission);
+        });
+      }
+    }
+    
+    // Generate mock notifications for demo purposes
+    function generateMockNotifications(count = 3) {
+      const now = new Date();
+      const types = Object.keys(messageTypes);
+      const senders = [
+        'Dr. Emily Chen',
+        'Prof. James Wilson',
+        'Research Committee',
+        'System Administrator',
+        'Dr. Sarah Johnson',
+        'Funding Department'
+      ];
+      
+      const mockNotifications = [];
+      
+      for (let i = 0; i < count; i++) {
+        const hoursAgo = Math.floor(Math.random() * 72); // Up to 3 days ago
+        const minutesAgo = Math.floor(Math.random() * 60);
+        const timestamp = new Date(now);
+        timestamp.setHours(timestamp.getHours() - hoursAgo);
+        timestamp.setMinutes(timestamp.getMinutes() - minutesAgo);
+        
+        const type = types[Math.floor(Math.random() * types.length)];
+        const sender = type === 'system' ? 'System' : senders[Math.floor(Math.random() * senders.length)];
+        
+        mockNotifications.push({
+          id: 'mock-' + Date.now() + '-' + i,
+          sender: sender,
+          title: getMockTitle(type),
+          content: getMockContent(type, sender),
+          timestamp: timestamp.toISOString(),
+          read: Math.random() > 0.5,
+          type: type,
+          actionUrl: Math.random() > 0.7 ? getMockActionUrl(type) : null
+        });
+      }
+      
+      return mockNotifications;
+    }
+    
+    function getMockTitle(type) {
+      const titles = {
+        collaboration: [
+          'New Collaboration Request',
+          'Research Partnership Opportunity',
+          'Invitation to Collaborate'
+        ],
+        system: [
+          'System Maintenance Scheduled',
+          'New Platform Features Available',
+          'Account Verification Required'
+        ],
+        feedback: [
+          'Feedback on Your Submission',
+          'Review Comments Available',
+          'Response to Your Feedback'
+        ],
+        assignment: [
+          'New Review Assignment',
+          'Proposal Review Requested',
+          'Manuscript Evaluation Needed'
+        ],
+        milestone: [
+          'Project Milestone Reached',
+          'Milestone Deadline Approaching',
+          'Milestone Completion Approved'
+        ],
+        funding: [
+          'New Funding Opportunity',
+          'Grant Application Update',
+          'Funding Request Approved'
+        ],
+        admin: [
+          'Administrative Action Required',
+          'Account Settings Updated',
+          'Important Security Notice'
+        ],
+        review: [
+          'New Peer Review Request',
+          'Review Deadline Reminder',
+          'Review Feedback Received'
+        ]
+      };
+      
+      const typeTitles = titles[type] || ['New Notification'];
+      return typeTitles[Math.floor(Math.random() * typeTitles.length)];
+    }
+    
+    function getMockContent(type, sender) {
+      const contents = {
+        collaboration: [
+          `You have been invited by ${sender} to collaborate on a new research project.`,
+          `${sender} would like to discuss a potential research partnership with you.`,
+          `New collaboration opportunity available from ${sender}. Click to view details.`
+        ],
+        system: [
+          'A system update has been scheduled for tomorrow at 2 AM. The platform will be unavailable for approximately 30 minutes.',
+          'New features have been added to the platform. Click here to learn more.',
+          'Please verify your email address to complete your account setup.'
+        ],
+        feedback: [
+          `${sender} has provided feedback on your recent submission.`,
+          `New comments available on your research proposal from ${sender}.`,
+          `${sender} has responded to your feedback on the collaborative project.`
+        ],
+        assignment: [
+          `You have been assigned to review a new research proposal by ${sender}.`,
+          `${sender} has requested your evaluation of a submitted manuscript.`,
+          'New peer review assignment available. Deadline is in 7 days.'
+        ],
+        milestone: [
+          'Your project "Advanced Quantum Computing" has reached its first milestone.',
+          'The deadline for your next milestone is approaching in 3 days.',
+          `${sender} has approved the completion of your project milestone.`
+        ],
+        funding: [
+          'New funding opportunity available for research in your field. Application deadline is June 30.',
+          'Your grant application has been received and is under review.',
+          'Congratulations! Your funding request has been approved.'
+        ],
+        admin: [
+          'Your account security settings have been updated. Please review the changes.',
+          'Administrative approval is required for your recent request.',
+          'Important security notice: Please update your password.'
+        ],
+        review: [
+          `${sender} has requested your peer review for a new submission.`,
+          'Reminder: Your review is due in 2 days. Please submit your evaluation.',
+          'The author has responded to your review comments. Click to view.'
+        ]
+      };
+      
+      const typeContents = contents[type] || ['You have a new notification.'];
+      return typeContents[Math.floor(Math.random() * typeContents.length)];
+    }
+    
+    function getMockActionUrl(type) {
+      const urls = {
+        collaboration: '/projects/collaborations',
+        system: '/account/settings',
+        feedback: '/projects/feedback',
+        assignment: '/reviews/assignments',
+        milestone: '/projects/milestones',
+        funding: '/funding/opportunities',
+        admin: '/admin/notices',
+        review: '/peer-reviews'
+      };
+      
+      return urls[type] || '/notifications';
+    }
+    
+    // Save messages to localStorage
+    function saveMessagesToLocalStorage() {
+      const messagesToSave = messages.map(msg => ({
+        ...msg,
+        timestamp: msg.timestamp.toISOString(),
+        read: !msg.unread
+      }));
+      localStorage.setItem('userMessages', JSON.stringify(messagesToSave));
+    }
+    
     // Format timestamp
     function formatTimestamp(timestamp) {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        
-        const messageDate = new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate());
-        
-        if (messageDate.getTime() === today.getTime()) {
-            // Today, show time
-            return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        } else if (messageDate.getTime() === yesterday.getTime()) {
-            // Yesterday, show "Yesterday at [time]"
-            return `Yesterday at ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-        } else {
-            // More than a day ago, show date
-            return timestamp.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
-        }
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const timestampDate = new Date(timestamp.getFullYear(), timestamp.getMonth(), timestamp.getDate());
+      
+      if (timestampDate.getTime() === today.getTime()) {
+        // Today, show time
+        return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      } else if (timestampDate.getTime() === yesterday.getTime()) {
+        // Yesterday, show "Yesterday at [time]"
+        return `Yesterday at ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      } else {
+        // More than a day ago, show date
+        return timestamp.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      }
     }
-
+    
     // Group messages by date
     function groupMessagesByDate(messagesArray) {
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const todayMsgs = [];
+      const yesterdayMsgs = [];
+      const earlierMsgs = [];
+      
+      messagesArray.forEach(message => {
+        const msgDate = new Date(message.timestamp.getFullYear(), message.timestamp.getMonth(), message.timestamp.getDate());
         
-        const todayMsgs = [];
-        const yesterdayMsgs = [];
-        const earlierMsgs = [];
-        
-        messagesArray.forEach(message => {
-            const msgDate = new Date(message.timestamp.getFullYear(), message.timestamp.getMonth(), message.timestamp.getDate());
-            
-            if (msgDate.getTime() === today.getTime()) {
-                todayMsgs.push(message);
-            } else if (msgDate.getTime() === yesterday.getTime()) {
-                yesterdayMsgs.push(message);
-            } else {
-                earlierMsgs.push(message);
-            }
-        });
-        
-        return {
-            today: todayMsgs,
-            yesterday: yesterdayMsgs,
-            earlier: earlierMsgs
-        };
+        if (msgDate.getTime() === today.getTime()) {
+          todayMsgs.push(message);
+        } else if (msgDate.getTime() === yesterday.getTime()) {
+          yesterdayMsgs.push(message);
+        } else {
+          earlierMsgs.push(message);
+        }
+      });
+      
+      return {
+        today: todayMsgs,
+        yesterday: yesterdayMsgs,
+        earlier: earlierMsgs
+      };
     }
-
+    
     // Create message HTML element
     function createMessageElement(message) {
-    const messageItem = document.createElement('div');
-    messageItem.className = `message-item ${message.unread ? 'unread' : ''}`;
-    messageItem.dataset.id = message.id;
-    messageItem.dataset.status = message.status;
-    
-    const senderLabel = message.sender === 'you' ? 'You' : message.projectInfo.invitedBy.name;
-    const statusBadge = `<span class="status-badge ${message.status}">${message.status.charAt(0).toUpperCase() + message.status.slice(1)}</span>`;
-    
-    messageItem.innerHTML = `
-        <div class="message-icon">
-            <i class="fas fa-envelope"></i>
+      const messageItem = document.createElement('div');
+      messageItem.className = `notification-item ${message.unread ? 'unread' : ''}`;
+      messageItem.dataset.id = message.id;
+      messageItem.dataset.type = message.type;
+      
+      const typeInfo = messageTypes[message.type] || { 
+        icon: 'fa-envelope', 
+        label: 'Message',
+        color: 'var(--primary-purple)'
+      };
+      
+      messageItem.innerHTML = `
+        <div class="notification-icon" style="background-color: ${typeInfo.color}">
+          <i class="fas ${typeInfo.icon}"></i>
         </div>
-        <div class="message-content">
-            <div class="message-title">
-                ${message.title}
-                ${statusBadge}
-            </div>
-            <p class="message-text"><strong>${senderLabel}:</strong> ${message.text}</p>
-            <div class="message-meta">
-                <span class="message-timestamp">${formatTimestamp(message.timestamp)}</span>
-                <span class="message-project">Project: ${message.projectInfo.projectTitle}</span>
-            </div>
+        <div class="notification-content">
+          <h4 class="notification-title">${message.title}</h4>
+          <p class="notification-message">From: ${message.sender || 'System'}</p>
+          <div class="notification-meta">
+            <span class="notification-timestamp">${formatTimestamp(message.timestamp)}</span>
+            <span class="notification-type">${typeInfo.label}</span>
+          </div>
         </div>
-    `;
+      `;
+      
+      messageItem.addEventListener('click', () => openMessageDetail(message));
+      return messageItem;
+    }
     
-    // Add click event to open the message detail modal
-    messageItem.addEventListener('click', () => openMessageDetail(message));
-    
-    return messageItem;
-}
     // Render messages by date groups
     function renderMessages() {
-    // Clear all containers
-    document.getElementById('today-messages').innerHTML = '';
-    document.getElementById('yesterday-messages').innerHTML = '';
-    document.getElementById('earlier-messages').innerHTML = '';
-    
-    // Apply filters and search before displaying
-    applyFiltersAndSearch();
-    
-    // Get paginated subset
-    const paginatedMessages = getPaginatedMessages();
-    
-    // Group by date
-    const groupedMsgs = groupMessagesByDate(paginatedMessages);
-    
-    // Hide date sections if empty
-    document.getElementById('today-section').style.display = groupedMsgs.today.length ? 'block' : 'none';
-    document.getElementById('yesterday-section').style.display = groupedMsgs.yesterday.length ? 'block' : 'none';
-    document.getElementById('earlier-section').style.display = groupedMsgs.earlier.length ? 'block' : 'none';
-    
-    // Show empty state if all sections are empty
-    document.getElementById('empty-messages').style.display = 
+      todayNotifications.innerHTML = '';
+      yesterdayNotifications.innerHTML = '';
+      earlierNotifications.innerHTML = '';
+      
+      applyFiltersAndSearch();
+      
+      const paginatedMessages = getPaginatedMessages();
+      const groupedMsgs = groupMessagesByDate(paginatedMessages);
+      
+      document.getElementById('today-section').style.display = groupedMsgs.today.length ? 'block' : 'none';
+      document.getElementById('yesterday-section').style.display = groupedMsgs.yesterday.length ? 'block' : 'none';
+      document.getElementById('earlier-section').style.display = groupedMsgs.earlier.length ? 'block' : 'none';
+      
+      emptyState.style.display = 
         (groupedMsgs.today.length || groupedMsgs.yesterday.length || groupedMsgs.earlier.length) ? 
         'none' : 'flex';
+      
+      groupedMsgs.today.forEach(message => {
+        todayNotifications.appendChild(createMessageElement(message));
+      });
+      
+      groupedMsgs.yesterday.forEach(message => {
+        yesterdayNotifications.appendChild(createMessageElement(message));
+      });
+      
+      groupedMsgs.earlier.forEach(message => {
+        earlierNotifications.appendChild(createMessageElement(message));
+      });
+      
+      updatePagination();
+    }
     
-    // Render messages in each section
-    groupedMsgs.today.forEach(message => {
-        document.getElementById('today-messages').appendChild(createMessageElement(message));
-    });
-    
-    groupedMsgs.yesterday.forEach(message => {
-        document.getElementById('yesterday-messages').appendChild(createMessageElement(message));
-    });
-    
-    groupedMsgs.earlier.forEach(message => {
-        document.getElementById('earlier-messages').appendChild(createMessageElement(message));
-    });
-    
-    // Update pagination
-    updatePagination();
-}
-
     // Apply filters and search
     function applyFiltersAndSearch() {
-        filteredMessages = [...messages];
-        
-        // Apply status filter
-        if (currentFilter !== 'all') {
-            if (currentFilter === 'unread') {
-                filteredMessages = filteredMessages.filter(m => m.unread);
-            } else {
-                filteredMessages = filteredMessages.filter(m => m.status === currentFilter);
-            }
+      filteredMessages = [...messages];
+      
+      if (currentFilter !== 'all') {
+        if (currentFilter === 'unread') {
+          filteredMessages = filteredMessages.filter(m => m.unread);
+        } else {
+          filteredMessages = filteredMessages.filter(m => m.type === currentFilter);
         }
-        
-        // Apply search
-        if (currentSearchTerm) {
-            const searchLower = currentSearchTerm.toLowerCase();
-            filteredMessages = filteredMessages.filter(m => 
-                m.title.toLowerCase().includes(searchLower) || 
-                m.text.toLowerCase().includes(searchLower) ||
-                m.projectInfo.projectTitle.toLowerCase().includes(searchLower) ||
-                m.projectInfo.invitedBy.name.toLowerCase().includes(searchLower)
-            );
-        }
-        
-        // Reset to page 1 when filters change
-        currentPage = 1;
+      }
+      
+      if (currentSearchTerm) {
+        const searchLower = currentSearchTerm.toLowerCase();
+        filteredMessages = filteredMessages.filter(m => 
+          m.title.toLowerCase().includes(searchLower) || 
+          m.content.toLowerCase().includes(searchLower) ||
+          (m.sender && m.sender.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      currentPage = 1;
     }
-
-    // Get paginated subset of messages
+    
+    // Get paginated messages
     function getPaginatedMessages() {
-        const startIdx = (currentPage - 1) * itemsPerPage;
-        const endIdx = startIdx + itemsPerPage;
-        return filteredMessages.slice(startIdx, endIdx);
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const endIdx = startIdx + itemsPerPage;
+      return filteredMessages.slice(startIdx, endIdx);
     }
-
-    // Update pagination controls and info
+    
+    // Update pagination controls
     function updatePagination() {
-        const totalPages = Math.max(1, Math.ceil(filteredMessages.length / itemsPerPage));
-        
-        document.getElementById('pagination-info').textContent = `Page ${currentPage} of ${totalPages}`;
-        
-        document.getElementById('prev-page').disabled = currentPage <= 1;
-        document.getElementById('next-page').disabled = currentPage >= totalPages;
+      const totalPages = Math.max(1, Math.ceil(filteredMessages.length / itemsPerPage));
+      paginationInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+      prevPageBtn.disabled = currentPage <= 1;
+      nextPageBtn.disabled = currentPage >= totalPages;
     }
-
+    
     // Open message detail modal
     function openMessageDetail(message) {
-        // Set modal content
-        document.getElementById('modal-message-title').textContent = message.title;
-        document.getElementById('modal-message-time').textContent = formatTimestamp(message.timestamp);
-        
-        const senderName = message.sender === 'you' ? 'You' : message.projectInfo.invitedBy.name;
-        
-        document.getElementById('modal-message-content').innerHTML = `
-            <p><strong>From:</strong> ${senderName}</p>
-            <p><strong>Project:</strong> ${message.projectInfo.projectTitle}</p>
-            <p><strong>Status:</strong> ${message.status.charAt(0).toUpperCase() + message.status.slice(1)}</p>
-            <hr>
-            <p><strong>Message:</strong></p>
-            <p>${message.text}</p>
-            <hr>
-            <p><strong>Project Description:</strong> ${message.projectInfo.description}</p>
-            <p><strong>Invited By:</strong> ${message.projectInfo.invitedBy.name}</p>
-            <p><strong>Institution:</strong> ${message.projectInfo.invitedBy.institution}</p>
-        `;
-        
-        // Set action button
-        modalActionBtn.textContent = 'View Project';
+      currentMessageId = message.id;
+      
+      document.getElementById('modal-notification-title').textContent = message.title;
+      document.getElementById('modal-notification-time').textContent = formatTimestamp(message.timestamp);
+      
+      const modalIcon = document.getElementById('modal-notification-icon');
+      const typeInfo = messageTypes[message.type] || { icon: 'fa-envelope', label: 'Message' };
+      modalIcon.className = `notification-icon`;
+      modalIcon.innerHTML = `<i class="fas ${typeInfo.icon}"></i>`;
+      modalIcon.style.backgroundColor = typeInfo.color || 'var(--primary-purple)';
+      
+      const detailContent = document.getElementById('modal-notification-content');
+      detailContent.innerHTML = `
+        <p><strong>From:</strong> ${message.sender || 'System'}</p>
+        <p><strong>Date:</strong> ${message.timestamp.toLocaleString()}</p>
+        <div class="message-content">
+          ${message.content}
+        </div>
+      `;
+      
+      // Show action button if there's an action URL
+      if (message.actionUrl) {
+        modalActionBtn.style.display = 'inline-flex';
+        modalActionBtn.textContent = getActionButtonText(message.type);
         modalActionBtn.onclick = () => {
-            window.location.href = `project-details.html?id=${message.projectInfo.projectId}`;
+          window.location.href = message.actionUrl;
         };
-        
-        // Mark as read if unread
-        if (message.unread) {
-            markMessageAsRead(message.id);
-        }
-        
-        // Show modal
-        messageModal.style.display = 'flex';
+      } else {
+        modalActionBtn.style.display = 'none';
+      }
+      
+      if (message.unread) {
+        markMessageAsRead(message.id);
+      }
+      
+      notificationModal.showModal();
     }
-
+    
+    function getActionButtonText(type) {
+      const actions = {
+        collaboration: 'View Collaboration',
+        system: 'View Details',
+        feedback: 'View Feedback',
+        assignment: 'View Assignment',
+        milestone: 'View Milestone',
+        funding: 'View Funding',
+        admin: 'View Notice',
+        review: 'View Review'
+      };
+      
+      return actions[type] || 'Take Action';
+    }
+    
     // Mark message as read
     function markMessageAsRead(messageId) {
-        const msgIndex = messages.findIndex(m => m.id === messageId);
-        if (msgIndex !== -1 && messages[msgIndex].unread) {
-            messages[msgIndex].unread = false;
-            
-            // Update UI
-            const msgElement = document.querySelector(`.message-item[data-id="${messageId}"]`);
-            if (msgElement) {
-                msgElement.classList.remove('unread');
-            }
+      const msgIndex = messages.findIndex(m => m.id === messageId);
+      if (msgIndex !== -1 && messages[msgIndex].unread) {
+        messages[msgIndex].unread = false;
+        
+        const msgElement = document.querySelector(`.notification-item[data-id="${messageId}"]`);
+        if (msgElement) {
+          msgElement.classList.remove('unread');
         }
+        
+        saveMessagesToLocalStorage();
+        updateNotificationBadge();
+      }
     }
-
+    
     // Mark all messages as read
     function markAllAsRead() {
-        let hasUnreadMessages = false;
-        
-        messages.forEach(message => {
-            if (message.unread) {
-                message.unread = false;
-                hasUnreadMessages = true;
-            }
-        });
-        
-        if (hasUnreadMessages) {
-            renderMessages();
-            alert('All messages marked as read');
+      let hasUnreadMessages = false;
+      
+      messages.forEach(message => {
+        if (message.unread) {
+          message.unread = false;
+          hasUnreadMessages = true;
         }
+      });
+      
+      if (hasUnreadMessages) {
+        saveMessagesToLocalStorage();
+        renderMessages();
+        updateNotificationBadge();
+        // In a real app, you would also notify the server
+        // fetch('/api/notifications/mark-all-read', { method: 'POST' });
+      }
     }
-
-    // Close modal
-    function closeModal() {
-        messageModal.style.display = 'none';
-    }
-
-    // Event Listeners
     
-    // Search input
-    searchInput.addEventListener('input', function(e) {
+    // Close modals
+    function closeModals() {
+      notificationModal.close();
+      settingsModal.close();
+    }
+    
+    // Initialize the page
+    function initialize() {
+      loadMessages();
+      setupEventListeners();
+      
+      // Request notification permission if not already determined
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+      
+      // For demo purposes, simulate occasional new notifications
+      setInterval(() => {
+        if (Math.random() > 0.8) { // 20% chance of new notification
+          const mockNotifications = generateMockNotifications(1);
+          mockNotifications.forEach(notification => {
+            handleNewNotification(notification);
+          });
+        }
+      }, 60000); // Check every minute
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+      // Search input
+      searchInput.addEventListener('input', function(e) {
         currentSearchTerm = e.target.value.trim();
         renderMessages();
-    });
-    
-    // Filter tags
-    filterTags.forEach(tag => {
+      });
+      
+      // Filter tags
+      filterTags.forEach(tag => {
         tag.addEventListener('click', function() {
-            // Remove active class from all filters
-            filterTags.forEach(t => t.classList.remove('active'));
-            
-            // Add active class to clicked filter
-            this.classList.add('active');
-            
-            // Update current filter
-            currentFilter = this.getAttribute('data-filter');
-            
-            // Re-render messages
-            renderMessages();
+          filterTags.forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          currentFilter = this.getAttribute('data-filter');
+          renderMessages();
         });
-    });
-    
-    // Mark all as read button
-    markAllReadBtn.addEventListener('click', markAllAsRead);
-    
-    // Close modal buttons
-    closeModalBtns.forEach(btn => {
-        btn.addEventListener('click', closeModal);
-    });
-    
-    // Pagination buttons
-    document.getElementById('prev-page').addEventListener('click', function() {
+      });
+      
+      // Mark all as read button
+      markAllReadBtn.addEventListener('click', markAllAsRead);
+      
+      // Notification settings button
+      notificationSettingsBtn.addEventListener('click', function() {
+        settingsModal.showModal();
+      });
+      
+      // Close modal buttons
+      closeModalBtns.forEach(btn => {
+        btn.addEventListener('click', closeModals);
+      });
+      
+      // Dismiss notification button
+      modalDismissBtn.addEventListener('click', closeModals);
+      
+      // Cancel settings button
+      cancelSettingsBtn.addEventListener('click', closeModals);
+      
+      // Pagination buttons
+      prevPageBtn.addEventListener('click', function() {
         if (currentPage > 1) {
-            currentPage--;
-            renderMessages();
+          currentPage--;
+          renderMessages();
         }
-    });
-    
-    document.getElementById('next-page').addEventListener('click', function() {
+      });
+      
+      nextPageBtn.addEventListener('click', function() {
         const totalPages = Math.ceil(filteredMessages.length / itemsPerPage);
         if (currentPage < totalPages) {
-            currentPage++;
-            renderMessages();
+          currentPage++;
+          renderMessages();
         }
-    });
-
-    // Initialize the application
-    function initialize() {
-        // Load invitation messages from mock data
-        const invitations = loadInvitationMessages();
+      });
+      
+      // Settings form submission
+      notificationSettingsForm.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        // Convert to message format
-        messages = convertInvitationMessagesToMessages(invitations);
+        // Save settings to localStorage
+        const settings = {
+          emailNewAssignments: document.getElementById('email-new-assignments').checked,
+          emailDeadlines: document.getElementById('email-deadlines').checked,
+          emailFeedback: document.getElementById('email-feedback').checked,
+          systemAll: document.getElementById('system-all').checked,
+          systemSound: document.getElementById('system-sound').checked
+        };
         
-        // Set initial filtered messages
-        filteredMessages = [...messages];
+        localStorage.setItem('notificationSettings', JSON.stringify(settings));
+        localStorage.setItem('notificationSound', settings.systemSound);
         
-        // Render messages
-        renderMessages();
-        
-        console.log(`Loaded ${messages.length} messages from invitations`);
+        alert('Notification settings saved successfully');
+        closeModals();
+      });
+      
+      // Load saved settings
+      const savedSettings = localStorage.getItem('notificationSettings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        document.getElementById('email-new-assignments').checked = settings.emailNewAssignments !== false;
+        document.getElementById('email-deadlines').checked = settings.emailDeadlines !== false;
+        document.getElementById('email-feedback').checked = settings.emailFeedback !== false;
+        document.getElementById('system-all').checked = settings.systemAll !== false;
+        document.getElementById('system-sound').checked = settings.systemSound !== false;
+      }
+      
+      // Update badge when tab becomes visible
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          updateNotificationBadge();
+          document.title = 'Notifications - CollabNexus';
+        }
+      });
+      
+      // Logout button
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (confirm('Are you sure you want to log out?')) {
+            // Close WebSocket connection
+            if (socket) {
+              socket.close();
+            }
+            if (pollingInterval) {
+              clearInterval(pollingInterval);
+            }
+            
+            localStorage.removeItem('userToken');
+            window.location.replace('../../../login.html');
+          }
+        });
+      }
     }
-
+    
     // Start the application
     initialize();
+
+  } catch (error) {
+    console.error('Error in notification center:', error);
+    alert('There was an error initializing the notification center. Please check the console for details.');
+  }
 });
