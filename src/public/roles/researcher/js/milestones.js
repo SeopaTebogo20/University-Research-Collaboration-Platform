@@ -314,10 +314,31 @@ function displayMilestones(milestones) {
                 statusClass = 'milestone-pending';
         }
         
-        // Format assignee name
-        let assigneeDisplay = milestone.assignee_name || 'Unassigned';
+        // Improved assignee name resolution
+        let assigneeDisplay = 'Unassigned';
+        
         if (milestone.assignee_id === 'lead') {
             assigneeDisplay = `${currentProject.researcher_name || 'Project Lead'} (Lead)`;
+        } 
+        else if (milestone.assignee_id && currentProject.Collaborators) {
+            try {
+                // Parse collaborators if needed
+                const collaborators = Array.isArray(currentProject.Collaborators) ? 
+                    currentProject.Collaborators : 
+                    JSON.parse(currentProject.Collaborators);
+                
+                // Find the collaborator by ID
+                const collaborator = collaborators.find(c => c.id === milestone.assignee_id);
+                if (collaborator) {
+                    assigneeDisplay = `${collaborator.name} (${collaborator.position || 'Collaborator'})`;
+                }
+            } catch (e) {
+                console.error("Error parsing collaborators:", e);
+            }
+        }
+        else if (milestone.assignee_name) {
+            // Use the stored assignee name if available
+            assigneeDisplay = milestone.assignee_name;
         }
         
         const milestoneElement = document.createElement('div');
@@ -522,7 +543,7 @@ async function handleMilestoneFormSubmit(e) {
     const assigneeSelect = document.getElementById('milestone-assignee');
     
     // Get the selected assignee name (for display purposes)
-    let assigneeName = null;
+    let assigneeName = 'Unassigned';
     let assigneeId = null;
     
     if (assigneeSelect.value === 'lead') {
@@ -532,6 +553,22 @@ async function handleMilestoneFormSubmit(e) {
         const selectedOption = assigneeSelect.options[assigneeSelect.selectedIndex];
         assigneeName = selectedOption.textContent.split(' (')[0]; // Remove the position part
         assigneeId = assigneeSelect.value;
+        
+        // If it's a collaborator, get their name from the project data
+        if (currentProject.Collaborators) {
+            try {
+                const collaborators = Array.isArray(currentProject.Collaborators) ? 
+                    currentProject.Collaborators : 
+                    JSON.parse(currentProject.Collaborators);
+                
+                const collaborator = collaborators.find(c => c.id === assigneeId);
+                if (collaborator) {
+                    assigneeName = collaborator.name;
+                }
+            } catch (e) {
+                console.error("Error parsing collaborators:", e);
+            }
+        }
     }
     
     // Collect form data
@@ -543,7 +580,7 @@ async function handleMilestoneFormSubmit(e) {
         end_date: document.getElementById('milestone-end-date').value,
         status: document.getElementById('milestone-status').value,
         assignee_id: assigneeId,
-        assignee_name: assigneeName
+        assignee_name: assigneeName  // Ensure we store the name
     };
     
     try {
