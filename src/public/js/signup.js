@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             isValid = false; // Temporarily set to false, will be reset if email check passes
                             
                             // Indicate checking is in progress
-                            const loadingMsg = document.createElement('div');
+                            const loadingMsg = document.createElement('section');
                             loadingMsg.className = 'checking-email';
                             loadingMsg.textContent = 'Checking email...';
                             

@@ -72,34 +72,34 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.classList.add('modal');
         
         modal.innerHTML = `
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
+            <section class="modal-content">
+                <nav class="close-modal">&times;</nav>
                 <h2>Reviewer Profile</h2>
                 
-                <div class="profile-details">
-                    <div class="profile-section">
+                <section class="profile-details">
+                    <section class="profile-section">
                         <h3 id="reviewer-name"></h3>
-                        <p><strong>Role:</strong> <span id="reviewer-role"></span></p>
-                        <p><strong>Department:</strong> <span id="reviewer-department"></span></p>
-                        <p><strong>Academic Role:</strong> <span id="reviewer-academic-role"></span></p>
-                        <p><strong>Email:</strong> <span id="reviewer-email"></span></p>
-                        <p><strong>Phone:</strong> <span id="reviewer-phone"></span></p>
-                    </div>
+                        <p><strong>Role:</strong> <nav id="reviewer-role"></nav></p>
+                        <p><strong>Department:</strong> <nav id="reviewer-department"></nav></p>
+                        <p><strong>Academic Role:</strong> <nav id="reviewer-academic-role"></nav></p>
+                        <p><strong>Email:</strong> <nav id="reviewer-email"></nav></p>
+                        <p><strong>Phone:</strong> <nav id="reviewer-phone"></nav></p>
+                    </section>
                     
-                    <div class="profile-section">
+                    <section class="profile-section">
                         <h3>Research Information</h3>
-                        <p><strong>Research Area:</strong> <span id="reviewer-research-area"></span></p>
-                        <p><strong>Research Experience:</strong> <span id="reviewer-research-experience"></span> years</p>
-                        <p><strong>Qualifications:</strong> <span id="reviewer-qualifications"></span></p>
-                        <p><strong>Current Project:</strong> <span id="reviewer-current-project"></span></p>
-                    </div>
-                </div>
+                        <p><strong>Research Area:</strong> <nav id="reviewer-research-area"></nav></p>
+                        <p><strong>Research Experience:</strong> <nav id="reviewer-research-experience"></nav> years</p>
+                        <p><strong>Qualifications:</strong> <nav id="reviewer-qualifications"></nav></p>
+                        <p><strong>Current Project:</strong> <nav id="reviewer-current-project"></nav></p>
+                    </section>
+                </section>
                 
-                <div class="modal-footer">
+                <section class="modal-footer">
                     <button id="select-reviewer-btn" class="btn primary-btn">Assign as Reviewer</button>
                     <button class="btn secondary-btn close-modal">Cancel</button>
-                </div>
-            </div>
+                </section>
+            </section>
         `;
         
         document.body.appendChild(modal);
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayErrorMessage(message) {
         proposalsList.innerHTML = `
             <tr>
-                <td colspan="7" class="error-message">${message}</td>
+                <td colnav="7" class="error-message">${message}</td>
             </tr>
         `;
     }
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filteredProposals.length === 0) {
             const emptyRow = document.createElement('tr');
             emptyRow.innerHTML = `
-                <td colspan="7" class="empty-table-message">No proposals match the selected filters.</td>
+                <td colnav="7" class="empty-table-message">No proposals match the selected filters.</td>
             `;
             proposalsList.appendChild(emptyRow);
             return;
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${project.researcher_name}</td>
                 <td>${startDate}</td>
                 <td>${project.key_research_area || 'N/A'}</td>
-                <td><span class="status-badge ${statusClass}">${displayStatus}</span></td>
+                <td><nav class="status-badge ${statusClass}">${displayStatus}</nav></td>
                 <td class="table-actions">
                      <button class="btn view-btn" data-id="${project.id}"><i class="fas fa-eye"></i> View Details</button>
                 </td>
@@ -461,18 +461,18 @@ document.addEventListener('DOMContentLoaded', function() {
                              matchScore > 50 ? 'medium-match' : 'low-match';
             
             li.innerHTML = `
-                <div class="reviewer-list-item">
-                    <div class="reviewer-info">
+                <section class="reviewer-list-item">
+                    <section class="reviewer-info">
                         <h4>${reviewer.name}</h4>
                         <p>Department: ${reviewer.department || 'Not specified'}</p>
                         <p>Research Area: ${reviewer.research_area || 'Not specified'}</p>
-                    </div>
-                    <div class="reviewer-actions">
-                        <span class="match-score ${matchClass}">${matchScore}% Match</span>
+                    </section>
+                    <section class="reviewer-actions">
+                        <nav class="match-score ${matchClass}">${matchScore}% Match</nav>
                         <button class="btn view-profile-btn" data-id="${reviewer.id}">View Profile</button>
                         <button class="btn assign-reviewer-btn" data-id="${reviewer.id}">Assign</button>
-                    </div>
-                </div>
+                    </section>
+                </section>
             `;
             
             assignModalElements.reviewersList.appendChild(li);

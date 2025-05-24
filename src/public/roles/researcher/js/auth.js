@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             authButtons.forEach(container => {
                 container.innerHTML = `
                     <div class="user-profile">
-                        <span class="user-greeting">Welcome, ${name}${roleDisplay}</span>
+                        <nav class="user-greeting">Welcome, ${name}${roleDisplay}</nav>
                         <button class="btn btn-outline logout-btn">Sign Out</button>
                     </div>
                 `;

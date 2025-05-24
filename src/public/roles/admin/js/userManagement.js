@@ -4,17 +4,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const usersListElement = document.getElementById('users-list');
     const searchInputElement = document.getElementById('search-input');
     const searchForm = document.querySelector('.search-form');
-    const viewProfileModal = document.createElement('div');
+    const viewProfileModal = document.createElement('section');
     viewProfileModal.id = 'view-profile-modal';
     viewProfileModal.className = 'modal';
     viewProfileModal.innerHTML = `
-        <div class="modal-content">
+        <section class="modal-content">
             <button class="close-modal">&times;</button>
-            <div id="profile-content" class="profile-content"></div>
-            <div class="modal-actions">
+            <section id="profile-content" class="profile-content"></section>
+            <section class="modal-actions">
                 <button id="promote-user-btn" class="btn btn-primary">Promote to Reviewer</button>
-            </div>
-        </div>
+            </section>
+        </section>
     `;
     document.body.appendChild(viewProfileModal);
     
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const promoteUserBtn = document.getElementById('promote-user-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const closeModalButtons = document.querySelectorAll('.close-modal');
-    const toastContainer = document.createElement('div');
+    const toastContainer = document.createElement('section');
     toastContainer.id = 'toast-container';
     document.body.appendChild(toastContainer);
 
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (users.length === 0) {
             const noResultsRow = document.createElement('tr');
             noResultsRow.innerHTML = `
-                <td colspan="7" class="text-center">No researchers or reviewers found matching your criteria</td>
+                <td colnav="7" class="text-center">No researchers or reviewers found matching your criteria</td>
             `;
             usersListElement.appendChild(noResultsRow);
             return;
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${user.name || 'N/A'}</td>
                 <td>${user.email || 'N/A'}</td>
                 <td>${formattedRole}</td>
-                <td><span class="status-badge ${statusClass}">${formattedPromotedRole}</span></td>
+                <td><nav class="status-badge ${statusClass}">${formattedPromotedRole}</nav></td>
                 <td>${joinDate}</td>
                 <td class="table-actions">
                      <button class="btn view-btn" data-id="${user.id}"><i class="fas fa-eye"></i> View Details</button>
@@ -262,12 +262,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (user.research_area) {
             const researchAreas = user.research_area.split(',').map(area => area.trim());
             researchAreasHtml = `
-                <div class="profile-section">
+                <section class="profile-section">
                     <h3>Research Areas</h3>
                     <ul class="profile-list">
                         ${researchAreas.map(area => `<li>${capitalizeFirstLetter(area)}</li>`).join('')}
                     </ul>
-                </div>
+                </section>
             `;
         }
         
@@ -275,10 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
         let qualificationsHtml = '';
         if (user.qualifications) {
             qualificationsHtml = `
-                <div class="profile-section">
+                <section class="profile-section">
                     <h3>Qualifications</h3>
                     <p>${user.qualifications}</p>
-                </div>
+                </section>
             `;
         }
         
@@ -286,58 +286,58 @@ document.addEventListener('DOMContentLoaded', function() {
         let currentProjectHtml = '';
         if (user.current_project) {
             currentProjectHtml = `
-                <div class="profile-section">
+                <section class="profile-section">
                     <h3>Current Project</h3>
                     <p>${user.current_project}</p>
-                </div>
+                </section>
             `;
         }
         
         // Combine all sections
         profileContent.innerHTML = `
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    <div class="avatar-placeholder">${getInitials(user.name)}</div>
-                </div>
-                <div class="profile-header-content">
+            <section class="profile-header">
+                <section class="profile-avatar">
+                    <section class="avatar-placeholder">${getInitials(user.name)}</section>
+                </section>
+                <section class="profile-header-content">
                     <h2>${user.name || 'Unnamed User'}</h2>
-                    <div class="user-meta">
-                        <span class="role-badge">${capitalizeFirstLetter(user.role || 'User')}</span>
-                        <span class="status-badge ${statusClass}">${capitalizeFirstLetter(promotedRole)}</span>
-                    </div>
+                    <section class="user-meta">
+                        <nav class="role-badge">${capitalizeFirstLetter(user.role || 'User')}</nav>
+                        <nav class="status-badge ${statusClass}">${capitalizeFirstLetter(promotedRole)}</nav>
+                    </section>
                     <p class="join-date">Member since ${formatDate(user.created_at)}</p>
-                </div>
-            </div>
+                </section>
+            </section>
             
-            <div class="profile-section">
+            <section class="profile-section">
                 <h3>Contact Information</h3>
                 <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
                 ${user.phone ? `<p><strong>Phone:</strong> ${user.phone}</p>` : ''}
-            </div>
+            </section>
             
-            <div class="profile-section">
+            <section class="profile-section">
                 <h3>Academic Information</h3>
                 ${user.department ? `<p><strong>Department:</strong> ${user.department}</p>` : ''}
                 ${user.academic_role ? `<p><strong>Academic Role:</strong> ${user.academic_role}</p>` : ''}
-            </div>
+            </section>
             
             ${qualificationsHtml}
             
-            <div class="profile-section">
+            <section class="profile-section">
                 <h3>Research Experience</h3>
                 <p>${user.research_experience || '0'} years</p>
                 <p><strong>Projects Created:</strong> ${user.projects_created || '0'}</p>
-            </div>
+            </section>
             
             ${researchAreasHtml}
             
             ${currentProjectHtml}
             
-            <div class="profile-section">
+            <section class="profile-section">
                 <h3>Account Information</h3>
                 <p><strong>User ID:</strong> ${user.id}</p>
                 <p><strong>Last Updated:</strong> ${formatDate(user.updated_at)}</p>
-            </div>
+            </section>
         `;
         
         // Update button text based on user role
@@ -423,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toast notification function
     function showToast(message, type = 'info', duration = 5000) {
-        const toast = document.createElement('div');
+        const toast = document.createElement('section');
         toast.className = `toast toast-${type}`;
         
         let icon = '';
@@ -439,10 +439,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         toast.innerHTML = `
-            <div class="toast-icon">${icon}</div>
-            <div class="toast-content">
-                <div class="toast-message">${message}</div>
-            </div>
+            <section class="toast-icon">${icon}</section>
+            <section class="toast-content">
+                <section class="toast-message">${message}</section>
+            </section>
             <button class="toast-close"><i class="fas fa-times"></i></button>
         `;
         

@@ -122,7 +122,7 @@ function setupFiltering() {
         
         // Show loading state
         const tbody = document.querySelector('.proposals-table tbody');
-        tbody.innerHTML = '<tr><td colspan="6" class="loading-text">Loading filtered results...</td></tr>';
+        tbody.innerHTML = '<tr><td colnav="6" class="loading-text">Loading filtered results...</td></tr>';
         
         // Simulate API delay
         setTimeout(() => {
@@ -187,7 +187,7 @@ function updateReviewTable(data) {
     if (data.length === 0) {
         const emptyRow = document.createElement('tr');
         const emptyCell = document.createElement('td');
-        emptyCell.colSpan = 6;
+        emptyCell.colnav = 6;
         emptyCell.textContent = 'No reviews match the selected filters';
         emptyRow.appendChild(emptyCell);
         tbody.appendChild(emptyRow);
@@ -219,7 +219,7 @@ function updateReviewTable(data) {
         
         // Decision cell
         const decisionCell = document.createElement('td');
-        const statusBadge = document.createElement('span');
+        const statusBadge = document.createElement('nav');
         statusBadge.className = `status-badge status-${review.decision.toLowerCase()}`;
         statusBadge.textContent = review.decision;
         decisionCell.appendChild(statusBadge);
@@ -319,7 +319,7 @@ function openReportModal(proposalId) {
         <p><strong>Researcher:</strong> ${reviewData.researcher}</p>
         <p><strong>Submitted:</strong> ${formatDate(reviewData.submittedDate)}</p>
         <p><strong>Reviewed:</strong> ${formatDate(reviewData.reviewDate)}</p>
-        <p><strong>Decision:</strong> <span class="status-badge status-${reviewData.decision.toLowerCase()}">${reviewData.decision}</span></p>
+        <p><strong>Decision:</strong> <nav class="status-badge status-${reviewData.decision.toLowerCase()}">${reviewData.decision}</nav></p>
     `;
     
     // Scores
@@ -335,11 +335,11 @@ function openReportModal(proposalId) {
     Object.entries(reviewData.scores).forEach(([criterion, score]) => {
         const scoreItem = document.createElement('li');
         
-        const criterionName = document.createElement('span');
+        const criterionName = document.createElement('nav');
         criterionName.className = 'criterion-name';
         criterionName.textContent = formatCriterionName(criterion);
         
-        const scoreValue = document.createElement('span');
+        const scoreValue = document.createElement('nav');
         scoreValue.className = 'score-value';
         
         // Create score stars
@@ -503,8 +503,8 @@ function getMockReviewData() {
             decision: 'Rejected'
         },
         {
-            id: 'biodiversity',
-            title: 'Biodiversity Conservation Strategies',
+            id: 'biosectionersity',
+            title: 'Biosectionersity Conservation Strategies',
             researcher: 'Prof. Laura Martinez',
             submittedDate: '2025-03-05T11:25:00',
             reviewDate: '2025-03-14T09:15:00',

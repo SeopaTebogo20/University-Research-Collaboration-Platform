@@ -76,7 +76,7 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
   async function fetchReceivedInvitations() {
     try {
       // Show loading state before fetch
-      receivedContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading invitations...</span></div>';
+      receivedContainer.innerHTML = '<section class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><nav>Loading invitations...</nav></section>';
       
       const response = await fetch(RECEIVED_INVITATIONS_ENDPOINT);
       if (!response.ok) {
@@ -96,7 +96,7 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
   async function fetchSentInvitations() {
     try {
       // Show loading state before fetch
-      sentContainer.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading invitations...</span></div>';
+      sentContainer.innerHTML = '<section class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><nav>Loading invitations...</nav></section>';
       
       const response = await fetch(SENT_INVITATIONS_ENDPOINT);
       if (!response.ok) {
@@ -157,11 +157,11 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
         // Status badge
         let statusBadge = '';
         if (invitation.status === 'pending') {
-          statusBadge = '<span class="badge badge-pending">Pending</span>';
+          statusBadge = '<nav class="badge badge-pending">Pending</nav>';
         } else if (invitation.status === 'accepted') {
-          statusBadge = '<span class="badge badge-success">Accepted</span>';
+          statusBadge = '<nav class="badge badge-success">Accepted</nav>';
         } else if (invitation.status === 'declined') {
-          statusBadge = '<span class="badge badge-danger">Declined</span>';
+          statusBadge = '<nav class="badge badge-danger">Declined</nav>';
         }
         
         // Action buttons (only show if pending)
@@ -186,47 +186,47 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
           parseJsonField(invitation.messages) : [];
         
         return `
-          <div class="invitation-card">
-            <div class="invitation-header">
+          <section class="invitation-card">
+            <section class="invitation-header">
               <h3 class="invitation-project-title">${invitation.projectTitle || 'Project Invitation'}</h3>
               ${statusBadge}
-            </div>
-            <div class="invitation-body">
-              <div class="invitation-sender">
-                <span class="sender-label">From:</span>
+            </section>
+            <section class="invitation-body">
+              <section class="invitation-sender">
+                <nav class="sender-label">From:</nav>
                 <a href="#" class="sender-name view-researcher" data-researcher-id="${invitation.invitedByEmail}">
                   ${invitation.invitedByName || 'Researcher'}
                 </a>
-                <span class="sender-title">${invitation.invitedByTitle || ''}</span>
-                <span class="sender-institution">${invitation.invitedByInstitution || ''}</span>
-              </div>
-              <div class="invitation-info">
-                <div class="info-item">
+                <nav class="sender-title">${invitation.invitedByTitle || ''}</nav>
+                <nav class="sender-institution">${invitation.invitedByInstitution || ''}</nav>
+              </section>
+              <section class="invitation-info">
+                <section class="info-item">
                   <i class="fas fa-calendar-alt"></i> Invited on ${date}
-                </div>
-                <div class="info-item">
+                </section>
+                <section class="info-item">
                   <i class="fas fa-clock"></i> Duration: ${invitation.duration || 'Not specified'}
-                </div>
-              </div>
+                </section>
+              </section>
               <p class="invitation-description">${invitation.description || 'No description provided.'}</p>
               ${requiredSkills.length > 0 ? `
-                <div class="required-skills">
-                  <span class="skills-label">Required Skills:</span>
-                  <div class="skills-list">
-                    ${requiredSkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                  </div>
-                </div>
+                <section class="required-skills">
+                  <nav class="skills-label">Required Skills:</nav>
+                  <section class="skills-list">
+                    ${requiredSkills.map(skill => `<nav class="skill-tag">${skill}</nav>`).join('')}
+                  </section>
+                </section>
               ` : ''}
-            </div>
-            <div class="invitation-footer">
+            </section>
+            <section class="invitation-footer">
               <button class="btn btn-outline btn-sm view-project-btn" data-project-id="${invitation.projectId}">
                 <i class="fas fa-eye mr-1"></i> View Project
               </button>
-              <div class="invitation-actions">
+              <section class="invitation-actions">
                 ${actionButtons}
-              </div>
-            </div>
-          </div>
+              </section>
+            </section>
+          </section>
         `;
       }).join('');
       
@@ -262,13 +262,13 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
         // Status badge
         let statusBadge = '';
         if (invitation.status === 'pending') {
-          statusBadge = '<span class="badge badge-pending">Pending</span>';
+          statusBadge = '<nav class="badge badge-pending">Pending</nav>';
         } else if (invitation.status === 'accepted') {
-          statusBadge = '<span class="badge badge-success">Accepted</span>';
+          statusBadge = '<nav class="badge badge-success">Accepted</nav>';
         } else if (invitation.status === 'declined') {
-          statusBadge = '<span class="badge badge-danger">Declined</span>';
+          statusBadge = '<nav class="badge badge-danger">Declined</nav>';
         } else if (invitation.status === 'cancelled') {
-          statusBadge = '<span class="badge badge-danger">Cancelled</span>';
+          statusBadge = '<nav class="badge badge-danger">Cancelled</nav>';
         }
         
                 // Action buttons (only show cancel if pending)
@@ -290,54 +290,54 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
           parseJsonField(invitation.messages) : [];
         
         return `
-          <div class="invitation-card">
-            <div class="invitation-header">
+          <section class="invitation-card">
+            <section class="invitation-header">
               <h3 class="invitation-project-title">${invitation.projectTitle || 'Project Invitation'}</h3>
               ${statusBadge}
-            </div>
-            <div class="invitation-body">
-              <div class="invitation-recipient">
-                <span class="recipient-label">To:</span>
+            </section>
+            <section class="invitation-body">
+              <section class="invitation-recipient">
+                <nav class="recipient-label">To:</nav>
                 <a href="#" class="recipient-name view-researcher" data-researcher-id="${invitation.email}">
                   ${invitation.name || 'Researcher'}
                 </a>
-                <span class="recipient-title">${invitation.projectTitle || ''}</span>
-                <span class="recipient-institution">${invitation.university || ''}</span>
-              </div>
-              <div class="invitation-info">
-                <div class="info-item">
+                <nav class="recipient-title">${invitation.projectTitle || ''}</nav>
+                <nav class="recipient-institution">${invitation.university || ''}</nav>
+              </section>
+              <section class="invitation-info">
+                <section class="info-item">
                   <i class="fas fa-calendar-alt"></i> Sent on ${date}
-                </div>
-                <div class="info-item">
+                </section>
+                <section class="info-item">
                   <i class="fas fa-clock"></i> Duration: ${invitation.duration || 'Not specified'}
-                </div>
-              </div>
+                </section>
+              </section>
               <p class="invitation-description">${invitation.description || 'No description provided.'}</p>
               ${requiredSkills.length > 0 ? `
-                <div class="required-skills">
-                  <span class="skills-label">Required Skills:</span>
-                  <div class="skills-list">
-                    ${requiredSkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
-                  </div>
-                </div>
+                <section class="required-skills">
+                  <nav class="skills-label">Required Skills:</nav>
+                  <section class="skills-list">
+                    ${requiredSkills.map(skill => `<nav class="skill-tag">${skill}</nav>`).join('')}
+                  </section>
+                </section>
               ` : ''}
               
               ${invitation.status !== 'pending' && messages.length > 0 ? `
-                <div class="invitation-response">
-                  <span class="response-label">Response:</span>
+                <section class="invitation-response">
+                  <nav class="response-label">Response:</nav>
                   <p class="response-message">${messages[messages.length - 1].text || 'No message provided.'}</p>
-                </div>
+                </section>
               ` : ''}
-            </div>
-            <div class="invitation-footer">
+            </section>
+            <section class="invitation-footer">
               <button class="btn btn-outline btn-sm view-project-btn" data-project-id="${invitation.projectId}">
                 <i class="fas fa-eye mr-1"></i> View Project
               </button>
-              <div class="invitation-actions">
+              <section class="invitation-actions">
                 ${actionButtons}
-              </div>
-            </div>
-          </div>
+              </section>
+            </section>
+          </section>
         `;
       }).join('');
       
@@ -410,7 +410,7 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
   // View project details
   function viewProject(projectId) {
     const projectDetails = document.getElementById('project-details');
-    projectDetails.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading project details...</span></div>';
+    projectDetails.innerHTML = '<section class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><nav>Loading project details...</nav></section>';
     
     document.getElementById('view-project-title').textContent = `Project Details: ${projectId}`;
     
@@ -418,60 +418,60 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
     // For this example, we'll simulate with placeholder content
     setTimeout(() => {
       projectDetails.innerHTML = `
-        <div class="project-detail-item">
+        <section class="project-detail-item">
           <h3 class="project-title">${projectId}: Climate Impact on Marine Ecosystems</h3>
-          <p class="project-status"><span class="badge badge-active">Active</span></p>
-        </div>
-        <div class="project-detail-item">
-          <span class="detail-label">Principal Investigator:</span>
-          <span class="detail-value">Dr. Robert Anderson</span>
-        </div>
-        <div class="project-detail-item">
-          <span class="detail-label">Institution:</span>
-          <span class="detail-value">Ocean Research Institute</span>
-        </div>
-        <div class="project-detail-item">
-          <span class="detail-label">Timeline:</span>
-          <span class="detail-value">Jan 2025 - Dec 2026</span>
-        </div>
-        <div class="project-detail-item">
-          <span class="detail-label">Description:</span>
+          <p class="project-status"><nav class="badge badge-active">Active</nav></p>
+        </section>
+        <section class="project-detail-item">
+          <nav class="detail-label">Principal Investigator:</nav>
+          <nav class="detail-value">Dr. Robert Anderson</nav>
+        </section>
+        <section class="project-detail-item">
+          <nav class="detail-label">Institution:</nav>
+          <nav class="detail-value">Ocean Research Institute</nav>
+        </section>
+        <section class="project-detail-item">
+          <nav class="detail-label">Timeline:</nav>
+          <nav class="detail-value">Jan 2025 - Dec 2026</nav>
+        </section>
+        <section class="project-detail-item">
+          <nav class="detail-label">Description:</nav>
           <p class="detail-value">This project aims to study the impact of climate change on marine ecosystems with a focus on coral reefs and coastal environments. Using advanced machine learning algorithms, we'll analyze environmental data to predict future changes and develop conservation strategies.</p>
-        </div>
-        <div class="project-detail-item">
-          <span class="detail-label">Funding:</span>
-          <span class="detail-value">National Science Foundation, Global Climate Initiative</span>
-        </div>
+        </section>
+        <section class="project-detail-item">
+          <nav class="detail-label">Funding:</nav>
+          <nav class="detail-value">National Science Foundation, Global Climate Initiative</nav>
+        </section>
       `;
       
       document.getElementById('project-requirements').innerHTML = `
-        <span class="skill-tag">Machine Learning</span>
-        <span class="skill-tag">Environmental Science</span>
-        <span class="skill-tag">Marine Biology</span>
-        <span class="skill-tag">Data Analysis</span>
-        <span class="skill-tag">Python</span>
-        <span class="skill-tag">R</span>
+        <nav class="skill-tag">Machine Learning</nav>
+        <nav class="skill-tag">Environmental Science</nav>
+        <nav class="skill-tag">Marine Biology</nav>
+        <nav class="skill-tag">Data Analysis</nav>
+        <nav class="skill-tag">Python</nav>
+        <nav class="skill-tag">R</nav>
       `;
       
       document.getElementById('project-collaborators').innerHTML = `
-        <div class="collaborator-item">
-          <div class="collaborator-avatar">
+        <section class="collaborator-item">
+          <section class="collaborator-avatar">
             <i class="fas fa-user-circle"></i>
-          </div>
-          <div class="collaborator-info">
-            <span class="collaborator-name">Dr. Robert Anderson</span>
-            <span class="collaborator-role">Principal Investigator</span>
-          </div>
-        </div>
-        <div class="collaborator-item">
-          <div class="collaborator-avatar">
+          </section>
+          <section class="collaborator-info">
+            <nav class="collaborator-name">Dr. Robert Anderson</nav>
+            <nav class="collaborator-role">Principal Investigator</nav>
+          </section>
+        </section>
+        <section class="collaborator-item">
+          <section class="collaborator-avatar">
             <i class="fas fa-user-circle"></i>
-          </div>
-          <div class="collaborator-info">
-            <span class="collaborator-name">Dr. Anna Williams</span>
-            <span class="collaborator-role">Co-Investigator</span>
-          </div>
-        </div>
+          </section>
+          <section class="collaborator-info">
+            <nav class="collaborator-name">Dr. Anna Williams</nav>
+            <nav class="collaborator-role">Co-Investigator</nav>
+          </section>
+        </section>
       `;
     }, 800);
     
@@ -481,7 +481,7 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
   // View researcher profile
   function viewResearcher(researcherId) {
     const researcherProfile = document.getElementById('researcher-profile');
-    researcherProfile.innerHTML = '<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><span>Loading researcher profile...</span></div>';
+    researcherProfile.innerHTML = '<section class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i><nav>Loading researcher profile...</nav></section>';
     
     // Find the researcher in our data
     let researcher = receivedInvitations.find(invitation => 
@@ -507,42 +507,42 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
       
       setTimeout(() => {
         researcherProfile.innerHTML = `
-          <div class="researcher-header">
-            <div class="researcher-avatar">
+          <section class="researcher-header">
+            <section class="researcher-avatar">
               <i class="fas fa-user-circle fa-3x"></i>
-            </div>
-            <div class="researcher-basic-info">
+            </section>
+            <section class="researcher-basic-info">
               <h3 class="researcher-name">${name || 'Researcher'}</h3>
               <p class="researcher-title">${title || 'Researcher'}</p>
               <p class="researcher-institution">${institution || 'Institution not specified'}</p>
               <p class="researcher-contact"><i class="fas fa-envelope"></i> ${email}</p>
-            </div>
-          </div>
+            </section>
+          </section>
           
-          <div class="researcher-section">
+          <section class="researcher-section">
             <h4 class="section-title">About</h4>
             <p>Researcher at ${institution || 'their institution'}.</p>
-          </div>
+          </section>
           
-          <div class="researcher-section">
+          <section class="researcher-section">
             <h4 class="section-title">Current Projects</h4>
             <p class="text-muted">Information not available</p>
-          </div>
+          </section>
           
-          <div class="researcher-section">
+          <section class="researcher-section">
             <h4 class="section-title">Recent Publications</h4>
             <p class="text-muted">Information not available</p>
-          </div>
+          </section>
         `;
       }, 800);
     } else {
       // Fallback for when researcher is not found
       document.getElementById('researcher-name-title').textContent = 'Researcher Profile';
       researcherProfile.innerHTML = `
-        <div class="alert alert-warning">
+        <section class="alert alert-warning">
           <i class="fas fa-exclamation-triangle"></i>
           Researcher information could not be loaded.
-        </div>
+        </section>
       `;
     }
     
@@ -558,13 +558,13 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
     
     if (invitation) {
       document.getElementById('cancel-invitation-details').innerHTML = `
-        <div>
+        <section>
           <p>Are you sure you want to cancel this invitation?</p>
           <p><strong>Project:</strong> ${invitation.projectTitle || 'Research Project'}</p>
           <p><strong>To:</strong> ${invitation.invitedName || 'Researcher'}, ${invitation.invitedInstitution || 'Institution'}</p>
           <p><strong>Status:</strong> ${invitation.status}</p>
           <p class="text-danger">This action cannot be undone.</p>
-        </div>
+        </section>
       `;
       
       cancelInvitationModal.classList.add('active');
@@ -589,11 +589,11 @@ const PROJECTS_API = `${API_BASE_URL}/projects`;
       }
       
       document.getElementById('respond-invitation-details').innerHTML = `
-        <div>
+        <section>
           <p><strong>Project:</strong> ${invitation.projectTitle || 'Research Project'}</p>
           <p><strong>From:</strong> ${invitation.invitedByName || 'Researcher'}, ${invitation.invitedByInstitution || 'Institution'}</p>
           <p><strong>Description:</strong> ${invitation.description || 'No description provided.'}</p>
-        </div>
+        </section>
       `;
       
       respondInvitationModal.classList.add('active');
@@ -852,7 +852,7 @@ confirmCancelBtn.addEventListener('click', async function() {
   // Toast notification system
   function showToast(message, type = 'info') {
     const toastContainer = document.getElementById('toast-container');
-    const toast = document.createElement('div');
+    const toast = document.createElement('section');
     toast.className = `toast toast-${type}`;
     
     let icon = '';
@@ -863,7 +863,7 @@ confirmCancelBtn.addEventListener('click', async function() {
     
     toast.innerHTML = `
       ${icon}
-      <span class="toast-message">${message}</span>
+      <nav class="toast-message">${message}</nav>
     `;
     
     toastContainer.appendChild(toast);

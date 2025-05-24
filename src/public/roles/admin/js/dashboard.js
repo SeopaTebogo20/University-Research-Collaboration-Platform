@@ -259,7 +259,7 @@ function initializeCalendar() {
             
             if (eventsForDay.length > 0) {
                 // Add event marker to the day element
-                const eventMarker = document.createElement('span');
+                const eventMarker = document.createElement('nav');
                 eventMarker.className = `event-marker ${eventsForDay[0].category}`;
                 dayElem.appendChild(eventMarker);
                 
@@ -294,19 +294,19 @@ function populateUpcomingEvents(events) {
         eventItem.className = 'event-item';
         
         eventItem.innerHTML = `
-            <div class="event-date">
-                <span class="day">${day}</span>
-                <span class="month">${month}</span>
-            </div>
-            <div class="event-info">
+            <section class="event-date">
+                <nav class="day">${day}</nav>
+                <nav class="month">${month}</nav>
+            </section>
+            <section class="event-info">
                 <h4>${event.title}</h4>
                 <p>Time details will appear here</p>
-            </div>
-            <div class="event-status ${event.category}">
+            </section>
+            <section class="event-status ${event.category}">
                 <i class="fas fa-${event.category === 'important' ? 'star' : 
                                event.category === 'deadline' ? 'clock' : 'calendar-check'}"></i>
                 ${capitalizeFirstLetter(event.category)}
-            </div>
+            </section>
         `;
         
         eventsList.appendChild(eventItem);
@@ -466,7 +466,7 @@ function fetchEventsForMonth(monthIndex, year) {
             
             if (eventsForDay.length > 0) {
                 // Add event marker to the day element
-                const eventMarker = document.createElement('span');
+                const eventMarker = document.createElement('nav');
                 eventMarker.className = `event-marker ${eventsForDay[0].category}`;
                 dayElem.appendChild(eventMarker);
                 
@@ -644,7 +644,7 @@ function closeModal(modalId) {
 // Toast notification function
 function showToast(message, type = 'info', duration = 5000) {
     const toastContainer = document.getElementById('toast-container');
-    const toast = document.createElement('div');
+    const toast = document.createElement('section');
     toast.className = `toast toast-${type}`;
     
     let icon = '';
@@ -663,10 +663,10 @@ function showToast(message, type = 'info', duration = 5000) {
     }
     
     toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
+        <section class="toast-icon">${icon}</section>
+        <section class="toast-content">
+            <section class="toast-message">${message}</section>
+        </section>
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
     

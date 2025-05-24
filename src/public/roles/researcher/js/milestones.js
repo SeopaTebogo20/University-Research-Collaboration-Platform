@@ -126,10 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Reset timeline
         milestonesTimeline.innerHTML = `
-            <div class="timeline-placeholder">
+            <section class="timeline-placeholder">
                 <i class="fas fa-tasks"></i>
                 <p>Select a project to view milestones</p>
-            </div>
+            </section>
         `;
         
         // Reset chart
@@ -250,7 +250,7 @@ async function loadCollaborators(project) {
     async function loadMilestones(projectId) {
         try {
             // Show loading state
-            milestonesTimeline.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</div>';
+            milestonesTimeline.innerHTML = '<section class="loading"><i class="fas fa-spinner fa-spin"></i> Loading milestones...</section>';
             
             // Fetch milestones for the selected project
             const response = await fetch(`${MILESTONES_API}?project_id=${projectId}`);
@@ -263,10 +263,10 @@ async function loadCollaborators(project) {
             
             if (milestones.length === 0) {
                 milestonesTimeline.innerHTML = `
-                    <div class="timeline-placeholder">
+                    <section class="timeline-placeholder">
                         <i class="fas fa-clipboard-list"></i>
                         <p>No milestones found for this project. Create a milestone to get started.</p>
-                    </div>
+                    </section>
                 `;
                 return;
             }
@@ -280,9 +280,9 @@ async function loadCollaborators(project) {
         } catch (error) {
             console.error('Error loading milestones:', error);
             milestonesTimeline.innerHTML = `
-                <div class="error">
+                <section class="error">
                     <i class="fas fa-exclamation-triangle"></i> Error loading milestones. Please try again later.
-                </div>
+                </section>
             `;
         }
     }
@@ -341,39 +341,39 @@ function displayMilestones(milestones) {
             assigneeDisplay = milestone.assignee_name;
         }
         
-        const milestoneElement = document.createElement('div');
+        const milestoneElement = document.createElement('section');
         milestoneElement.className = `timeline-milestone ${statusClass}`;
         milestoneElement.dataset.id = milestone.id;
         
         milestoneElement.innerHTML = `
-            <div class="timeline-milestone-header">
+            <section class="timeline-milestone-header">
                 <h3 class="milestone-title">${milestone.title}</h3>
-                <div class="milestone-actions">
+                <section class="milestone-actions">
                     <button class="action-btn edit-btn" title="Edit Milestone">
                         <i class="fas fa-edit"></i>
                     </button>
                     <button class="action-btn delete-btn" title="Delete Milestone">
                         <i class="fas fa-trash-alt"></i>
                     </button>
-                </div>
-            </div>
-            <div class="milestone-content">
+                </section>
+            </section>
+            <section class="milestone-content">
                 <p class="milestone-description">${milestone.description || 'No description provided.'}</p>
-                <div class="milestone-meta">
-                    <div class="meta-item">
+                <section class="milestone-meta">
+                    <section class="meta-item">
                         <i class="fas fa-calendar"></i>
-                        <span>${startDate} - ${endDate}</span>
-                    </div>
-                    <div class="meta-item">
+                        <nav>${startDate} - ${endDate}</nav>
+                    </section>
+                    <section class="meta-item">
                         <i class="fas fa-check"></i>
-                        <span>Status: ${capitalize(milestone.status || 'Pending')}</span>
-                    </div>
-                    <div class="meta-item">
+                        <nav>Status: ${capitalize(milestone.status || 'Pending')}</nav>
+                    </section>
+                    <section class="meta-item">
                         <i class="fas fa-user"></i>
-                        <span>Assignee: ${assigneeDisplay}</span>
-                    </div>
-                </div>
-            </div>
+                        <nav>Assignee: ${assigneeDisplay}</nav>
+                    </section>
+                </section>
+            </section>
         `;
         
         milestonesTimeline.appendChild(milestoneElement);
@@ -630,10 +630,10 @@ async function handleMilestoneFormSubmit(e) {
     function confirmDeleteMilestone(milestoneId, milestoneTitle) {
         document.getElementById('confirm-delete-btn').dataset.id = milestoneId;
         document.querySelector('.milestone-to-delete').innerHTML = `
-            <div class="delete-milestone-info">
+            <section class="delete-milestone-info">
                 <h3>${milestoneTitle || 'Unnamed Milestone'}</h3>
                 <p>Milestone ID: ${milestoneId}</p>
-            </div>
+            </section>
         `;
         
         deleteModal.style.display = 'block';
@@ -842,13 +842,13 @@ async function handleMilestoneFormSubmit(e) {
     // Utility function for notifications
     function showNotification(message, type = 'info') {
         // Create notification element
-        const notification = document.createElement('div');
+        const notification = document.createElement('section');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            <div class="notification-content">
+            <section class="notification-content">
                 <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
+                <nav>${message}</nav>
+            </section>
             <button class="notification-close"><i class="fas fa-times"></i></button>
         `;
         

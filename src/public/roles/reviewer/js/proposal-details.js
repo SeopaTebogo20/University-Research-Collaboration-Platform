@@ -147,7 +147,7 @@ function populateAttachments(attachments) {
         icon.className = getFileIconClass(attachment.type);
         link.prepend(icon);
         
-        const fileSize = document.createElement('span');
+        const fileSize = document.createElement('nav');
         fileSize.className = 'file-size';
         fileSize.textContent = attachment.size;
         
