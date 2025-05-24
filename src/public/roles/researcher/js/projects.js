@@ -585,19 +585,18 @@ async function removeCollaborator(projectId, userId) {
         }
     }
     
-    async function handleProjectFormSubmit(e) {
-        e.preventDefault();
-        
-        const projectId = document.getElementById('project-id').value;
-        const isNewProject = !projectId;
-        
-        // Get references to fields (using either original or renamed IDs)
-        const skillsField = document.getElementById('skills-and-expertise') || document.getElementById('skills');
-        const positionsField = document.getElementById('positions-required') || document.getElementById('positions');
-        
-        // Collect form data and match it to database fields
+async function handleProjectFormSubmit(e) {
+    e.preventDefault();
+    
+    // First ensure all additional fields are present
+    ensureAdditionalFields();
+    
+    const projectId = document.getElementById('project-id').value;
+    const isNewProject = !projectId;
+    
+    try {
+        // Get form values - using null-safe operators
         const projectData = {
-            // Primary fields
             researcher_name: document.getElementById('researcher-name').value,
             project_title: document.getElementById('project-title').value,
             description: document.getElementById('description').value,
@@ -606,73 +605,63 @@ async function removeCollaborator(projectId, userId) {
             end_date: document.getElementById('end-date').value,
             funding_available: document.getElementById('funding-available').checked,
             experience_level: document.getElementById('experience-level').value,
+            skills_and_expertise: document.getElementById('skills-and-expertise')?.value || '',
+            positions_required: document.getElementById('positions-required')?.value || '',
             technical_requirements: document.getElementById('technical-requirements').value,
-            
-            // Fields that might be renamed to match DB schema
-            skills_and_expertise: skillsField ? skillsField.value : '',
-            positions_required: positionsField ? positionsField.value : '',
-            
-            // Additional fields from schema
-            status: document.getElementById('status') ? document.getElementById('status').value : 'Active'
+            status: document.getElementById('status')?.value || 'Active',
+            userID: document.getElementById('userID')?.value || '',
+            department: document.getElementById('department')?.value || '',
+            userName: document.getElementById('userName')?.value || '',
+            reviewer: document.getElementById('reviewer')?.value || null,
+            assigned_proposal_status: 'pending',
+            Collaborators: [] // Initialize empty array for collaborators
         };
+
+        console.log('Submitting project data:', projectData); // Debug log
+
+        let response;
+        let url = PROJECTS_API;
+        let method = 'POST';
         
-        // Add optional fields if they exist
-        if (document.getElementById('userId')) {
-            projectData.userId = document.getElementById('userId').value;
-        }
-        
-        if (document.getElementById('department')) {
-            projectData.department = document.getElementById('department').value;
-        }
-        
-        if (document.getElementById('userName')) {
-            projectData.userName = document.getElementById('userName').value;
-        }
-        
-        if (document.getElementById('reviewer')) {
-            projectData.reviewer = document.getElementById('reviewer').value;
-        }
-        
-        try {
-            let response;
+        if (!isNewProject) {
+            url = `${PROJECTS_API}/${projectId}`;
+            method = 'PUT';
             
-            if (isNewProject) {
-                // Create new project
-                response = await fetch(PROJECTS_API, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(projectData),
-                });
-            } else {
-                // Update existing project
-                response = await fetch(`${PROJECTS_API}/${projectId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(projectData),
-                });
+            // For updates, get the existing project first to preserve collaborators
+            const existingResponse = await fetch(url);
+            if (existingResponse.ok) {
+                const existingProject = await existingResponse.json();
+                if (existingProject.Collaborators) {
+                    projectData.Collaborators = existingProject.Collaborators;
+                }
             }
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            // Close modal and reload projects
-            projectModal.style.display = 'none';
-            loadProjects();
-            
-            // Show success notification
-            showNotification(isNewProject ? 'Project created successfully!' : 'Project updated successfully!', 'success');
-            
-        } catch (error) {
-            console.error('Error saving project:', error);
-            showNotification('Error saving project. Please try again later.', 'error');
         }
+
+        response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(projectData),
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('API Error:', errorData); // Debug log
+            throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+        }
+        
+        // Close modal and reload projects
+        projectModal.style.display = 'none';
+        loadProjects();
+        
+        showNotification(isNewProject ? 'Project created successfully!' : 'Project updated successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error saving project:', error);
+        showNotification(`Error saving project: ${error.message}`, 'error');
     }
-    
+}
     function openInviteModal(projectId, projectTitle) {
         document.getElementById('invite-project-id').value = projectId;
         document.getElementById('invite-project-title').textContent = projectTitle;
@@ -1052,22 +1041,15 @@ async function sendInvitation(projectId, userId, userName) {
     }
     
 async function deleteProject() {
+    const projectId = document.getElementById('confirm-delete-btn').dataset.id;
+    
     try {
-        const projectId = this.dataset.id; // Get the ID from the button's dataset
-        
-        if (!projectId) {
-            throw new Error('No project ID provided for deletion');
-        }
-
         const response = await fetch(`${PROJECTS_API}/${projectId}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            }
         });
         
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+            const errorData = await response.json();
             throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
         }
         
@@ -1075,7 +1057,6 @@ async function deleteProject() {
         deleteModal.style.display = 'none';
         loadProjects();
         
-        // Show success notification
         showNotification('Project deleted successfully!', 'success');
         
     } catch (error) {

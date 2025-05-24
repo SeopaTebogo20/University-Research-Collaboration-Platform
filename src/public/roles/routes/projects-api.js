@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createClient } = require('@supabase/supabase-js');
+const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -15,27 +17,43 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
-// Generate a new project ID
+// Generate a unique project ID with timestamp and random components
 async function generateProjectId() {
   try {
-    // Get all projects
-    const { data: projects, error } = await supabase
+    // Get current date/time components
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2); // Last 2 digits of year
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    // Generate a random string component
+    const randomString = crypto.randomBytes(3).toString('hex').toUpperCase();
+    
+    // Generate a UUID and take first 6 characters
+    const uuidComponent = uuidv4().replace(/-/g, '').substring(0, 6).toUpperCase();
+    
+    // Combine all components to create a unique ID
+    const projectId = `PRJ-${day}-${hours}`;
+    
+    // Verify uniqueness in database (though collision is extremely unlikely)
+    const { data: existingProject, error } = await supabase
       .from('projects')
       .select('id')
-      .order('id', { ascending: false })
-      .limit(1);
+      .eq('id', projectId)
+      .maybeSingle();
     
     if (error) throw error;
     
-    if (projects && projects.length > 0) {
-      // Extract the numeric part of the last ID (assuming format is PRJ001, PRJ002, etc.)
-      const lastId = projects[0].id;
-      const numericPart = parseInt(lastId.replace('PRJ', ''));
-      return `PRJ${String(numericPart + 1).padStart(3, '0')}`;
-    } else {
-      // If no projects exist yet, start with PRJ001
-      return 'PRJ001';
+    if (existingProject) {
+      // If by some miracle this ID exists, recursively generate a new one
+      console.warn(`[${new Date().toISOString()}] ID collision detected for ${projectId}, generating new ID`);
+      return await generateProjectId();
     }
+    
+    return projectId;
   } catch (error) {
     console.error('Error generating project ID:', error);
     throw error;
