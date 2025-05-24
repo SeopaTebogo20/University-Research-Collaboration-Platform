@@ -708,3 +708,120 @@ input:checked + .toggle-slider:before {
 .btn-outline:active {
     transform: translateY(0);
 }
+/* Add to messages.css */
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notifications-list > div {
+    width: 100%;
+}
+/* Messages specific styles */
+.message-item {
+    display: flex;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background-color: var(--light-gray);
+    transition: all var(--transition-speed) ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.message-item.unread {
+    background-color: var(--light-purple);
+}
+
+.message-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--primary-purple);
+}
+
+.message-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.message-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    font-size: 1rem;
+    color: white;
+    background-color: var(--primary-purple);
+}
+
+.message-content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.message-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.message-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background-color: var(--warning-orange);
+    color: white;
+}
+
+.status-badge.accepted {
+    background-color: var(--success-green);
+    color: white;
+}
+
+.status-badge.declined {
+    background-color: var(--danger-red);
+    color: white;
+}
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}

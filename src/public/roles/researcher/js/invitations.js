@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const RECEIVED_INVITATIONS_ENDPOINT = `${API_BASE_URL}/received_invitations`;
   const SENT_INVITATIONS_ENDPOINT = `${API_BASE_URL}/project_invitations`; 
   const INVITATIONS_ENDPOINT = `${API_BASE_URL}/invitations`; // For operations like updating status
+const PROJECTS_API = `${API_BASE_URL}/projects`;
 
   // Tab switching logic
   tabs.forEach(tab => {
@@ -267,17 +268,17 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (invitation.status === 'declined') {
           statusBadge = '<span class="badge badge-danger">Declined</span>';
         } else if (invitation.status === 'cancelled') {
-          statusBadge = '<span class="badge badge-secondary">Cancelled</span>';
+          statusBadge = '<span class="badge badge-danger">Cancelled</span>';
         }
         
-        // Action buttons (only show cancel if pending)
+                // Action buttons (only show cancel if pending)
         let actionButtons = '';
         if (invitation.status === 'pending') {
-          actionButtons = `
-            <button class="btn btn-sm btn-danger cancel-invite-btn" data-invitation-id="${invitation.id}">
-              <i class="fas fa-ban mr-1"></i> Cancel
-            </button>
-          `;
+            actionButtons = `
+                <button class="btn btn-sm btn-danger cancel-invite-btn" data-invitation-id="${invitation.id}">
+                    <i class="fas fa-ban mr-1"></i> Cancel
+                </button>
+            `;
         }
         
         // Parse skills if they exist
@@ -660,60 +661,68 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
 
-  // Delete invitation from API
-  async function deleteInvitation(invitationId) {
+async function deleteInvitation(invitationId) {
     try {
-      // First try to delete on the server
-      const response = await fetch(`${INVITATIONS_ENDPOINT}/${invitationId}`, {
-        method: 'DELETE',
-      });
-      
-      // If the server request fails, update locally for demo purposes
-      if (!response.ok) {
-        console.warn('API call failed, updating state locally for demo purposes');
+        // First, get the invitation details
+        const invitationResponse = await fetch(`${SENT_INVITATIONS_ENDPOINT}/${invitationId}`);
+        if (!invitationResponse.ok) {
+            throw new Error('Failed to fetch invitation details');
+        }
+        const invitation = await invitationResponse.json();
+
+        // Update the invitation status to 'cancelled'
+        const updateResponse = await fetch(`${SENT_INVITATIONS_ENDPOINT}/${invitationId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                ...invitation,
+                status: 'cancelled'
+            }),
+        });
+
+        if (!updateResponse.ok) {
+            throw new Error('Failed to update invitation status');
+        }
+
         return true;
-      }
-      
-      return true;
     } catch (error) {
-      console.error('Error deleting invitation:', error);
-      // For demo purposes, allow the UI to update even if API fails
-      return true;
+        console.error('Error cancelling invitation:', error);
+        throw error;
     }
-  }
+}
   
-  // Cancel invitation handler (delete invitation)
-  confirmCancelBtn.addEventListener('click', async function() {
+confirmCancelBtn.addEventListener('click', async function() {
     if (!currentInvitationId) return;
     
     confirmCancelBtn.disabled = true;
     confirmCancelBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
     
     try {
-      // Instead of actually deleting, just update status to 'cancelled'
-      await updateInvitationStatus(currentInvitationId, 'cancelled', 'Invitation cancelled by sender');
-      
-      // Update local data
-      const index = sentInvitations.findIndex(inv => inv.id === currentInvitationId);
-      if (index !== -1) {
-        sentInvitations[index].status = 'cancelled';
-      }
-      
-      // Close modal and refresh view
-      cancelInvitationModal.classList.remove('active');
-      renderSentInvitations(statusFilterSent.value);
-      
-      showToast('Invitation cancelled successfully', 'success');
+        // Cancel the invitation
+        await deleteInvitation(currentInvitationId);
+        
+        // Update local data
+        const index = sentInvitations.findIndex(inv => inv.id === currentInvitationId);
+        if (index !== -1) {
+            sentInvitations[index].status = 'cancelled';
+        }
+        
+        // Close modal and refresh view
+        cancelInvitationModal.classList.remove('active');
+        renderSentInvitations(statusFilterSent.value);
+        
+        showToast('Invitation cancelled successfully', 'success');
     } catch (error) {
-      console.error('Error cancelling invitation:', error);
-      showToast('Failed to cancel invitation. Please try again.', 'error');
+        console.error('Error cancelling invitation:', error);
+        showToast('Failed to cancel invitation. Please try again.', 'error');
     } finally {
-      confirmCancelBtn.disabled = false;
-      confirmCancelBtn.innerHTML = 'Yes, Cancel Invitation';
-      currentInvitationId = null;
+        confirmCancelBtn.disabled = false;
+        confirmCancelBtn.innerHTML = 'Yes, Cancel Invitation';
+        currentInvitationId = null;
     }
-  });
-  
+});
   // Respond to invitation handlers
   acceptInvitationBtn.addEventListener('click', async function() {
     await respondToInvitation('accepted');

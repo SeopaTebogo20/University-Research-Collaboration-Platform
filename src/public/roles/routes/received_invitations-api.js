@@ -117,6 +117,15 @@ router.post('/', async (req, res) => {
       if (!newRecInv.invitedByEmail) {
         newRecInv.invitedByEmail = "245@wits.ac.za";
       }
+      // Set default status if not provided
+      if (!newRecInv.status) {
+        newRecInv.status = "pending"; // or whatever your default status should be
+      }
+      // Validate status value
+      if (newRecInv.status && !["pending", "accepted", "declined"].includes(newRecInv.status)) {
+        return res.status(400).json({ message: 'Invalid status value. Must be "pending", "accepted", or "declined"' });
+      }
+      
       // Insert received_invitations into Supabase
       const { data: createdreceived_invitations, error } = await supabase
         .from('received_invitations')
@@ -133,7 +142,7 @@ router.post('/', async (req, res) => {
       res.status(500).json({ message: 'Error creating received_invitations', error: error.message });
     }
   });
-
+  
   // PUT update existing received_invitations
 router.put('/:id', async (req, res) => {
     try {
