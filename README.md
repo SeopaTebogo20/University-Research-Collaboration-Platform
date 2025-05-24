@@ -16,18 +16,21 @@ https://github.com/SeopaTebogo20/University-Research-Collaboration-Platform.git
 1. git pull --no-rebase
 
 # How to correctly push to a new branch
-1. git checkout -b {name of your new branch}
-2. (check if you are in the new branch you created by running this command): git branch
+1. (check if you are in the new branch you created by running this command): git branch
 2. git add .
 3. git commit -m "Your commit message"
-4. git push origin {name of your new branch}
+4. git checkout -b {name of your new branch}
+5. git push origin {name of your new branch}
 
 ## HOW TO RUN THE PROJECT LOCALLY
  ## Run the following commands to install the necessary dependancies and to run the project
  1. npm install
  2. npm install express
  3. npm install express-session
- 4. node src/server.js
+ 4. npm install @supabase/supabase-js
+ 5. npm install jsonwebtoken
+ 6. npm install axios
+ 7. npm start or node src/server.js 
 
 ## Setup Instructions
 
