@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages - CollabNexus Research Hub</title>
-    <meta name="description" content="Messages for CollabNexus Research Hub">
+    <title>Notifications - CollabNexus Research Hub</title>
+    <meta name="description" content="Reviewer notifications for CollabNexus Research Hub">
     <meta name="author" content="CollabNexus">
     
-    <meta property="og:title" content="Messages - CollabNexus Research Hub">
-    <meta property="og:description" content="Messages center for CollabNexus Research Hub">
+    <meta property="og:title" content="Notifications - CollabNexus Research Hub">
+    <meta property="og:description" content="Notifications center for CollabNexus Research Hub">
     <meta property="og:type" content="website">
     <link rel="stylesheet" href="css/messages.css">
     <link rel="stylesheet" href="css/milestones3.css">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
+    <!-- Navigation Bar with notification badge -->
     <nav class="navbar">
         <a href="dashboard.html" class="logo">
             <i class="fas fa-book-open book-logo"></i>
@@ -31,23 +31,28 @@
             <li><a href="invitations.html"><i class="fas fa-users"></i> Invitations</a></li>
             <li><a href="funding.html"><i class="fas fa-hand-holding-usd"></i> Funding</a></li>
             <li><a href="aipage.html"><i class="fas fa-robot"></i> AI Suggestions</a></li>
-            <li><a href="messages.html" class="active"><i class="fas fa-envelope"></i> Messages</a></li>
+            <li>
+                <a href="messages.html" class="active">
+                    <i class="fas fa-bell"></i> Notifications
+                    <span class="notification-badge" id="notification-badge"></span>
+                </a>
+            </li>
         </ul>
         <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </nav>
 
     <main class="admin-proposal">
         <header class="proposal-header">
-            <h1>Messages</h1>
-            <p>View and manage messages from your project invitations and collaborations</p>
+            <h1>Notifications Center</h1>
+            <p>Stay updated on all activities related to your research collaborations</p>
         </header>
 
         <section class="notifications-wrapper">
             <aside class="notifications-sidebar">
                 <section class="notifications-controls">
-                    <h2>Filter Messages</h2>
+                    <h2>Filter Notifications</h2>
                     <form class="search-container">
-                        <input type="text" id="search-notifications" placeholder="Search messages...">
+                        <input type="text" id="search-notifications" placeholder="Search notifications...">
                         <button type="submit" class="search-icon" aria-label="Search">
                             <i class="fas fa-search"></i>
                         </button>
@@ -56,7 +61,10 @@
                         <button class="filter-tag active" data-filter="all">All</button>
                         <button class="filter-tag" data-filter="unread">Unread</button>
                         <button class="filter-tag" data-filter="assignment">Assignments</button>
+                        <button class="filter-tag" data-filter="collaboration">Collaborations</button>
                         <button class="filter-tag" data-filter="feedback">Feedback</button>
+                        <button class="filter-tag" data-filter="milestone">Milestones</button>
+                        <button class="filter-tag" data-filter="funding">Funding</button>
                         <button class="filter-tag" data-filter="system">System</button>
                     </nav>
                 </section>
@@ -70,47 +78,63 @@
                 </menu>
             </aside>
             
-            <div class="notifications-content">
-    <div id="today-section" class="date-section">
-        <h3 class="date-heading">Today</h3>
-        <div id="today-messages" class="messages-list"></div>
-    </div>
-    
-    <div id="yesterday-section" class="date-section">
-        <h3 class="date-heading">Yesterday</h3>
-        <div id="yesterday-messages" class="messages-list"></div>
-    </div>
-    
-    <div id="earlier-section" class="date-section">
-        <h3 class="date-heading">Earlier</h3>
-        <div id="earlier-messages" class="messages-list"></div>
-    </div>
-    
-    <div id="empty-messages" class="empty-state" style="display: none;">
-        <div class="empty-state-icon">
-            <i class="fas fa-inbox"></i>
-        </div>
-        <h3>No messages found</h3>
-        <p>You don't have any messages matching your current filters.</p>
-    </div>
-</div>
+            <section class="notifications-content">
+                <article class="date-section" id="today-section">
+                    <h3 class="date-heading">Today</h3>
+                    <ul class="notifications-list" id="today-notifications">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </article>
+                
+                <article class="date-section" id="yesterday-section">
+                    <h3 class="date-heading">Yesterday</h3>
+                    <ul class="notifications-list" id="yesterday-notifications">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </article>
+                
+                <article class="date-section" id="earlier-section">
+                    <h3 class="date-heading">Earlier</h3>
+                    <ul class="notifications-list" id="earlier-notifications">
+                        <!-- Will be populated by JavaScript -->
+                    </ul>
+                </article>
+                
+                <article class="empty-state" id="empty-notifications" style="display: none;">
+                    <figure class="empty-state-icon">
+                        <i class="fas fa-bell-slash"></i>
+                    </figure>
+                    <h3>No Notifications Found</h3>
+                    <p>You're all caught up! No notifications match your current filters.</p>
+                </article>
+                
+                <nav class="pagination">
+                    <button class="pagination-btn" id="prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span class="pagination-info" id="pagination-info">Page 1 of 1</span>
+                    <button class="pagination-btn" id="next-page" disabled>
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </nav>
+            </section>
         </section>
     </main>
     
-    <!-- Message Detail Modal -->
+    <!-- Notification Detail Modal -->
     <dialog class="modal notification-modal">
         <article class="modal-content">
             <header class="modal-header">
-                <h2 id="notification-modal-title">Message Details</h2>
+                <h2 id="notification-modal-title">Notification Details</h2>
                 <button class="close-modal" aria-label="Close modal">×</button>
             </header>
             <section class="modal-body">
                 <header class="notification-detail-header">
                     <figure class="notification-icon" id="modal-notification-icon">
-                        <i class="fas fa-envelope"></i>
+                        <i class="fas fa-bell"></i>
                     </figure>
                     <section class="notification-meta">
-                        <h3 id="modal-notification-title">Message Title</h3>
+                        <h3 id="modal-notification-title">Notification Title</h3>
                         <time class="notification-timestamp" id="modal-notification-time">Time</time>
                     </section>
                 </header>
@@ -119,17 +143,17 @@
                 </article>
                 <menu class="notification-actions">
                     <button class="btn btn-outline" id="modal-dismiss">Dismiss</button>
-                    <button class="btn btn-primary" id="modal-action">View Project</button>
+                    <button class="btn btn-primary" id="modal-action" style="display: none;">Take Action</button>
                 </menu>
             </section>
         </article>
     </dialog>
     
-    <!-- Message Settings Modal -->
+    <!-- Notification Settings Modal -->
     <dialog class="modal settings-modal">
         <article class="modal-content">
             <header class="modal-header">
-                <h2>Message Settings</h2>
+                <h2>Notification Settings</h2>
                 <button class="close-modal" aria-label="Close modal">×</button>
             </header>
             <section class="modal-body">
@@ -138,8 +162,8 @@
                         <legend><h3>Email Notifications</h3></legend>
                         <section class="setting-item">
                             <section class="setting-info">
-                                <label for="email-new-assignments">New Messages</label>
-                                <p class="setting-description">Receive emails when new messages are sent to you</p>
+                                <label for="email-new-assignments">New Assignments</label>
+                                <p class="setting-description">Receive emails when new proposals are assigned to you</p>
                             </section>
                             <section class="setting-control">
                                 <label class="toggle">
@@ -150,8 +174,8 @@
                         </section>
                         <section class="setting-item">
                             <section class="setting-info">
-                                <label for="email-deadlines">Project Updates</label>
-                                <p class="setting-description">Receive email notifications about project-related updates</p>
+                                <label for="email-deadlines">Deadline Reminders</label>
+                                <p class="setting-description">Receive email reminders about upcoming deadlines</p>
                             </section>
                             <section class="setting-control">
                                 <label class="toggle">
@@ -162,8 +186,8 @@
                         </section>
                         <section class="setting-item">
                             <section class="setting-info">
-                                <label for="email-feedback">Collaboration Requests</label>
-                                <p class="setting-description">Receive emails about new collaboration opportunities</p>
+                                <label for="email-feedback">Feedback Responses</label>
+                                <p class="setting-description">Receive emails when researchers respond to your feedback</p>
                             </section>
                             <section class="setting-control">
                                 <label class="toggle">
@@ -179,7 +203,7 @@
                         <section class="setting-item">
                             <section class="setting-info">
                                 <label for="system-all">Enable All Notifications</label>
-                                <p class="setting-description">Enable or disable all in-app message notifications</p>
+                                <p class="setting-description">Enable or disable all in-app notifications</p>
                             </section>
                             <section class="setting-control">
                                 <label class="toggle">
@@ -191,7 +215,7 @@
                         <section class="setting-item">
                             <section class="setting-info">
                                 <label for="system-sound">Notification Sounds</label>
-                                <p class="setting-description">Play a sound when you receive a new message</p>
+                                <p class="setting-description">Play a sound when you receive a new notification</p>
                             </section>
                             <section class="setting-control">
                                 <label class="toggle">
@@ -213,78 +237,45 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <section class="container">
-            <section class="footer-content">
-                <article class="footer-column">
-                    <header class="footer-logo">
-                        <i class="fas fa-book-open book-logo"></i>
-                        CollabNexus
-                    </header>
-                    <p>Connecting researchers, advancing science, and accelerating discoveries through collaborative innovation.</p>
-                </article>
-                <article class="footer-column">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="dashboard.html">Dashboard</a></li>
-                        <li><a href="projects.html">Projects</a></li>
-                        <li><a href="invitations.html">Invitations</a></li>
-                        <li><a href="funding.html">Funding</a></li>
-                    </ul>
-                </article>
-                <article class="footer-column">
-                    <h3>Support</h3>
-                    <ul>
-                        <li><a href="help.html">Help Center</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
-                        <li><a href="privacy.html">Privacy Policy</a></li>
-                        <li><a href="terms.html">Terms of Service</a></li>
-                    </ul>
-                </article>
-                <article class="footer-column">
-                    <h3>Connect</h3>
-                    <section class="social-links">
-                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
-                        <a href="#" aria-label="Email"><i class="fas fa-envelope"></i></a>
-                    </section>
-                </article>
-            </section>
-            <section class="footer-bottom">
-                <p>&copy; 2025 CollabNexus Research Hub. All rights reserved.</p>
-            </section>
-        </section>
+            <section class="container">
+      <nav class="footer-content">
+        <article class="footer-column">
+          <h3 class="footer-logo">
+            <i class="fas fa-book-open book-logo"></i>
+            CollabNexus
+          </h3>
+          <p>A platform for collaborative research and knowledge sharing.</p>
+        </article>
+        <article class="footer-column">
+          <h3>Resources</h3>
+          <ul class="footer-links">
+            <li><a href="#">Reviewer Guidelines</a></li>
+            <li><a href="#">Best Practices</a></li>
+            <li><a href="#">FAQs</a></li>
+          </ul>
+        </article>
+        <article class="footer-column">
+          <h3>Support</h3>
+          <ul class="footer-links">
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Report Issue</a></li>
+          </ul>
+        </article>
+        <article class="footer-column">
+          <h3>Legal</h3>
+          <ul class="footer-links">
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+          </ul>
+        </article>
+      </nav>
+      <p class="footer-bottom">© 2025 CollabNexus Research Hub. All rights reserved.</p>
+    </section>
     </footer>
-
-    <!-- Add CSS for status badges -->
-    <style>
-        .status-badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.75rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-left: 0.5rem;
-        }
-        
-        .status-badge.pending {
-            background-color: #FEF3C7;
-            color: #D97706;
-        }
-        
-        .status-badge.accepted {
-            background-color: #D1FAE5;
-            color: #065F46;
-        }
-        
-        .status-badge.declined {
-            background-color: #FEE2E2;
-            color: #DC2626;
-        }
-    </style>
-
-    <!-- JavaScript -->
-
+    
+    <script src="js/messaging.js"></script>
     <script src="../../js/auth.js"></script>
 </body>
 </html>
