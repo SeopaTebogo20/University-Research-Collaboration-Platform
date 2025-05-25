@@ -617,8 +617,6 @@ async function handleProjectFormSubmit(e) {
             Collaborators: [] // Initialize empty array for collaborators
         };
 
-        console.log('Submitting project data:', projectData); // Debug log
-
         let response;
         let url = PROJECTS_API;
         let method = 'POST';
