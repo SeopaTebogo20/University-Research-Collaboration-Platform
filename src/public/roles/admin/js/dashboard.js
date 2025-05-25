@@ -61,9 +61,9 @@ async function loadDashboardData() {
         
         // Update dashboard statistics with mock data
         updateDashboardStats({
-            totalUsers: 248,
-            activeProposals: 42,
-            pendingReviews: 17,
+            totalUsers: 7,
+            activeProposals: 4,
+            pendingReviews: 2,
             systemHealth: 98
         });
         
