@@ -36,7 +36,7 @@ async function generateProjectId() {
     const uuidComponent = uuidv4().replace(/-/g, '').substring(0, 6).toUpperCase();
     
     // Combine all components to create a unique ID
-    const projectId = `PRJ-${day}-${hours}`;
+    const projectId = `PRJ-${minutes}-${seconds}`;
     
     // Verify uniqueness in database (though collision is extremely unlikely)
     const { data: existingProject, error } = await supabase
