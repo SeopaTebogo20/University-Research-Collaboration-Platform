@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Display loading state
             document.getElementById('funding-records-body').innerHTML = `
                 <tr>
-                    <td colnav="8" style="text-align: center;">
+                    <td colspan="8" style="text-align: center;">
                         <nav class="loading-indicator" style="min-height: 100px;">
                             <i class="fas fa-spinner fa-spin"></i>
                             <p>Loading funding records...</p>
@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error loading funding records:', error);
             document.getElementById('funding-records-body').innerHTML = `
                 <tr>
-                    <td colnav="8" style="text-align: center;">
+                    <td colspan="8" style="text-align: center;">
                         <nav class="error-message" style="padding: 2rem;">
                             <i class="fas fa-exclamation-triangle"></i>
                             <p>Error loading funding records. Please try again later.</p>
