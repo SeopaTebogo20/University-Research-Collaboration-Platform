@@ -115,7 +115,7 @@ function initializeCalendar() {
             
             if (eventsForDay.length > 0) {
                 // Add event marker to the day element
-                const eventMarker = document.createElement('span');
+                const eventMarker = document.createElement('nav');
                 eventMarker.className = `event-marker ${eventsForDay[0].category}`;
                 dayElem.appendChild(eventMarker);
                 
@@ -148,18 +148,18 @@ function populateUpcomingDeadlines(events) {
         deadlineItem.className = 'deadline-item';
         
         deadlineItem.innerHTML = `
-            <div class="deadline-date">
-                <span class="day">${day}</span>
-                <span class="month">${month}</span>
-            </div>
-            <div class="deadline-info">
+            <section class="deadline-date">
+                <nav class="day">${day}</nav>
+                <nav class="month">${month}</nav>
+            </section>
+            <section class="deadline-info">
                 <h4>${event.title}</h4>
                 <p>Due in ${daysUntil} days</p>
-            </div>
-            <div class="deadline-status ${event.category}">
+            </section>
+            <section class="deadline-status ${event.category}">
                 <i class="fas fa-${event.category === 'urgent' ? 'exclamation-circle' : 'clock'}"></i>
                 ${event.category === 'urgent' ? 'Urgent' : 'Upcoming'}
-            </div>
+            </section>
         `;
         
         deadlinesList.appendChild(deadlineItem);
@@ -398,7 +398,7 @@ function setupEventListeners() {
 // Toast notification function
 function showToast(message, type = 'info', duration = 5000) {
     const toastContainer = document.getElementById('toast-container');
-    const toast = document.createElement('div');
+    const toast = document.createElement('section');
     toast.className = `toast toast-${type}`;
     
     let icon = '';
@@ -417,10 +417,10 @@ function showToast(message, type = 'info', duration = 5000) {
     }
     
     toast.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
+        <section class="toast-icon">${icon}</section>
+        <section class="toast-content">
+            <section class="toast-message">${message}</section>
+        </section>
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
     

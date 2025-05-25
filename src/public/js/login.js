@@ -59,7 +59,7 @@ function createResendLink(email) {
   }
   
   // Create new link
-  resendVerificationLink = document.createElement('div');
+  resendVerificationLink = document.createElement('section');
   resendVerificationLink.className = 'resend-verification';
   resendVerificationLink.innerHTML = `
     <p>Didn't receive verification email? <a href="#" id="resendLink">Resend it</a></p>

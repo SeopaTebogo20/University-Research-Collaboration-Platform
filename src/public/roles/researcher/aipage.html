@@ -35,27 +35,27 @@
     <!-- Main Content -->
     <main class="admin-proposal">
         <section  class="proposal-header">
-            <div class="page-title-container">
+            <section class="page-title-container">
                 <h1 class="page-title">AI Collaboration Suggestions</h1>
                 <p class="page-subtitle">Discover new opportunities personalized for your research profile.</p>
-            </div>
-            <div class="ai-actions">
+            </section>
+            <section class="ai-actions">
                 <button id="refresh-suggestions-btn" class="btn btn-secondary">
                     <i class="fas fa-sync-alt"></i> Refresh Suggestions
                 </button>
                 <button id="ai-settings-btn" class="btn btn-primary">
                     <i class="fas fa-cog"></i> AI Settings
                 </button>
-            </div>
+            </section>
         </section>
 
         <section class="ai-content">
-            <div class="ai-sidebar">
-                <div class="ai-filters">
+            <section class="ai-sidebar">
+                <section class="ai-filters">
                     <h3>Filter Suggestions</h3>
-                    <div class="filter-group">
+                    <section class="filter-group">
                         <label>Category</label>
-                        <div class="filter-options">
+                        <section class="filter-options">
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="category" value="collaboration" checked> Collaborations
                             </label>
@@ -71,11 +71,11 @@
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="category" value="papers" checked> Papers
                             </label>
-                        </div>
-                    </div>
-                    <div class="filter-group">
+                        </section>
+                    </section>
+                    <section class="filter-group">
                         <label>Priority</label>
-                        <div class="filter-options">
+                        <section class="filter-options">
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="priority" value="high" checked> High
                             </label>
@@ -85,11 +85,11 @@
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="priority" value="low" checked> Low
                             </label>
-                        </div>
-                    </div>
-                    <div class="filter-group">
+                        </section>
+                    </section>
+                    <section class="filter-group">
                         <label>Time Horizon</label>
-                        <div class="filter-options">
+                        <section class="filter-options">
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="timeframe" value="immediate" checked> Immediate
                             </label>
@@ -99,171 +99,171 @@
                             <label class="filter-checkbox">
                                 <input type="checkbox" name="timeframe" value="long-term" checked> Long-term
                             </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="ai-stats">
+                        </section>
+                    </section>
+                </section>
+                <section class="ai-stats">
                     <h3>AI Insights</h3>
-                    <div class="stat-item">
-                        <div class="stat-label">Research Alignment</div>
-                        <div class="progress-bar">
-                            <div class="progress-value" style="width: 85%;"></div>
-                        </div>
-                        <div class="stat-value">85%</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Collaboration Potential</div>
-                        <div class="progress-bar">
-                            <div class="progress-value" style="width: 72%;"></div>
-                        </div>
-                        <div class="stat-value">72%</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Funding Match Score</div>
-                        <div class="progress-bar">
-                            <div class="progress-value" style="width: 63%;"></div>
-                        </div>
-                        <div class="stat-value">63%</div>
-                    </div>
-                </div>
-            </div>
+                    <section class="stat-item">
+                        <section class="stat-label">Research Alignment</section>
+                        <section class="progress-bar">
+                            <section class="progress-value" style="width: 85%;"></section>
+                        </section>
+                        <section class="stat-value">85%</section>
+                    </section>
+                    <section class="stat-item">
+                        <section class="stat-label">Collaboration Potential</section>
+                        <section class="progress-bar">
+                            <section class="progress-value" style="width: 72%;"></section>
+                        </section>
+                        <section class="stat-value">72%</section>
+                    </section>
+                    <section class="stat-item">
+                        <section class="stat-label">Funding Match Score</section>
+                        <section class="progress-bar">
+                            <section class="progress-value" style="width: 63%;"></section>
+                        </section>
+                        <section class="stat-value">63%</section>
+                    </section>
+                </section>
+            </section>
             
-            <div class="ai-main">
-                <div class="ai-search-bar">
-                    <div class="search-input">
+            <section class="ai-main">
+                <section class="ai-search-bar">
+                    <section class="search-input">
                         <i class="fas fa-search"></i>
                         <input type="text" id="suggestion-search" placeholder="Search suggestions...">
-                    </div>
-                    <div class="search-sorting">
+                    </section>
+                    <section class="search-sorting">
                         <label for="suggestion-sort">Sort by:</label>
                         <select id="suggestion-sort">
                             <option value="relevance">Relevance</option>
                             <option value="recent">Most Recent</option>
                             <option value="priority">Priority</option>
                         </select>
-                    </div>
-                </div>
+                    </section>
+                </section>
                 
-                <div id="suggestions-container" class="suggestions-container">
-                    <div class="loading-container">
-                        <div class="ai-loading">
-                            <div class="ai-loading-animation">
+                <section id="suggestions-container" class="suggestions-container">
+                    <section class="loading-container">
+                        <section class="ai-loading">
+                            <section class="ai-loading-animation">
                                 <i class="fas fa-robot"></i>
-                                <div class="thinking-dots">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </div>
-                            </div>
+                                <section class="thinking-dots">
+                                    <nav></nav>
+                                    <nav></nav>
+                                    <nav></nav>
+                                </section>
+                            </section>
                             <p>Analyzing your research profile and generating personalized suggestions...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                        </section>
+                    </section>
+                </section>
+            </section>
         </section>
     </main>
 
     <!-- AI Settings Modal -->
-    <div id="ai-settings-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
+    <section id="ai-settings-modal" class="modal">
+        <section class="modal-content">
+            <section class="modal-header">
                 <h3>AI Suggestion Settings</h3>
                 <button class="close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-section">
+            </section>
+            <section class="modal-body">
+                <section class="settings-section">
                     <h4>Suggestion Types</h4>
-                    <div class="settings-options">
+                    <section class="settings-options">
                         <label class="settings-switch">
                             <input type="checkbox" name="suggestion-type" value="collaboration" checked>
-                            <span class="switch-slider"></span>
-                            <span class="switch-label">Collaborations</span>
+                            <nav class="switch-slider"></nav>
+                            <nav class="switch-label">Collaborations</nav>
                         </label>
                         <label class="settings-switch">
                             <input type="checkbox" name="suggestion-type" value="funding" checked>
-                            <span class="switch-slider"></span>
-                            <span class="switch-label">Funding Opportunities</span>
+                            <nav class="switch-slider"></nav>
+                            <nav class="switch-label">Funding Opportunities</nav>
                         </label>
                         <label class="settings-switch">
                             <input type="checkbox" name="suggestion-type" value="papers" checked>
-                            <span class="switch-slider"></span>
-                            <span class="switch-label">Research Papers</span>
+                            <nav class="switch-slider"></nav>
+                            <nav class="switch-label">Research Papers</nav>
                         </label>
                         <label class="settings-switch">
                             <input type="checkbox" name="suggestion-type" value="events" checked>
-                            <span class="switch-slider"></span>
-                            <span class="switch-label">Conferences & Events</span>
+                            <nav class="switch-slider"></nav>
+                            <nav class="switch-label">Conferences & Events</nav>
                         </label>
                         <label class="settings-switch">
                             <input type="checkbox" name="suggestion-type" value="resources" checked>
-                            <span class="switch-slider"></span>
-                            <span class="switch-label">Resources & Tools</span>
+                            <nav class="switch-slider"></nav>
+                            <nav class="switch-label">Resources & Tools</nav>
                         </label>
-                    </div>
-                </div>
+                    </section>
+                </section>
                 
-                <div class="settings-section">
+                <section class="settings-section">
                     <h4>Research Areas of Interest</h4>
-                    <div class="tag-input-container">
-                        <div class="tag-input-field">
+                    <section class="tag-input-container">
+                        <section class="tag-input-field">
                             <input type="text" id="research-area-input" placeholder="Add a research area...">
                             <button id="add-research-area-btn"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <div id="research-areas-tags" class="tags-container">
-                            <span class="tag">Artificial Intelligence<button class="remove-tag">&times;</button></span>
-                            <span class="tag">Machine Learning<button class="remove-tag">&times;</button></span>
-                            <span class="tag">Quantum Computing<button class="remove-tag">&times;</button></span>
-                            <span class="tag">Data Science<button class="remove-tag">&times;</button></span>
-                        </div>
-                    </div>
-                </div>
+                        </section>
+                        <section id="research-areas-tags" class="tags-container">
+                            <nav class="tag">Artificial Intelligence<button class="remove-tag">&times;</button></nav>
+                            <nav class="tag">Machine Learning<button class="remove-tag">&times;</button></nav>
+                            <nav class="tag">Quantum Computing<button class="remove-tag">&times;</button></nav>
+                            <nav class="tag">Data Science<button class="remove-tag">&times;</button></nav>
+                        </section>
+                    </section>
+                </section>
                 
-                <div class="settings-section">
+                <section class="settings-section">
                     <h4>AI Model Preferences</h4>
-                    <div class="settings-options">
-                        <div class="settings-slider">
-                            <label>Creativity <span id="creativity-value">Medium</span></label>
+                    <section class="settings-options">
+                        <section class="settings-slider">
+                            <label>Creativity <nav id="creativity-value">Medium</nav></label>
                             <input type="range" id="creativity-slider" min="1" max="3" value="2">
-                            <div class="slider-labels">
-                                <span>Conservative</span>
-                                <span>Balanced</span>
-                                <span>Exploratory</span>
-                            </div>
-                        </div>
+                            <section class="slider-labels">
+                                <nav>Conservative</nav>
+                                <nav>Balanced</nav>
+                                <nav>Exploratory</nav>
+                            </section>
+                        </section>
                         
-                        <div class="settings-slider">
-                            <label>Suggestion Frequency <span id="frequency-value">Weekly</span></label>
+                        <section class="settings-slider">
+                            <label>Suggestion Frequency <nav id="frequency-value">Weekly</nav></label>
                             <input type="range" id="frequency-slider" min="1" max="3" value="2">
-                            <div class="slider-labels">
-                                <span>Monthly</span>
-                                <span>Weekly</span>
-                                <span>Daily</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
+                            <section class="slider-labels">
+                                <nav>Monthly</nav>
+                                <nav>Weekly</nav>
+                                <nav>Daily</nav>
+                            </section>
+                        </section>
+                    </section>
+                </section>
+            </section>
+            <section class="modal-footer">
                 <button id="reset-settings-btn" class="btn btn-secondary">Reset to Default</button>
                 <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
-            </div>
-        </div>
-    </div>
+            </section>
+        </section>
+    </section>
 
     <!-- Suggestion Detail Modal -->
-    <div id="suggestion-detail-modal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
+    <section id="suggestion-detail-modal" class="modal">
+        <section class="modal-content modal-lg">
+            <section class="modal-header">
                 <h3 id="detail-title">Suggestion Details</h3>
                 <button class="close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="suggestion-detail-content">
+            </section>
+            <section class="modal-body">
+                <section id="suggestion-detail-content">
                     <!-- Content will be dynamically populated -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div class="feedback-buttons">
+                </section>
+            </section>
+            <section class="modal-footer">
+                <section class="feedback-buttons">
                     <button id="reject-suggestion-btn" class="btn btn-text">
                         <i class="fas fa-thumbs-down"></i> Not Relevant
                     </button>
@@ -273,13 +273,13 @@
                     <button id="take-action-btn" class="btn btn-primary">
                         <i class="fas fa-check"></i> Take Action
                     </button>
-                </div>
-            </div>
-        </div>
-    </div>
+                </section>
+            </section>
+        </section>
+    </section>
 
     <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
+    <section id="toast-container" class="toast-container"></section>
 
 <!-- Footer -->
 <footer class="footer">

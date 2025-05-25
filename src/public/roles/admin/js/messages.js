@@ -188,22 +188,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create notification HTML
     function createNotificationElement(notification) {
-        const notifItem = document.createElement('div');
+        const notifItem = document.createElement('section');
         notifItem.className = `notification-item ${notification.unread ? 'unread' : ''}`;
         notifItem.dataset.id = notification.id;
         notifItem.dataset.type = notification.type;
         
         notifItem.innerHTML = `
-            <div class="notification-icon ${notification.type}">
+            <section class="notification-icon ${notification.type}">
                 <i class="fas ${getIconForType(notification.type)}"></i>
-            </div>
-            <div class="notification-content">
+            </section>
+            <section class="notification-content">
                 <h4 class="notification-title">${notification.title}</h4>
                 <p class="notification-message">${notification.message}</p>
-                <div class="notification-meta">
-                    <span class="notification-timestamp">${formatTimestamp(notification.timestamp)}</span>
-                </div>
-            </div>
+                <section class="notification-meta">
+                    <nav class="notification-timestamp">${formatTimestamp(notification.timestamp)}</nav>
+                </section>
+            </section>
         `;
         
         // Add click event to open the notification detail modal

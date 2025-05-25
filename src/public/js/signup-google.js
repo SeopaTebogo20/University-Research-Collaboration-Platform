@@ -86,15 +86,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // Create profile information display
         const profileHTML = `
-            <div class="google-profile">
-                <div class="profile-image">
+            <section class="google-profile">
+                <section class="profile-image">
                     <img src="${profile.picture}" alt="${profile.name}" class="profile-pic">
-                </div>
-                <div class="profile-info">
+                </section>
+                <section class="profile-info">
                     <h3>${profile.name}</h3>
                     <p>${profile.email}</p>
-                </div>
-            </div>
+                </section>
+            </section>
         `;
         
         googleProfileInfo.innerHTML = profileHTML;
@@ -203,12 +203,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
             
             if (!isValid) {
-                formStatus.innerHTML = `<div class="error">Please correct the errors before submitting.</div>`;
+                formStatus.innerHTML = `<section class="error">Please correct the errors before submitting.</section>`;
                 return;
             }
             
             // Show loading status
-            formStatus.innerHTML = `<div class="info">Processing your information...</div>`;
+            formStatus.innerHTML = `<section class="info">Processing your information...</section>`;
             
             // Gather form data
             const formData = new FormData(form);
@@ -249,11 +249,11 @@ document.addEventListener('DOMContentLoaded', async function() {
                             });
                         }
                         
-                        formStatus.innerHTML = `<div class="error">${result.message || 'An error occurred'}</div>`;
+                        formStatus.innerHTML = `<section class="error">${result.message || 'An error occurred'}</section>`;
                     } else {
                         // Handle non-JSON responses
                         const errorText = await response.text();
-                        formStatus.innerHTML = `<div class="error">Server error: ${response.status} ${response.statusText}</div>`;
+                        formStatus.innerHTML = `<section class="error">Server error: ${response.status} ${response.statusText}</section>`;
                         console.error('Server error response:', errorText);
                     }
                     return;
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const result = await response.json();
                 
                 // Success - show success message and redirect
-                formStatus.innerHTML = `<div class="success">${result.message || 'Account created successfully!'}</div>`;
+                formStatus.innerHTML = `<section class="success">${result.message || 'Account created successfully!'}</section>`;
                 
                 // Save authentication data - Store user in a consistent way to match auth.js
                 if (result.user) {
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 
             } catch (error) {
                 console.error('Error submitting form:', error);
-                formStatus.innerHTML = `<div class="error">An unexpected error occurred. Please try again.</div>`;
+                formStatus.innerHTML = `<section class="error">An unexpected error occurred. Please try again.</section>`;
             }
         });
     }
@@ -294,10 +294,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         if (!googleProfile) {
             formStatus.innerHTML = `
-                <div class="error">
+                <section class="error">
                     Unable to retrieve your Google profile information. 
                     <a href="/auth/google">Try logging in with Google again</a>
-                </div>
+                </section>
             `;
         }
     } catch (error) {

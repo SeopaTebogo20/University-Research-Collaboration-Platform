@@ -157,7 +157,7 @@ async function loadCollaborators() {
           }
         ],
         projects: [
-          "Climate Change Effects on Coral Reef Biodiversity",
+          "Climate Change Effects on Coral Reef Biosectionersity",
           "Restoration Ecology in Marine Ecosystems",
           "Sustainable Management of Coastal Resources"
         ]
@@ -357,57 +357,57 @@ function renderCollaborators() {
   
   if (filteredCollaborators.length === 0) {
     container.innerHTML = `
-      <div class="col-span-full text-center py-12">
-        <div class="text-6xl mb-4 text-gray-300">
+      <section class="col-nav-full text-center py-12">
+        <section class="text-6xl mb-4 text-gray-300">
           <i class="fas fa-users"></i>
-        </div>
+        </section>
         <h3 class="text-xl font-semibold text-gray-500">No Collaborators Found</h3>
         <p class="text-gray-400 mt-2">Try changing your search criteria or filters</p>
-      </div>
+      </section>
     `;
     return;
   }
   
   filteredCollaborators.forEach(collaborator => {
-    const collaboratorCard = document.createElement('div');
+    const collaboratorCard = document.createElement('section');
     collaboratorCard.className = 'collaborator-card';
     collaboratorCard.innerHTML = `
-      <div class="collaborator-header">
-        <div class="collaborator-avatar">
+      <section class="collaborator-header">
+        <section class="collaborator-avatar">
           ${getInitials(collaborator.name)}
-        </div>
+        </section>
         <h3 class="collaborator-name">${collaborator.name}</h3>
         <p class="collaborator-title">${collaborator.title}</p>
-      </div>
+      </section>
       
-      <div class="collaborator-body">
-        <div class="collaborator-info">
-          <div class="collaborator-info-label">Institution</div>
-          <div class="collaborator-info-value">${collaborator.institution}</div>
-        </div>
+      <section class="collaborator-body">
+        <section class="collaborator-info">
+          <section class="collaborator-info-label">Institution</section>
+          <section class="collaborator-info-value">${collaborator.institution}</section>
+        </section>
         
-        <div class="collaborator-info">
-          <div class="collaborator-info-label">Department</div>
-          <div class="collaborator-info-value">${collaborator.department}</div>
-        </div>
+        <section class="collaborator-info">
+          <section class="collaborator-info-label">Department</section>
+          <section class="collaborator-info-value">${collaborator.department}</section>
+        </section>
         
-        <div class="collaborator-info">
-          <div class="collaborator-info-label">Research Focus</div>
-          <div class="collaborator-info-value">${truncateText(collaborator.bio, 100)}</div>
-        </div>
+        <section class="collaborator-info">
+          <section class="collaborator-info-label">Research Focus</section>
+          <section class="collaborator-info-value">${truncateText(collaborator.bio, 100)}</section>
+        </section>
         
-        <div class="collaborator-info">
-          <div class="collaborator-info-label">Skills & Expertise</div>
-          <div class="collaborator-skills">
+        <section class="collaborator-info">
+          <section class="collaborator-info-label">Skills & Expertise</section>
+          <section class="collaborator-skills">
             ${collaborator.skills.slice(0, 4).map(skill => 
-              `<div class="collaborator-skill">${skill}</div>`
+              `<section class="collaborator-skill">${skill}</section>`
             ).join('')}
-            ${collaborator.skills.length > 4 ? `<div class="collaborator-skill">+${collaborator.skills.length - 4} more</div>` : ''}
-          </div>
-        </div>
-      </div>
+            ${collaborator.skills.length > 4 ? `<section class="collaborator-skill">+${collaborator.skills.length - 4} more</section>` : ''}
+          </section>
+        </section>
+      </section>
       
-      <div class="collaborator-footer">
+      <section class="collaborator-footer">
         <button class="collaborator-action collaborator-view" data-id="${collaborator.id}">
           <i class="fas fa-user mr-2"></i> View Profile
         </button>
@@ -420,7 +420,7 @@ function renderCollaborators() {
             <i class="fas fa-user-plus mr-2"></i> Invite
           </button>
         `}
-      </div>
+      </section>
     `;
     
     container.appendChild(collaboratorCard);
@@ -504,37 +504,37 @@ function viewResearcherProfile(researcherId) {
   
   const profileContent = document.getElementById('profile-content');
   profileContent.innerHTML = `
-    <div class="collaborator-profile">
-      <div class="profile-header">
-        <div class="profile-avatar">
+    <section class="collaborator-profile">
+      <section class="profile-header">
+        <section class="profile-avatar">
           ${getInitials(researcher.name)}
-        </div>
+        </section>
         <h2 class="profile-name">${researcher.name}</h2>
         <p class="profile-title">${researcher.title}</p>
         <p class="text-center">
           <i class="fas fa-map-marker-alt mr-1"></i> ${researcher.location}
         </p>
         
-        <div class="profile-stats">
-          <div class="profile-stat">
-            <div class="profile-stat-value">${researcher.publications}</div>
-            <div class="profile-stat-label">Publications</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat-value">${researcher.citations}</div>
-            <div class="profile-stat-label">Citations</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat-value">${researcher.projects}</div>
-            <div class="profile-stat-label">Projects</div>
-          </div>
-          <div class="profile-stat">
-            <div class="profile-stat-value">${researcher.collaborations}</div>
-            <div class="profile-stat-label">Collaborations</div>
-          </div>
-        </div>
+        <section class="profile-stats">
+          <section class="profile-stat">
+            <section class="profile-stat-value">${researcher.publications}</section>
+            <section class="profile-stat-label">Publications</section>
+          </section>
+          <section class="profile-stat">
+            <section class="profile-stat-value">${researcher.citations}</section>
+            <section class="profile-stat-label">Citations</section>
+          </section>
+          <section class="profile-stat">
+            <section class="profile-stat-value">${researcher.projects}</section>
+            <section class="profile-stat-label">Projects</section>
+          </section>
+          <section class="profile-stat">
+            <section class="profile-stat-value">${researcher.collaborations}</section>
+            <section class="profile-stat-label">Collaborations</section>
+          </section>
+        </section>
         
-        <div class="profile-actions">
+        <section class="profile-actions">
           <button class="profile-action">
             <i class="fas fa-envelope"></i> Contact
           </button>
@@ -544,62 +544,62 @@ function viewResearcherProfile(researcherId) {
           <button class="profile-action">
             <i class="fas fa-share-alt"></i> Share
           </button>
-        </div>
-      </div>
+        </section>
+      </section>
       
-      <div class="profile-content">
-        <div class="profile-section">
+      <section class="profile-content">
+        <section class="profile-section">
           <h3 class="profile-section-title">Biography</h3>
           <p>${researcher.bio}</p>
-        </div>
+        </section>
         
-        <div class="profile-section">
+        <section class="profile-section">
           <h3 class="profile-section-title">Contact Information</h3>
           <p><i class="fas fa-envelope mr-2"></i> ${researcher.email}</p>
           <p><i class="fas fa-phone mr-2"></i> ${researcher.phone}</p>
-        </div>
+        </section>
         
-        <div class="profile-section">
+        <section class="profile-section">
           <h3 class="profile-section-title">Skills & Expertise</h3>
-          <div class="expertise-tags">
+          <section class="expertise-tags">
             ${researcher.skills.map(skill => 
-              `<div class="expertise-tag">${skill}</div>`
+              `<section class="expertise-tag">${skill}</section>`
             ).join('')}
-          </div>
-        </div>
+          </section>
+        </section>
         
-        <div class="profile-section">
+        <section class="profile-section">
           <h3 class="profile-section-title">Education</h3>
           ${researcher.education.map(edu => `
-            <div class="education-item">
-              <div class="education-degree">${edu.degree}</div>
-              <div class="education-institution">${edu.institution}</div>
-              <div class="education-date">${edu.year}</div>
-            </div>
+            <section class="education-item">
+              <section class="education-degree">${edu.degree}</section>
+              <section class="education-institution">${edu.institution}</section>
+              <section class="education-date">${edu.year}</section>
+            </section>
           `).join('')}
-        </div>
+        </section>
         
-        <div class="profile-section">
+        <section class="profile-section">
           <h3 class="profile-section-title">Experience</h3>
           ${researcher.experience.map(exp => `
-            <div class="experience-item">
-              <div class="experience-title">${exp.title}</div>
-              <div class="experience-company">${exp.organization}</div>
-              <div class="experience-date">${exp.period}</div>
-            </div>
+            <section class="experience-item">
+              <section class="experience-title">${exp.title}</section>
+              <section class="experience-company">${exp.organization}</section>
+              <section class="experience-date">${exp.period}</section>
+            </section>
           `).join('')}
-        </div>
+        </section>
         
-        <div class="profile-section">
+        <section class="profile-section">
           <h3 class="profile-section-title">Current Projects</h3>
           <ul class="list-disc list-inside">
             ${researcher.projects.map(project => 
               `<li class="mb-2">${project}</li>`
             ).join('')}
           </ul>
-        </div>
-      </div>
-    </div>
+        </section>
+      </section>
+    </section>
   `;
   
   document.getElementById('profile-modal').classList.add('active');
@@ -626,15 +626,15 @@ function showInviteToProjectModal() {
   // Display researcher info in the invite modal
   const researcherInfo = document.getElementById('invite-researcher-info');
   researcherInfo.innerHTML = `
-    <div class="flex items-center p-4 bg-gray-50 rounded-lg">
-      <div class="w-12 h-12 rounded-full bg-research-primary flex items-center justify-center text-white font-semibold mr-4">
+    <section class="flex items-center p-4 bg-gray-50 rounded-lg">
+      <section class="w-12 h-12 rounded-full bg-research-primary flex items-center justify-center text-white font-semibold mr-4">
         ${getInitials(currentResearcher.name)}
-      </div>
-      <div>
+      </section>
+      <section>
         <h3 class="font-semibold">${currentResearcher.name}</h3>
         <p class="text-sm text-gray-600">${currentResearcher.title}</p>
-      </div>
-    </div>
+      </section>
+    </section>
   `;
   
   // Populate project select dropdown
@@ -723,16 +723,16 @@ function closeInviteProjectModal() {
 function showToast(type, title, message) {
   const toastContainer = document.querySelector('.toast-container');
   
-  const toast = document.createElement('div');
+  const toast = document.createElement('section');
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `
-    <div class="toast-icon">
+    <section class="toast-icon">
       <i class="fas ${getToastIcon(type)}"></i>
-    </div>
-    <div class="toast-content">
+    </section>
+    <section class="toast-content">
       <h3 class="toast-title">${title}</h3>
       <p class="toast-message">${message}</p>
-    </div>
+    </section>
     <button class="toast-close">&times;</button>
   `;
   

@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function addWidgetToGrid(widget) {
         try {
-            const widgetElement = document.createElement('div');
+            const widgetElement = document.createElement('section');
             widgetElement.classList.add('grid-stack-item');
             widgetElement.setAttribute('data-widget-type', widget.widget_type);
             

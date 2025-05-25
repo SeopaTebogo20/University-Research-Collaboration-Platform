@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Get DOM elements
     const evaluationModal = document.querySelector('.evaluation-modal');
-    const projectDetailsModal = document.createElement('div');
+    const projectDetailsModal = document.createElement('section');
     projectDetailsModal.className = 'project-details-modal';
     document.body.appendChild(projectDetailsModal);
     
@@ -36,75 +36,75 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup the project details modal
     function setupProjectDetailsModal() {
         projectDetailsModal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
+            <section class="modal-content">
+                <section class="modal-header">
                     <h2>Project Details</h2>
-                    <span class="close-details-modal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <div class="project-details">
+                    <nav class="close-details-modal">&times;</nav>
+                </section>
+                <section class="modal-body">
+                    <section class="project-details">
                         <h3 id="details-project-title">Project Title</h3>
-                        <div class="details-grid">
-                            <div class="details-item">
+                        <section class="details-grid">
+                            <section class="details-item">
                                 <strong>Researcher:</strong>
-                                <span id="details-researcher-name"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-researcher-name"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>Department:</strong>
-                                <span id="details-department"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-department"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>Research Area:</strong>
-                                <span id="details-research-area"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-research-area"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>Experience Level:</strong>
-                                <span id="details-experience-level"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-experience-level"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>Start Date:</strong>
-                                <span id="details-start-date"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-start-date"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>End Date:</strong>
-                                <span id="details-end-date"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-end-date"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>Funding Available:</strong>
-                                <span id="details-funding"></span>
-                            </div>
-                            <div class="details-item">
+                                <nav id="details-funding"></nav>
+                            </section>
+                            <section class="details-item">
                                 <strong>Created:</strong>
-                                <span id="details-created-at"></span>
-                            </div>
-                        </div>
+                                <nav id="details-created-at"></nav>
+                            </section>
+                        </section>
                         
-                        <div class="details-section">
+                        <section class="details-section">
                             <h4>Project Description</h4>
                             <p id="details-description"></p>
-                        </div>
+                        </section>
                         
-                        <div class="details-section">
+                        <section class="details-section">
                             <h4>Skills and Expertise</h4>
                             <p id="details-skills"></p>
-                        </div>
+                        </section>
                         
-                        <div class="details-section">
+                        <section class="details-section">
                             <h4>Positions Required</h4>
                             <p id="details-positions"></p>
-                        </div>
+                        </section>
                         
-                        <div class="details-section">
+                        <section class="details-section">
                             <h4>Technical Requirements</h4>
                             <p id="details-technical"></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
+                        </section>
+                    </section>
+                </section>
+                <section class="modal-footer">
                     <button type="button" class="btn btn-outline cancel-details-btn">Close</button>
                     <button type="button" class="btn btn-primary review-btn">Review Project</button>
-                </div>
-            </div>
+                </section>
+            </section>
         `;
         
         // Add event listeners for the new modal
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>${proposal.researcher_name}</td>
                 <td>${proposal.key_research_area || 'N/A'}</td>
                 <td>${new Date(proposal.created_at).toLocaleDateString()}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td><nav class="status-badge ${statusClass}">${statusText}</nav></td>
                 <td>
                     <button class="${buttonClass}" data-proposal="${proposal.id}">${buttonText}</button>
                 </td>

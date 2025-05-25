@@ -80,17 +80,17 @@ async function initializeAISuggestions() {
     
     // Show loading state
     aiSuggestionsContainer.innerHTML = `
-        <div class="ai-loading">
+        <section class="ai-loading">
             <i class="fas fa-robot ai-icon"></i>
-            <div class="ai-loading-text">
+            <section class="ai-loading-text">
                 <p>Analyzing your research data...</p>
-                <div class="ai-loading-indicator">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                </div>
-            </div>
-        </div>
+                <section class="ai-loading-indicator">
+                    <nav class="dot"></nav>
+                    <nav class="dot"></nav>
+                    <nav class="dot"></nav>
+                </section>
+            </section>
+        </section>
     `;
     
     try {
@@ -128,30 +128,30 @@ async function initializeAISuggestions() {
         
         // Render suggestions
         aiSuggestionsContainer.innerHTML = `
-            <div class="ai-suggestions-header">
+            <section class="ai-suggestions-header">
                 <i class="fas fa-robot"></i>
                 <h3>AI-Powered Collaboration Suggestions</h3>
-            </div>
-            <div class="ai-suggestions-list">
+            </section>
+            <section class="ai-suggestions-list">
                 ${suggestions.map(suggestion => `
-                    <div class="ai-suggestion ${suggestion.type}">
-                        <div class="suggestion-icon">
+                    <section class="ai-suggestion ${suggestion.type}">
+                        <section class="suggestion-icon">
                             <i class="${suggestion.icon}"></i>
-                        </div>
-                        <div class="suggestion-content">
+                        </section>
+                        <section class="suggestion-content">
                             <h4>${suggestion.title}</h4>
                             <p>${suggestion.description}</p>
-                        </div>
-                        <div class="suggestion-actions">
+                        </section>
+                        <section class="suggestion-actions">
                             <button class="suggestion-action primary">Explore</button>
                             <button class="suggestion-action secondary">Dismiss</button>
-                        </div>
-                    </div>
+                        </section>
+                    </section>
                 `).join('')}
-            </div>
-            <div class="ai-suggestions-footer">
+            </section>
+            <section class="ai-suggestions-footer">
                 <p><i class="fas fa-info-circle"></i> Suggestions are based on your research profile and current projects</p>
-            </div>
+            </section>
         `;
         
         // Add event listeners to suggestion buttons
@@ -177,11 +177,11 @@ async function initializeAISuggestions() {
     } catch (error) {
         console.error('Error loading AI suggestions:', error);
         aiSuggestionsContainer.innerHTML = `
-            <div class="ai-error">
+            <section class="ai-error">
                 <i class="fas fa-exclamation-circle"></i>
                 <p>Unable to load AI suggestions. Please try again later.</p>
                 <button class="retry-button">Retry</button>
-            </div>
+            </section>
         `;
         
         // Add retry button functionality
@@ -432,7 +432,7 @@ function initializeResearchCalendar() {
             const event = events.find(event => event.date === dateStr);
             
             if (event) {
-                const eventMarker = document.createElement('span');
+                const eventMarker = document.createElement('nav');
                 eventMarker.classList.add('event-marker', event.type);
                 
                 // Style the event marker based on type
@@ -617,7 +617,7 @@ function addAnimations() {
 // Toast notification function
 function showToast(message, type = 'info', duration = 5000) {
     // Create notification element
-    const notification = document.createElement('div');
+    const notification = document.createElement('section');
     notification.className = `toast ${type}`;
     
     let icon = '';
@@ -636,10 +636,10 @@ function showToast(message, type = 'info', duration = 5000) {
     }
     
     notification.innerHTML = `
-        <div class="toast-icon">${icon}</div>
-        <div class="toast-content">
-            <div class="toast-message">${message}</div>
-        </div>
+        <section class="toast-icon">${icon}</section>
+        <section class="toast-content">
+            <section class="toast-message">${message}</section>
+        </section>
         <button class="toast-close"><i class="fas fa-times"></i></button>
     `;
     

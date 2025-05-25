@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Functions
     async function loadProjects(searchQuery = '') {
         try {
-            projectsContainer.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</div>';
+            projectsContainer.innerHTML = '<section class="loading"><i class="fas fa-spinner fa-spin"></i> Loading projects...</section>';
             
             let url = PROJECTS_API;
             if (searchQuery) {
@@ -85,14 +85,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const projects = await response.json();
             
             if (projects.length === 0) {
-                projectsContainer.innerHTML = '<div class="no-results">No projects found. Create a new project to get started.</div>';
+                projectsContainer.innerHTML = '<section class="no-results">No projects found. Create a new project to get started.</section>';
                 return;
             }
             
             displayProjects(projects);
         } catch (error) {
             console.error('Error loading projects:', error);
-            projectsContainer.innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i> Error loading projects. Please try again later.</div>`;
+            projectsContainer.innerHTML = `<section class="error"><i class="fas fa-exclamation-triangle"></i> Error loading projects. Please try again later.</section>`;
         }
     }
     
@@ -102,9 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
         projects.forEach(project => {
             const startDate = new Date(project.start_date).toLocaleDateString();
             const endDate = new Date(project.end_date).toLocaleDateString();
-            const keyResearchAreas = project.key_research_area ? project.key_research_area.split(',').map(area => `<span class="tag">${area.trim()}</span>`).join('') : '';
+            const keyResearchAreas = project.key_research_area ? project.key_research_area.split(',').map(area => `<nav class="tag">${area.trim()}</nav>`).join('') : '';
             
-            const projectCard = document.createElement('div');
+            const projectCard = document.createElement('section');
             projectCard.className = 'project-card';
             projectCard.dataset.id = project.id;
             
@@ -126,28 +126,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             projectCard.innerHTML = `
-                <div class="project-header">
+                <section class="project-header">
                     <h3 class="project-title">${project.project_title}</h3>
-                    <div class="project-status ${statusClass}">${statusText}</div>
-                </div>
-                <div class="project-info">
+                    <section class="project-status ${statusClass}">${statusText}</section>
+                </section>
+                <section class="project-info">
                     <p class="project-dates"><i class="fas fa-calendar"></i> ${startDate} - ${endDate}</p>
-                </div>
-                <div class="project-description">${project.description}</div>
-                <div class="project-tags">
+                </section>
+                <section class="project-description">${project.description}</section>
+                <section class="project-tags">
                     ${keyResearchAreas}
-                    ${project.funding_available ? '<span class="tag funding">Funding Available</span>' : ''}
-                </div>
-                <div class="experience-level">
-                    <span class="label">Experience Level:</span>
-                    <span class="value">${project.experience_level}</span>
-                </div>
-                <div class="project-actions">
+                    ${project.funding_available ? '<nav class="tag funding">Funding Available</nav>' : ''}
+                </section>
+                <section class="experience-level">
+                    <nav class="label">Experience Level:</nav>
+                    <nav class="value">${project.experience_level}</nav>
+                </section>
+                <section class="project-actions">
                     <button class="btn view-btn" data-id="${project.id}"><i class="fas fa-eye"></i> View Details</button>
                     <button class="btn edit-btn" data-id="${project.id}"><i class="fas fa-edit"></i> Edit</button>
                     <button class="btn invite-btn" data-id="${project.id}" data-title="${project.project_title}"><i class="fas fa-user-plus"></i> Invite</button>
                     <button class="btn delete-btn" data-id="${project.id}" data-title="${project.project_title}"><i class="fas fa-trash"></i> Delete</button>
-                </div>
+                </section>
             `;
             
             projectsContainer.appendChild(projectCard);
@@ -182,45 +182,45 @@ async function viewProjectDetails(projectId) {
         const endDate = new Date(project.end_date).toLocaleDateString();
         
         // Format research areas as tags
-        let keyResearchAreas = '<span class="tag">None specified</span>';
+        let keyResearchAreas = '<nav class="tag">None specified</nav>';
         if (project.key_research_area) {
             keyResearchAreas = project.key_research_area
                 .split(',')
-                .map(area => `<span class="tag">${area.trim()}</span>`)
+                .map(area => `<nav class="tag">${area.trim()}</nav>`)
                 .join('');
         }
         
         // Format skills
-        let skillsList = '<span>None specified</span>';
+        let skillsList = '<nav>None specified</nav>';
         if (project.skills_and_expertise || project.skills) {
             const skillsData = project.skills_and_expertise || project.skills;
             skillsList = skillsData
                 .split(',')
-                .map(skill => `<span class="skill-item">${skill.trim()}</span>`)
+                .map(skill => `<nav class="skill-item">${skill.trim()}</nav>`)
                 .join(', ');
         }
         
         // Format positions
-        let positionsList = '<span>None specified</span>';
+        let positionsList = '<nav>None specified</nav>';
         if (project.positions_required || project.positions) {
             const positionsData = project.positions_required || project.positions;
             positionsList = positionsData
                 .split(',')
-                .map(position => `<span>${position.trim()}</span>`)
+                .map(position => `<nav>${position.trim()}</nav>`)
                 .join(', ');
         }
         
         // Format technical requirements
-        let technicalReqs = '<span>None specified</span>';
+        let technicalReqs = '<nav>None specified</nav>';
         if (project.technical_requirements) {
             technicalReqs = project.technical_requirements
                 .split(',')
-                .map(req => `<span>${req.trim()}</span>`)
+                .map(req => `<nav>${req.trim()}</nav>`)
                 .join(', ');
         }
         
         // Format collaborators
-        let collaboratorsHtml = '<div class="no-results">No collaborators yet</div>';
+        let collaboratorsHtml = '<section class="no-results">No collaborators yet</section>';
         if (project.Collaborators) {
             try {
                 const collaborators = Array.isArray(project.Collaborators) ? 
@@ -229,30 +229,30 @@ async function viewProjectDetails(projectId) {
                 
                 if (collaborators.length > 0) {
                     collaboratorsHtml = `
-                        <div class="collaborators-list">
+                        <section class="collaborators-list">
                             ${collaborators.map(collaborator => `
-                                <div class="collaborator-item">
-                                    <div class="collaborator-info">
+                                <section class="collaborator-item">
+                                    <section class="collaborator-info">
                                         <h4>${collaborator.name || 'Unknown'}</h4>
                                         <p>Position: ${collaborator.position || 'Not specified'}</p>
-                                        <p>Status: <span class="tag ${collaborator.status === 'accepted' ? 'status-active' : 'status-pending'}">
+                                        <p>Status: <nav class="tag ${collaborator.status === 'accepted' ? 'status-active' : 'status-pending'}">
                                             ${collaborator.status || 'pending'}
-                                        </span></p>
+                                        </nav></p>
                                         <p>Invited on: ${new Date(collaborator.invitationDate).toLocaleDateString()}</p>
-                                    </div>
-                                    <div class="collaborator-actions">
+                                    </section>
+                                    <section class="collaborator-actions">
                                         <button class="btn remove-collaborator-btn" data-project-id="${projectId}" data-user-id="${collaborator.id}">
                                             <i class="fas fa-user-minus"></i> Remove
                                         </button>
-                                    </div>
-                                </div>
+                                    </section>
+                                </section>
                             `).join('')}
-                        </div>
+                        </section>
                     `;
                 }
             } catch (e) {
                 console.error("Error parsing collaborators:", e);
-                collaboratorsHtml = '<div class="error">Error loading collaborators</div>';
+                collaboratorsHtml = '<section class="error">Error loading collaborators</section>';
             }
         }
         
@@ -291,89 +291,89 @@ async function viewProjectDetails(projectId) {
         
         // Build the details HTML
         detailsContainer.innerHTML = `
-            <div class="project-details">
-                <div class="details-section">
-                    <div class="details-header">
+            <section class="project-details">
+                <section class="details-section">
+                    <section class="details-header">
                         <h3>Project Overview</h3>
-                        <div class="project-status ${statusClass}">${statusText}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Researcher:</div>
-                        <div class="details-value">${project.researcher_name || 'Not specified'}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Department:</div>
-                        <div class="details-value">${department}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">User Name:</div>
-                        <div class="details-value">${userName}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Project Timeline:</div>
-                        <div class="details-value">${startDate} - ${endDate}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Funding Available:</div>
-                        <div class="details-value">${project.funding_available ? 'Yes' : 'No'}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Reviewer:</div>
-                        <div class="details-value">${project.reviewer || 'Not assigned'}</div>
-                    </div>
-                </div>
+                        <section class="project-status ${statusClass}">${statusText}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Researcher:</section>
+                        <section class="details-value">${project.researcher_name || 'Not specified'}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Department:</section>
+                        <section class="details-value">${department}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">User Name:</section>
+                        <section class="details-value">${userName}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Project Timeline:</section>
+                        <section class="details-value">${startDate} - ${endDate}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Funding Available:</section>
+                        <section class="details-value">${project.funding_available ? 'Yes' : 'No'}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Reviewer:</section>
+                        <section class="details-value">${project.reviewer || 'Not assigned'}</section>
+                    </section>
+                </section>
                 
-                <div class="details-section">
+                <section class="details-section">
                     <h3>Description</h3>
-                    <div class="details-description">${project.description || 'No description provided.'}</div>
-                </div>
+                    <section class="details-description">${project.description || 'No description provided.'}</section>
+                </section>
                 
-                <div class="details-section">
+                <section class="details-section">
                     <h3>Research Areas</h3>
-                    <div class="details-tags">
+                    <section class="details-tags">
                         ${keyResearchAreas}
-                    </div>
-                </div>
+                    </section>
+                </section>
                 
-                <div class="details-section">
+                <section class="details-section">
                     <h3>Collaboration Requirements</h3>
-                    <div class="details-row">
-                        <div class="details-label">Experience Level:</div>
-                        <div class="details-value">${project.experience_level || 'Not specified'}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Required Skills:</div>
-                        <div class="details-value">${skillsList}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Open Positions:</div>
-                        <div class="details-value">${positionsList}</div>
-                    </div>
-                    <div class="details-row">
-                        <div class="details-label">Technical Requirements:</div>
-                        <div class="details-value">${technicalReqs}</div>
-                    </div>
-                </div>
+                    <section class="details-row">
+                        <section class="details-label">Experience Level:</section>
+                        <section class="details-value">${project.experience_level || 'Not specified'}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Required Skills:</section>
+                        <section class="details-value">${skillsList}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Open Positions:</section>
+                        <section class="details-value">${positionsList}</section>
+                    </section>
+                    <section class="details-row">
+                        <section class="details-label">Technical Requirements:</section>
+                        <section class="details-value">${technicalReqs}</section>
+                    </section>
+                </section>
                 
-                <div class="details-section">
-                    <div class="section-header">
+                <section class="details-section">
+                    <section class="section-header">
                         <h3>Collaborators</h3>
                         <button class="btn invite-btn" data-id="${projectId}" data-title="${project.project_title}">
                             <i class="fas fa-user-plus"></i> Invite Collaborator
                         </button>
-                    </div>
+                    </section>
                     ${collaboratorsHtml}
-                </div>
-            </div>
+                </section>
+            </section>
             
-            <div class="modal-footer">
+            <section class="modal-footer">
                 <button id="close-details-btn" class="btn secondary-btn">
                     <i class="fas fa-times"></i> Close
                 </button>
                 <button id="edit-from-details-btn" class="btn primary-btn" data-id="${projectId}">
                     <i class="fas fa-edit"></i> Edit Project
                 </button>
-            </div>
+            </section>
         `;
         
         // Add event listeners for remove collaborator buttons
@@ -497,19 +497,19 @@ async function removeCollaborator(projectId, userId) {
         
         if (!additionalFieldsSection) {
             // Create section for additional fields from DB schema
-            additionalFieldsSection = document.createElement('div');
+            additionalFieldsSection = document.createElement('section');
             additionalFieldsSection.className = 'additional-fields';
             additionalFieldsSection.innerHTML = `
                 <h3>Update Status</h3>
                 
-                <div class="form-group">
+                <section class="form-group">
                     <label for="status">Status</label>
                     <select id="status">
                         <option value="Active">Active</option>
                         <option value="Pending">Pending</option>
                         <option value="Completed">Completed</option>
                     </select>
-                </div>
+                </section>
             `;
             
             // Insert before form-actions
@@ -724,7 +724,7 @@ async function handleProjectFormSubmit(e) {
     
     async function loadAvailableCollaborators(projectId) {
         const collaboratorsList = document.getElementById('collaborators-list');
-        collaboratorsList.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading collaborators...</div>';
+        collaboratorsList.innerHTML = '<section class="loading"><i class="fas fa-spinner fa-spin"></i> Loading collaborators...</section>';
         
         try {
             const response = await fetch(USERS_API);
@@ -736,7 +736,7 @@ async function handleProjectFormSubmit(e) {
             const users = await response.json();
             
             if (users.length === 0) {
-                collaboratorsList.innerHTML = '<div class="no-results">No users found.</div>';
+                collaboratorsList.innerHTML = '<section class="no-results">No users found.</section>';
                 return;
             }
             
@@ -745,35 +745,35 @@ async function handleProjectFormSubmit(e) {
             
             // Display each user as a potential collaborator
             users.forEach(user => {
-                const userCard = document.createElement('div');
+                const userCard = document.createElement('section');
                 userCard.className = 'collaborator-card';
                 
                 // Format research area as tags
-                let researchAreaTags = '<span class="tag">No research area specified</span>';
+                let researchAreaTags = '<nav class="tag">No research area specified</nav>';
                 if (user.research_area) {
                     researchAreaTags = user.research_area
                         .split(',')
-                        .map(area => `<span class="tag">${area.trim()}</span>`)
+                        .map(area => `<nav class="tag">${area.trim()}</nav>`)
                         .join('');
                 }
                 
                 userCard.innerHTML = `
-                    <div class="collaborator-info">
+                    <section class="collaborator-info">
                         <h4>${user.name || 'No name provided'}</h4>
                         <p>${user.department || 'No department specified'}</p>
                         <p>${user.role || 'No role specified'}</p>
-                        <div class="skills">
+                        <section class="skills">
                             ${researchAreaTags}
-                        </div>
-                    </div>
-                    <div class="collaborator-actions">
+                        </section>
+                    </section>
+                    <section class="collaborator-actions">
                         <button class="btn view-profile-btn" data-id="${user.id}" data-name="${user.name}">
                             <i class="fas fa-id-card"></i> View Profile
                         </button>
                         <button class="btn invite-user-btn" data-id="${user.id}" data-name="${user.name}">
                             <i class="fas fa-paper-plane"></i> Invite
                         </button>
-                    </div>
+                    </section>
                 `;
                 
                 collaboratorsList.appendChild(userCard);
@@ -788,16 +788,16 @@ async function handleProjectFormSubmit(e) {
         } catch (error) {
             console.error('Error loading users:', error);
             collaboratorsList.innerHTML = `
-                <div class="error">
+                <section class="error">
                     <i class="fas fa-exclamation-triangle"></i> Error loading users. Please try again later.
-                </div>
+                </section>
             `;
         }
     }
     
     async function viewCollaboratorProfile(userId, userName) {
         const profileContent = document.getElementById('collaborator-profile');
-        profileContent.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading profile...</div>';
+        profileContent.innerHTML = '<section class="loading"><i class="fas fa-spinner fa-spin"></i> Loading profile...</section>';
         
         try {
             // Trim the userId to remove any whitespace or newline characters
@@ -812,11 +812,11 @@ async function handleProjectFormSubmit(e) {
             const user = await response.json();
             
             // Format research areas as tags
-            let researchAreas = '<span class="tag">None specified</span>';
+            let researchAreas = '<nav class="tag">None specified</nav>';
             if (user.research_area) {
                 researchAreas = user.research_area
                     .split(',')
-                    .map(area => `<span class="tag">${area.trim()}</span>`)
+                    .map(area => `<nav class="tag">${area.trim()}</nav>`)
                     .join('');
             }
             
@@ -832,66 +832,66 @@ async function handleProjectFormSubmit(e) {
             
             // Build the profile HTML using the user data from profiles table
             profileContent.innerHTML = `
-                <div class="profile-header">
-                    <div class="profile-avatar">
+                <section class="profile-header">
+                    <section class="profile-avatar">
                         <i class="fas fa-user-circle"></i>
-                    </div>
-                    <div class="profile-title">
+                    </section>
+                    <section class="profile-title">
                         <h3>${user.name || userName || 'User'}</h3>
                         <p>${user.role || ''}</p>
                         <p>${user.department || 'No department specified'}</p>
-                    </div>
-                </div>
+                    </section>
+                </section>
                 
-                <div class="profile-section">
+                <section class="profile-section">
                     <h4>Contact Information</h4>
-                    <div class="profile-contact">
+                    <section class="profile-contact">
                         <p><i class="fas fa-envelope"></i> ${user.email || 'No email provided'}</p>
                         <p><i class="fas fa-phone"></i> ${user.phone || 'No phone provided'}</p>
-                    </div>
-                </div>
+                    </section>
+                </section>
                 
-                <div class="profile-section">
+                <section class="profile-section">
                     <h4>Academic Information</h4>
-                    <div class="profile-row">
-                        <span class="label">Academic Role:</span>
-                        <span class="value">${user.academic_role || 'Not specified'}</span>
-                    </div>
-                    <div class="profile-row">
-                        <span class="label">Research Experience:</span>
-                        <span class="value">${user.research_experience ? `${user.research_experience} years` : 'Not specified'}</span>
-                    </div>
-                </div>
+                    <section class="profile-row">
+                        <nav class="label">Academic Role:</nav>
+                        <nav class="value">${user.academic_role || 'Not specified'}</nav>
+                    </section>
+                    <section class="profile-row">
+                        <nav class="label">Research Experience:</nav>
+                        <nav class="value">${user.research_experience ? `${user.research_experience} years` : 'Not specified'}</nav>
+                    </section>
+                </section>
                 
-                <div class="profile-section">
+                <section class="profile-section">
                     <h4>Research Areas</h4>
-                    <div class="profile-tags">
+                    <section class="profile-tags">
                         ${researchAreas}
-                    </div>
-                </div>
+                    </section>
+                </section>
                 
-                <div class="profile-section">
+                <section class="profile-section">
                     <h4>Qualifications</h4>
                     <ul class="profile-list">
                         ${qualificationsList}
                     </ul>
-                </div>
+                </section>
                 
-                <div class="profile-section">
+                <section class="profile-section">
                     <h4>Current Project</h4>
                     <p>${user.current_project || 'No current project specified'}</p>
-                </div>
+                </section>
                 
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">${user.research_experience || 0}</div>
-                        <div class="stat-label">Years Experience</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">${user.projects_created || 0}</div>
-                        <div class="stat-label">Projects Created</div>
-                    </div>
-                </div>
+                <section class="profile-stats">
+                    <section class="stat-item">
+                        <section class="stat-value">${user.research_experience || 0}</section>
+                        <section class="stat-label">Years Experience</section>
+                    </section>
+                    <section class="stat-item">
+                        <section class="stat-value">${user.projects_created || 0}</section>
+                        <section class="stat-label">Projects Created</section>
+                    </section>
+                </section>
             `;
             
             // Setup invite button
@@ -908,9 +908,9 @@ async function handleProjectFormSubmit(e) {
         } catch (error) {
             console.error('Error loading user profile:', error);
             profileContent.innerHTML = `
-                <div class="error">
+                <section class="error">
                     <i class="fas fa-exclamation-triangle"></i> Error loading profile: ${error.message}
-                </div>
+                </section>
             `;
         }
     }
@@ -1029,10 +1029,10 @@ async function sendInvitation(projectId, userId, userName) {
     function confirmDeleteProject(projectId, projectTitle) {
         document.getElementById('confirm-delete-btn').dataset.id = projectId;
         document.querySelector('.project-to-delete').innerHTML = `
-            <div class="delete-project-info">
+            <section class="delete-project-info">
                 <h3>${projectTitle}</h3>
                 <p>Project ID: ${projectId}</p>
-            </div>
+            </section>
         `;
         
         deleteModal.style.display = 'block';
@@ -1072,13 +1072,13 @@ document.getElementById('confirm-delete-btn').addEventListener('click', deletePr
     // Utility function for notifications
     function showNotification(message, type = 'info') {
         // Create notification element
-        const notification = document.createElement('div');
+        const notification = document.createElement('section');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            <div class="notification-content">
+            <section class="notification-content">
                 <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
+                <nav>${message}</nav>
+            </section>
             <button class="notification-close"><i class="fas fa-times"></i></button>
         `;
         

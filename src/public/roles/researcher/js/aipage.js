@@ -46,12 +46,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Show empty state
             document.getElementById('suggestions-container').innerHTML = `
-                <div class="empty-state">
+                <section class="empty-state">
                     <i class="fas fa-robot"></i>
                     <h3>Could not generate suggestions</h3>
                     <p>We encountered an error while analyzing your research profile. Please try refreshing the page.</p>
                     <button id="retry-suggestions-btn" class="btn btn-primary">Try Again</button>
-                </div>
+                </section>
             `;
             
             // Add retry button event listener
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 "name": "National Geographic Exploration Grant",
-                "focus": ["biodiversity", "conservation", "field research"],
+                "focus": ["biosectionersity", "conservation", "field research"],
                 "amount": "$150,000",
                 "deadline": "2025-09-15",
                 "relevance": 2
@@ -563,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 "name": "NIH All of Us Research Program",
-                "focus": ["precision medicine", "health data", "diversity in research"],
+                "focus": ["precision medicine", "health data", "sectionersity in research"],
                 "amount": "$3.3 million",
                 "deadline": "2025-11-05",
                 "relevance": 4
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             {
                 "name": "Google for Startups Black Founders Fund",
-                "focus": ["entrepreneurship", "tech startups", "diversity in tech"],
+                "focus": ["entrepreneurship", "tech startups", "sectionersity in tech"],
                 "amount": "$100,000",
                 "deadline": "2025-07-10",
                 "relevance": 2
@@ -912,8 +912,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     "relevance": 4
                 },
                 {
-                    "name": "SANBI Biodiversity Data Science Grant",
-                    "focus": ["biodiversity AI", "ecological data", "conservation"],
+                    "name": "SANBI Biosectionersity Data Science Grant",
+                    "focus": ["biosectionersity AI", "ecological data", "conservation"],
                     "amount": "R17 million",
                     "deadline": "2025-08-28",
                     "relevance": 3
@@ -1986,12 +1986,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!suggestions || suggestions.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
+                <section class="empty-state">
                     <i class="fas fa-robot"></i>
                     <h3>No suggestions found</h3>
                     <p>We couldn't find any relevant suggestions based on your current filters. Try changing your filter settings or refreshing.</p>
                     <button id="refresh-empty-btn" class="btn btn-primary">Refresh Suggestions</button>
-                </div>
+                </section>
             `;
             
             document.getElementById('refresh-empty-btn')?.addEventListener('click', refreshSuggestions);
@@ -2027,7 +2027,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Generate relevance dots
             let relevanceDots = '';
             for (let i = 1; i <= 5; i++) {
-                relevanceDots += `<span class="relevance-dot ${i <= suggestion.relevance ? 'active' : ''}"></span>`;
+                relevanceDots += `<nav class="relevance-dot ${i <= suggestion.relevance ? 'active' : ''}"></nav>`;
             }
             
             // Generate tags
@@ -2035,34 +2035,34 @@ document.addEventListener('DOMContentLoaded', function() {
             if (suggestion.tags && suggestion.tags.length > 0) {
                 const displayTags = suggestion.tags.slice(0, 3); // Limit to 3 tags for display
                 displayTags.forEach(tag => {
-                    tagHtml += `<span class="suggestion-tag">${tag}</span>`;
+                    tagHtml += `<nav class="suggestion-tag">${tag}</nav>`;
                 });
             }
             
             html += `
-                <div class="suggestion-card ${suggestion.priority}-priority" data-suggestion-id="${suggestion.id}" data-suggestion-type="${suggestion.type}" data-suggestion-priority="${suggestion.priority}" data-suggestion-timeframe="${suggestion.timeframe}">
-                    <div class="suggestion-header">
-                        <span class="suggestion-type ${suggestion.type}">
+                <section class="suggestion-card ${suggestion.priority}-priority" data-suggestion-id="${suggestion.id}" data-suggestion-type="${suggestion.type}" data-suggestion-priority="${suggestion.priority}" data-suggestion-timeframe="${suggestion.timeframe}">
+                    <section class="suggestion-header">
+                        <nav class="suggestion-type ${suggestion.type}">
                             <i class="fas fa-${icon}"></i> ${capitalizeFirstLetter(suggestion.type)}
-                        </span>
-                        <span class="suggestion-priority">
+                        </nav>
+                        <nav class="suggestion-priority">
                             <i class="fas fa-${suggestion.priority === 'high' ? 'exclamation-circle' : suggestion.priority === 'medium' ? 'circle' : 'info-circle'}"></i> ${capitalizeFirstLetter(suggestion.priority)} Priority
-                        </span>
-                    </div>
+                        </nav>
+                    </section>
                     <h3 class="suggestion-title">${suggestion.title}</h3>
                     <p class="suggestion-description">${suggestion.description}</p>
-                    <div class="suggestion-meta">
-                        <span class="suggestion-relevance">
-                            Relevance <span class="relevance-dots">${relevanceDots}</span>
-                        </span>
-                        <span class="suggestion-timeframe ${suggestion.timeframe}">
+                    <section class="suggestion-meta">
+                        <nav class="suggestion-relevance">
+                            Relevance <nav class="relevance-dots">${relevanceDots}</nav>
+                        </nav>
+                        <nav class="suggestion-timeframe ${suggestion.timeframe}">
                             <i class="fas fa-clock"></i> ${formatTimeframe(suggestion.timeframe)}
-                        </span>
-                    </div>
-                    <div class="suggestion-tags">
+                        </nav>
+                    </section>
+                    <section class="suggestion-tags">
                         ${tagHtml}
-                    </div>
-                </div>
+                    </section>
+                </section>
             `;
         });
         
@@ -2130,7 +2130,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if empty state already exists
             if (!container.querySelector('.empty-filtered-state')) {
                 // Add empty state after all suggestion cards
-                const emptyState = document.createElement('div');
+                const emptyState = document.createElement('section');
                 emptyState.className = 'empty-filtered-state';
                 emptyState.innerHTML = `
                     <i class="fas fa-filter"></i>
@@ -2235,20 +2235,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Common header
         content += `
-            <div class="detail-header">
-                <div class="detail-type-priority">
-                    <span class="suggestion-type ${suggestion.type}">
+            <section class="detail-header">
+                <section class="detail-type-priority">
+                    <nav class="suggestion-type ${suggestion.type}">
                         <i class="fas fa-${getSuggestionTypeIcon(suggestion.type)}"></i> ${capitalizeFirstLetter(suggestion.type)}
-                    </span>
-                    <span class="suggestion-priority">
+                    </nav>
+                    <nav class="suggestion-priority">
                         <i class="fas fa-${suggestion.priority === 'high' ? 'exclamation-circle' : suggestion.priority === 'medium' ? 'circle' : 'info-circle'}"></i> ${capitalizeFirstLetter(suggestion.priority)} Priority
-                    </span>
-                </div>
-            </div>
+                    </nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <p>${suggestion.description}</p>
-            </div>
+            </section>
         `;
         
         // Type-specific details
@@ -2276,22 +2276,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Common actions section
         content += `
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Recommended Actions</h4>
-                <div class="detail-actions">
+                <section class="detail-actions">
                     ${generateRecommendedActions(suggestion)}
-                </div>
-            </div>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Why This Was Suggested</h4>
                 <p>This suggestion was generated based on your research profile and recent project activities. The AI identified alignment between your work on ${suggestion.tags.slice(0, 3).join(', ')} and this opportunity.</p>
-                <div class="suggestion-meta" style="margin-top: 10px;">
-                    <span class="suggestion-relevance">
+                <section class="suggestion-meta" style="margin-top: 10px;">
+                    <nav class="suggestion-relevance">
                         Relevance ${generateRelevanceDots(suggestion.relevance)}
-                    </span>
-                </div>
-            </div>
+                    </nav>
+                </section>
+            </section>
         `;
         
         // Update modal content
@@ -2306,56 +2306,56 @@ document.addEventListener('DOMContentLoaded', function() {
         const details = suggestion.details;
         
         return `
-            <div class="detail-meta">
-                <div class="meta-item">
+            <section class="detail-meta">
+                <section class="meta-item">
                     <i class="fas fa-user-tie"></i>
-                    <span class="meta-label">Researcher:</span>
-                    <span class="meta-value">${details.researcher}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Researcher:</nav>
+                    <nav class="meta-value">${details.researcher}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-university"></i>
-                    <span class="meta-label">Institution:</span>
-                    <span class="meta-value">${details.institution}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Institution:</nav>
+                    <nav class="meta-value">${details.institution}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-award"></i>
-                    <span class="meta-label">H-Index:</span>
-                    <span class="meta-value">${details.h_index}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">H-Index:</nav>
+                    <nav class="meta-value">${details.h_index}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-file-alt"></i>
-                    <span class="meta-label">Publications:</span>
-                    <span class="meta-value">${details.recent_publications}</span>
-                </div>
-            </div>
+                    <nav class="meta-label">Publications:</nav>
+                    <nav class="meta-value">${details.recent_publications}</nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Research Expertise</h4>
-                <div class="suggestion-tags">
-                    ${details.expertise.map(exp => `<span class="suggestion-tag">${exp}</span>`).join('')}
-                </div>
-            </div>
+                <section class="suggestion-tags">
+                    ${details.expertise.map(exp => `<nav class="suggestion-tag">${exp}</nav>`).join('')}
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Potential Collaboration Areas</h4>
                 <ul>
                     ${details.potential_projects.map(project => `<li>${project}</li>`).join('')}
                 </ul>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Contact Information</h4>
-                <div class="meta-item">
+                <section class="meta-item">
                     <i class="fas fa-envelope"></i>
-                    <span class="meta-label">Email:</span>
-                    <span class="meta-value"><a href="mailto:${details.contact_information.email}">${details.contact_information.email}</a></span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Email:</nav>
+                    <nav class="meta-value"><a href="mailto:${details.contact_information.email}">${details.contact_information.email}</a></nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-globe"></i>
-                    <span class="meta-label">Website:</span>
-                    <span class="meta-value"><a href="${details.contact_information.website}" target="_blank">${details.contact_information.website}</a></span>
-                </div>
-            </div>
+                    <nav class="meta-label">Website:</nav>
+                    <nav class="meta-value"><a href="${details.contact_information.website}" target="_blank">${details.contact_information.website}</a></nav>
+                </section>
+            </section>
         `;
     }
     
@@ -2364,61 +2364,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const details = suggestion.details;
         
         return `
-            <div class="detail-meta">
-                <div class="meta-item">
+            <section class="detail-meta">
+                <section class="meta-item">
                     <i class="fas fa-coins"></i>
-                    <span class="meta-label">Amount:</span>
-                    <span class="meta-value">${details.funding_amount}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Amount:</nav>
+                    <nav class="meta-value">${details.funding_amount}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-calendar-day"></i>
-                    <span class="meta-label">Deadline:</span>
-                    <span class="meta-value">${formatDate(details.application_deadline)}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Deadline:</nav>
+                    <nav class="meta-value">${formatDate(details.application_deadline)}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-chart-line"></i>
-                    <span class="meta-label">Success Rate:</span>
-                    <span class="meta-value">${details.success_rate}</span>
-                </div>
-            </div>
+                    <nav class="meta-label">Success Rate:</nav>
+                    <nav class="meta-value">${details.success_rate}</nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Focus Areas</h4>
-                <div class="suggestion-tags">
-                    ${details.focus_areas.map(area => `<span class="suggestion-tag">${area}</span>`).join('')}
-                </div>
-            </div>
+                <section class="suggestion-tags">
+                    ${details.focus_areas.map(area => `<nav class="suggestion-tag">${area}</nav>`).join('')}
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Eligibility Criteria</h4>
                 <ul>
                     ${details.eligibility_criteria.map(criteria => `<li>${criteria}</li>`).join('')}
                 </ul>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Application Process</h4>
                 <p>${details.application_process}</p>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Contact Information</h4>
-                <div class="meta-item">
+                <section class="meta-item">
                     <i class="fas fa-user"></i>
-                    <span class="meta-label">Contact:</span>
-                    <span class="meta-value">${details.agency_contact.name}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Contact:</nav>
+                    <nav class="meta-value">${details.agency_contact.name}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-envelope"></i>
-                    <span class="meta-label">Email:</span>
-                    <span class="meta-value"><a href="mailto:${details.agency_contact.email}">${details.agency_contact.email}</a></span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Email:</nav>
+                    <nav class="meta-value"><a href="mailto:${details.agency_contact.email}">${details.agency_contact.email}</a></nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-globe"></i>
-                    <span class="meta-label">Website:</span>
-                    <span class="meta-value"><a href="${details.agency_contact.website}" target="_blank">${details.agency_contact.website}</a></span>
-                </div>
-            </div>
+                    <nav class="meta-label">Website:</nav>
+                    <nav class="meta-value"><a href="${details.agency_contact.website}" target="_blank">${details.agency_contact.website}</a></nav>
+                </section>
+            </section>
         `;
     }
     
@@ -2427,54 +2427,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const details = suggestion.details;
         
         return `
-            <div class="detail-meta">
-                <div class="meta-item">
+            <section class="detail-meta">
+                <section class="meta-item">
                     <i class="fas fa-journal-whills"></i>
-                    <span class="meta-label">Journal:</span>
-                    <span class="meta-value">${details.journal}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Journal:</nav>
+                    <nav class="meta-value">${details.journal}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-calendar-day"></i>
-                    <span class="meta-label">Published:</span>
-                    <span class="meta-value">${formatDate(details.publication_date)}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Published:</nav>
+                    <nav class="meta-value">${formatDate(details.publication_date)}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-quote-right"></i>
-                    <span class="meta-label">Citations:</span>
-                    <span class="meta-value">${details.citations}</span>
-                </div>
-            </div>
+                    <nav class="meta-label">Citations:</nav>
+                    <nav class="meta-value">${details.citations}</nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Authors</h4>
                 <p>${details.authors.join(', ')}</p>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Abstract</h4>
                 <p>${details.abstract}</p>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Keywords</h4>
-                <div class="suggestion-tags">
-                    ${details.keywords.map(keyword => `<span class="suggestion-tag">${keyword}</span>`).join('')}
-                </div>
-            </div>
+                <section class="suggestion-tags">
+                    ${details.keywords.map(keyword => `<nav class="suggestion-tag">${keyword}</nav>`).join('')}
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Access Information</h4>
-                <div class="meta-item">
+                <section class="meta-item">
                     <i class="fas fa-fingerprint"></i>
-                    <span class="meta-label">DOI:</span>
-                    <span class="meta-value">${details.doi}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">DOI:</nav>
+                    <nav class="meta-value">${details.doi}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-external-link-alt"></i>
-                    <span class="meta-label">Access:</span>
-                    <span class="meta-value"><a href="${details.access_link}" target="_blank">View Paper</a></span>
-                </div>
-            </div>
+                    <nav class="meta-label">Access:</nav>
+                    <nav class="meta-value"><a href="${details.access_link}" target="_blank">View Paper</a></nav>
+                </section>
+            </section>
         `;
     }
     
@@ -2483,61 +2483,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const details = suggestion.details;
         
         return `
-            <div class="detail-meta">
-                <div class="meta-item">
+            <section class="detail-meta">
+                <section class="meta-item">
                     <i class="fas fa-toolbox"></i>
-                    <span class="meta-label">Type:</span>
-                    <span class="meta-value">${details.resource_type}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Type:</nav>
+                    <nav class="meta-value">${details.resource_type}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-building"></i>
-                    <span class="meta-label">Provider:</span>
-                    <span class="meta-value">${details.provider}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Provider:</nav>
+                    <nav class="meta-value">${details.provider}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-star"></i>
-                    <span class="meta-label">Rating:</span>
-                    <span class="meta-value">${details.user_reviews.rating}/5.0</span>
-                </div>
-            </div>
+                    <nav class="meta-label">Rating:</nav>
+                    <nav class="meta-value">${details.user_reviews.rating}/5.0</nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Description</h4>
                 <p>${details.description}</p>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Keywords</h4>
-                <div class="suggestion-tags">
-                    ${details.keywords.map(keyword => `<span class="suggestion-tag">${keyword}</span>`).join('')}
-                </div>
-            </div>
+                <section class="suggestion-tags">
+                    ${details.keywords.map(keyword => `<nav class="suggestion-tag">${keyword}</nav>`).join('')}
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Access Information</h4>
-                <div class="meta-item">
+                <section class="meta-item">
                     <i class="fas fa-globe"></i>
-                    <span class="meta-label">Website:</span>
-                    <span class="meta-value"><a href="${details.access_information.website}" target="_blank">${details.access_information.website}</a></span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Website:</nav>
+                    <nav class="meta-value"><a href="${details.access_information.website}" target="_blank">${details.access_information.website}</a></nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-dollar-sign"></i>
-                    <span class="meta-label">Cost:</span>
-                    <span class="meta-value">${details.access_information.cost}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Cost:</nav>
+                    <nav class="meta-value">${details.access_information.cost}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-book"></i>
-                    <span class="meta-label">Documentation:</span>
-                    <span class="meta-value">${details.access_information.documentation}</span>
-                </div>
-            </div>
+                    <nav class="meta-label">Documentation:</nav>
+                    <nav class="meta-value">${details.access_information.documentation}</nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>User Testimonials</h4>
                 <ul>
                     ${details.user_reviews.testimonials.map(testimonial => `<li><i class="fas fa-quote-left"></i> ${testimonial}</li>`).join('')}
                 </ul>
-            </div>
+            </section>
         `;
     }
     
@@ -2546,71 +2546,71 @@ document.addEventListener('DOMContentLoaded', function() {
         const details = suggestion.details;
         
         return `
-            <div class="detail-meta">
-                <div class="meta-item">
+            <section class="detail-meta">
+                <section class="meta-item">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span class="meta-label">Location:</span>
-                    <span class="meta-value">${details.location}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Location:</nav>
+                    <nav class="meta-value">${details.location}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-calendar-day"></i>
-                    <span class="meta-label">Date:</span>
-                    <span class="meta-value">${formatDate(details.date)}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Date:</nav>
+                    <nav class="meta-value">${formatDate(details.date)}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-hourglass-end"></i>
-                    <span class="meta-label">Submission Deadline:</span>
-                    <span class="meta-value">${formatDate(details.submission_deadline)}</span>
-                </div>
-            </div>
+                    <nav class="meta-label">Submission Deadline:</nav>
+                    <nav class="meta-value">${formatDate(details.submission_deadline)}</nav>
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Description</h4>
                 <p>${details.description}</p>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Keynote Speakers</h4>
                 <ul>
                     ${details.keynote_speakers.map(speaker => `<li>${speaker}</li>`).join('')}
                 </ul>
-            </div>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Topics</h4>
-                <div class="suggestion-tags">
-                    ${details.topics.map(topic => `<span class="suggestion-tag">${topic}</span>`).join('')}
-                </div>
-            </div>
+                <section class="suggestion-tags">
+                    ${details.topics.map(topic => `<nav class="suggestion-tag">${topic}</nav>`).join('')}
+                </section>
+            </section>
             
-            <div class="detail-section">
+            <section class="detail-section">
                 <h4>Registration Information</h4>
-                <div class="meta-item">
+                <section class="meta-item">
                     <i class="fas fa-calendar-check"></i>
-                    <span class="meta-label">Early Bird Deadline:</span>
-                    <span class="meta-value">${formatDate(details.registration.early_bird_deadline)}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Early Bird Deadline:</nav>
+                    <nav class="meta-value">${formatDate(details.registration.early_bird_deadline)}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-dollar-sign"></i>
-                    <span class="meta-label">Early Bird Cost:</span>
-                    <span class="meta-value">${details.registration.costs.early_bird}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Early Bird Cost:</nav>
+                    <nav class="meta-value">${details.registration.costs.early_bird}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-dollar-sign"></i>
-                    <span class="meta-label">Regular Cost:</span>
-                    <span class="meta-value">${details.registration.costs.regular}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Regular Cost:</nav>
+                    <nav class="meta-value">${details.registration.costs.regular}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-dollar-sign"></i>
-                    <span class="meta-label">Student Cost:</span>
-                    <span class="meta-value">${details.registration.costs.student}</span>
-                </div>
-                <div class="meta-item">
+                    <nav class="meta-label">Student Cost:</nav>
+                    <nav class="meta-value">${details.registration.costs.student}</nav>
+                </section>
+                <section class="meta-item">
                     <i class="fas fa-globe"></i>
-                    <span class="meta-label">Website:</span>
-                    <span class="meta-value"><a href="${details.website}" target="_blank">${details.website}</a></span>
-                </div>
-            </div>
+                    <nav class="meta-label">Website:</nav>
+                    <nav class="meta-value"><a href="${details.website}" target="_blank">${details.website}</a></nav>
+                </section>
+            </section>
         `;
     }
     
@@ -2621,86 +2621,86 @@ document.addEventListener('DOMContentLoaded', function() {
         switch (suggestion.type) {
             case 'collaboration':
                 actions += `
-                    <div class="action-card">
+                    <section class="action-card">
                         <h5 class="action-title">Send Introduction Email</h5>
                         <p class="action-description">Introduce yourself and your research interests to ${suggestion.details.researcher}.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Schedule Meeting</h5>
                         <p class="action-description">Request a virtual meeting to discuss potential collaboration areas.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Review Publications</h5>
                         <p class="action-description">Read recent papers by ${suggestion.details.researcher} to better understand their work.</p>
-                    </div>
+                    </section>
                 `;
                 break;
                 
             case 'funding':
                 actions += `
-                    <div class="action-card">
+                    <section class="action-card">
                         <h5 class="action-title">Prepare Letter of Intent</h5>
                         <p class="action-description">Draft an initial letter of intent for the ${suggestion.details.grant_name}.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Contact Agency</h5>
                         <p class="action-description">Reach out to the funding agency with any questions about the application process.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Set Milestones</h5>
                         <p class="action-description">Create a timeline for completing the application before the deadline.</p>
-                    </div>
+                    </section>
                 `;
                 break;
                 
             case 'paper':
                 actions += `
-                    <div class="action-card">
+                    <section class="action-card">
                         <h5 class="action-title">Read Paper</h5>
                         <p class="action-description">Read the full paper to understand its relevance to your work.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Contact Authors</h5>
                         <p class="action-description">Reach out to the authors to discuss their research or potential collaboration.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Cite in Your Work</h5>
                         <p class="action-description">Consider citing this paper in your upcoming publications if relevant.</p>
-                    </div>
+                    </section>
                 `;
                 break;
                 
             case 'resource':
                 actions += `
-                    <div class="action-card">
+                    <section class="action-card">
                         <h5 class="action-title">Explore Resource</h5>
                         <p class="action-description">Visit the website to learn more about the ${suggestion.details.resource_type.toLowerCase()}.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Request Access</h5>
                         <p class="action-description">Apply for access or request a trial if it seems relevant to your work.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Share with Team</h5>
                         <p class="action-description">Share this resource with your research team or collaborators.</p>
-                    </div>
+                    </section>
                 `;
                 break;
                 
             case 'event':
                 actions += `
-                    <div class="action-card">
+                    <section class="action-card">
                         <h5 class="action-title">Mark Calendar</h5>
                         <p class="action-description">Add key dates to your calendar, including submission and registration deadlines.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Prepare Submission</h5>
                         <p class="action-description">Start working on your submission for the conference.</p>
-                    </div>
-                    <div class="action-card">
+                    </section>
+                    <section class="action-card">
                         <h5 class="action-title">Plan Attendance</h5>
                         <p class="action-description">Make travel and accommodation arrangements if you plan to attend in person.</p>
-                    </div>
+                    </section>
                 `;
                 break;
         }
@@ -2725,10 +2725,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset research areas
         document.getElementById('research-areas-tags').innerHTML = `
-            <span class="tag">Artificial Intelligence<button class="remove-tag">&times;</button></span>
-            <span class="tag">Machine Learning<button class="remove-tag">&times;</button></span>
-            <span class="tag">Quantum Computing<button class="remove-tag">&times;</button></span>
-            <span class="tag">Data Science<button class="remove-tag">&times;</button></span>
+            <nav class="tag">Artificial Intelligence<button class="remove-tag">&times;</button></nav>
+            <nav class="tag">Machine Learning<button class="remove-tag">&times;</button></nav>
+            <nav class="tag">Quantum Computing<button class="remove-tag">&times;</button></nav>
+            <nav class="tag">Data Science<button class="remove-tag">&times;</button></nav>
         `;
         
         // Reset sliders
@@ -2775,7 +2775,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Create new tag
-        const tag = document.createElement('span');
+        const tag = document.createElement('nav');
         tag.className = 'tag';
         tag.innerHTML = `${value.trim()}<button class="remove-tag">&times;</button>`;
         
@@ -2800,19 +2800,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function refreshSuggestions() {
         // Show loading
         document.getElementById('suggestions-container').innerHTML = `
-            <div class="loading-container">
-                <div class="ai-loading">
-                    <div class="ai-loading-animation">
+            <section class="loading-container">
+                <section class="ai-loading">
+                    <section class="ai-loading-animation">
                         <i class="fas fa-robot"></i>
-                        <div class="thinking-dots">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
+                        <section class="thinking-dots">
+                            <nav></nav>
+                            <nav></nav>
+                            <nav></nav>
+                        </section>
+                    </section>
                     <p>Refreshing suggestions based on your latest research profile...</p>
-                </div>
-            </div>
+                </section>
+            </section>
         `;
         
         // In a real app, this would call the API to refresh suggestions
@@ -2898,11 +2898,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function generateRelevanceDots(relevance) {
-        let dots = '<span class="relevance-dots">';
+        let dots = '<nav class="relevance-dots">';
         for (let i = 1; i <= 5; i++) {
-            dots += `<span class="relevance-dot ${i <= relevance ? 'active' : ''}"></span>`;
+            dots += `<nav class="relevance-dot ${i <= relevance ? 'active' : ''}"></nav>`;
         }
-        dots += '</span>';
+        dots += '</nav>';
         return dots;
     }
     
@@ -2926,7 +2926,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Create notification element
-        const notification = document.createElement('div');
+        const notification = document.createElement('section');
         notification.className = `notification ${type}`;
         
         let icon;
@@ -2939,10 +2939,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Set notification content
         notification.innerHTML = `
-            <div class="notification-content">
+            <section class="notification-content">
                 ${icon}
-                <span>${message}</span>
-            </div>
+                <nav>${message}</nav>
+            </section>
             <button class="notification-close">&times;</button>
         `;
         

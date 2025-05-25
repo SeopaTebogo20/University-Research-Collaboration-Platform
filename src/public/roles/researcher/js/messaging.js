@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Create message HTML element
     function createMessageElement(message) {
-      const messageItem = document.createElement('div');
+      const messageItem = document.createElement('section');
       messageItem.className = `notification-item ${message.unread ? 'unread' : ''}`;
       messageItem.dataset.id = message.id;
       messageItem.dataset.type = message.type;
@@ -512,17 +512,17 @@ document.addEventListener('DOMContentLoaded', function() {
       };
       
       messageItem.innerHTML = `
-        <div class="notification-icon" style="background-color: ${typeInfo.color}">
+        <section class="notification-icon" style="background-color: ${typeInfo.color}">
           <i class="fas ${typeInfo.icon}"></i>
-        </div>
-        <div class="notification-content">
+        </section>
+        <section class="notification-content">
           <h4 class="notification-title">${message.title}</h4>
           <p class="notification-message">From: ${message.sender || 'System'}</p>
-          <div class="notification-meta">
-            <span class="notification-timestamp">${formatTimestamp(message.timestamp)}</span>
-            <span class="notification-type">${typeInfo.label}</span>
-          </div>
-        </div>
+          <section class="notification-meta">
+            <nav class="notification-timestamp">${formatTimestamp(message.timestamp)}</nav>
+            <nav class="notification-type">${typeInfo.label}</nav>
+          </section>
+        </section>
       `;
       
       messageItem.addEventListener('click', () => openMessageDetail(message));
@@ -619,9 +619,9 @@ document.addEventListener('DOMContentLoaded', function() {
       detailContent.innerHTML = `
         <p><strong>From:</strong> ${message.sender || 'System'}</p>
         <p><strong>Date:</strong> ${message.timestamp.toLocaleString()}</p>
-        <div class="message-content">
+        <section class="message-content">
           ${message.content}
-        </div>
+        </section>
       `;
       
       // Show action button if there's an action URL
